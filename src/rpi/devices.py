@@ -15,7 +15,7 @@ class CRCError(Exception):
     pass
 
 
-def get_used_i2c_slots(bus=i2c_bus):
+def get_used_i2c_slots(bus_number=i2c_bus):
     """Find all used i2c slots.
 
     Args:
@@ -25,7 +25,7 @@ def get_used_i2c_slots(bus=i2c_bus):
         A dictionary containing all used i2c slots and their values.
     """
     slots = {}
-    table = subprocess.check_output(["i2cdetect", bus]).splitlines()[1:]
+    table = subprocess.check_output(["i2cdetect", bus_number]).splitlines()[1:]
     for i, row in enumerate(table):
         row = str(row, encoding="utf-8")
         for j, item in enumerate(row.split()[1:]):
@@ -270,10 +270,10 @@ class CurrentSensor(Device):
 
 
     def configure(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
-        """Configures the current sensor. c.f. page 18 in the datasheet.
-
-        This function only changes the parameters that are specified.
-        All other parameters remain unchanged.
+        """Configures the current sensor.
+        
+        c.f. page 18 in the datasheet. This function only changes the
+        parameters that are specified. All other parameters remain unchanged.
 
         Args:
             avg: (optional) The averaging mode.
@@ -379,3 +379,56 @@ class CurrentSensor(Device):
                  "ready": (data & (1<<alerts["cvrf"]) > 0),
                  "overflow": (data & (1<<alerts["ovf"]) > 0)}
         return flags
+
+
+class ADConverter(Device):
+    """Microchip MCP3425 16-bit Analog-to-Digital Converter.
+
+    All words are big endian.
+
+    References:
+        Datasheet: http://ww1.microchip.com/downloads/en/DeviceDoc/22072b.pdf
+
+    Attributes:
+        address: The address of the device.
+        name: The name of the device.
+        bus_number: The i2c bus being used.
+    """
+    def __init__(self, address, name="ADC", bus_number=i2c_bus):
+        """Inits the A/D converter.
+        
+        Args:
+            address: The address of the device.
+            name: (optional) The name of the device.
+            bus_number: (optional) The i2c bus being used.
+        """
+        super().__init__(address, name, bus_number)
+
+    def configure(self, mode=None, sample_rate=None, gain=None):
+        """Configure the A/D converter.
+        
+        This function only changes the parameters that are specified. All other
+        parameters remain unchanged.
+        
+        Args:
+            mode: (optional) The conversion mode. Continuous (1) or
+                One-shot (0).
+            sample_rate: (optional) The sampling rate. Can be 0~2.
+            gain: (optional) The PGA gain. Can be 0~3.
+        """
+        reg = 0  # TODO (masasin): Find the location of the config register.
+        config = self.bus.read_byte_data(self.address, reg)
+        upper = config & (0b111<<5)
+        if mode is None:
+            mode = config & (1<<4)
+        else:
+            mode = mode<<4
+        if sample_rate is None:
+            sample_rate = config & (0b11<<2)
+        else:
+            sample_rate = sample_rate<<2
+        if gain is None:
+            gain = config & (0b11)
+
+        configuration = upper + mode + sample_rate + gain
+        self.bus.write_byte_data(self.address, reg, configuration)
