@@ -82,6 +82,12 @@ class Device(object):
             address: The address of the i2c device
             name: The name of the device.
             bus_number: (optional) The i2c bus being used.
+
+        Raises:
+            UserWarning: The address maps to a non-detected device, or the
+                device itself is busy.
+            KeyError: The address is valid, but another device has already been
+                registered at that address and has not been removed yet.
         """
         slots = get_used_i2c_slots()
         if address not in slots.keys():
@@ -89,7 +95,7 @@ class Device(object):
         elif slots[address] == "UU":
             warnings.warn("The device at {} is busy!".format(hex(address)))
         elif address in Device.devices:
-            raise KeyError("A device is already registered at this location.")
+            raise KeyError("A device is already registered at this address.")
         else:
             self.address = address
             self.name = name
