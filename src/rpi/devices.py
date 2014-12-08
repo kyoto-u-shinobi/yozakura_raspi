@@ -1,14 +1,37 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import smbus
+import subprocess
+import warnings
 
 
 i2c_bus = 1  # /dev/i2c-1
+
+warnings.simplefilter("error", UserWarning)
 
 
 class CRCError(Exception):
     """This exception is raised when a cyclic redundancy check fails."""
     pass
+
+
+def get_used_i2c_slots(bus=i2c_bus):
+    """Find all used i2c slots.
+
+    Args:
+        bus: (optional) The bus to be used.
+
+    Returns:
+        A dictionary containing all used i2c slots and their values.
+    """
+    slots = {}
+    table = subprocess.check_output(["i2cdetect", bus]).splitlines()[1:]
+    for i, row in enumerate(table):
+        row = str(row, encoding="utf-8")
+        for j, item in enumerate(row.split()[1:]):
+            if item != "--":
+                slots[16*i + (j if i > 0 else j + 3)] = item
+    return slots
 
 
 def concatenate(byte_array, endianness="big", size=8):
@@ -50,7 +73,7 @@ class Device(object):
         bus_number: The i2c bus being used.
         devices: A class variable containing all registered devices.
     """
-    devices = []
+    devices = {}
 
     def __init__(self, address, name, bus_number=i2c_bus):
         """Inits and registers the device.
@@ -60,10 +83,18 @@ class Device(object):
             name: The name of the device.
             bus_number: (optional) The i2c bus being used.
         """
-        self.address = address
-        self.name = name
-        self.bus = smbus.SMBus(bus_number)
-        Device.devices.append(self)
+        slots = get_used_i2c_slots()
+        if address not in slots.keys():
+            warnings.warn("No device detected at {}!".format(hex(address)))
+        elif slots[address] == "UU":
+            warnings.warn("The device at {} is busy!".format(hex(address)))
+        elif address in Device.devices:
+            raise KeyError("A device is already registered at this location.")
+        else:
+            self.address = address
+            self.name = name
+            self.bus = smbus.SMBus(bus_number)
+            Device.devices[self] = address
 
     def remove(self):
         """Deregister the device."""
@@ -163,7 +194,7 @@ class ThermalSensor(Device):
         for datum in data:
             crc = crc8_check(datum ^ crc)
 
-        if not crc == data[-1]:
+        if crc != data[-1]:
             raise CRCError("A cyclic redundancy check failed.")
 
 
