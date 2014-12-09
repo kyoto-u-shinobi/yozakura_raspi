@@ -422,8 +422,7 @@ class ADConverter(Device):
             sample_rate: (optional) The sampling rate. Can be 0~2.
             gain: (optional) The PGA gain. Can be 0~3.
         """
-        reg = 0  # TODO (masasin): Find the location of the config register.
-        config = self.bus.read_byte_data(self.address, reg)
+        config = self.bus.read_byte(self.address)
         upper = config & (0b111<<5)
         if mode is None:
             mode = config & (1<<4)
@@ -437,4 +436,4 @@ class ADConverter(Device):
             gain = config & (0b11)
 
         configuration = upper + mode + sample_rate + gain
-        self.bus.write_byte_data(self.address, reg, configuration)
+        self.bus.write_byte(self.address, configuration)
