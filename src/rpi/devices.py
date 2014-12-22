@@ -1,5 +1,6 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+from collections import OrderedDict
 import smbus
 import subprocess
 import warnings
@@ -24,8 +25,9 @@ def get_used_i2c_slots(bus_number=i2c_bus):
     Returns:
         A dictionary containing all used i2c slots and their values.
     """
-    slots = {}
-    table = subprocess.check_output(["i2cdetect", bus_number]).splitlines()[1:]
+    slots = OrderedDict()
+    command = "i2cdetect -y {}".format(bus_number)
+    table = subprocess.check_output(command.split()).splitlines()[1:]
     for i, row in enumerate(table):
         row = str(row, encoding="utf-8")
         for j, item in enumerate(row.split()[1:]):
@@ -94,7 +96,7 @@ class Device(object):
             warnings.warn("No device detected at {}!".format(hex(address)))
         elif slots[address] == "UU":
             warnings.warn("The device at {} is busy!".format(hex(address)))
-        elif address in Device.devices:
+        elif address in Device.devices.values():
             raise KeyError("A device is already registered at this address.")
         else:
             self.address = address
@@ -106,6 +108,13 @@ class Device(object):
         """Deregister the device."""
         Device.devices.remove(self)
         del self
+
+    def __repr__(self):
+        return "{} at {} ({})".format(self.__class__.__name__,
+                                      hex(self.address), self.name)
+
+    def __str__(self):
+        return self.name
 
 
 class ThermalSensor(Device):
@@ -243,7 +252,7 @@ class CurrentSensor(Device):
             bus_number: (optional) The i2c bus being used.
         """
         super().__init__(address, name, bus_number)
-        self.calibrate(15, 0.002)  # Always calibrate first!
+        self.calibrate(15)  # Always calibrate first!
 
     def read_register(self, register, complement=True):
         """Read a register on the device.
@@ -258,6 +267,7 @@ class CurrentSensor(Device):
             return its two's complement.
         """
         data = self.bus.read_word_data(self.address, self.registers[register])
+        data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
 
         if complement:
             if data > 2**16/2-1:
@@ -272,8 +282,28 @@ class CurrentSensor(Device):
             data: The data to be written.
         """
         data = int(data)
+        data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
         self.bus.write_word_data(self.address, self.registers[register], data)
 
+    def get_configuration(self):
+        """Read the current sensor configuration.
+
+        Returns:
+            A dictionary containing:
+                upper: The upper four bits (not used).
+                avg: The averaging mode.
+                bus_ct: Bus voltage conversion time.
+                shunt_ct: Shunt voltage conversion time.
+                mode: Operating mode.
+        """
+        read_result = self.read_register("config", complement=False)
+        config = OrderedDict()
+        config["upper"] = (read_result & (0b1111<<12)) >> 12
+        config["avg"] = (read_result & (0b111<<9)) >> 9
+        config["bus_ct"] = (read_result & (0b111<<6)) >> 6
+        config["shunt_ct"] = (read_result & (0b111<<3)) >> 3
+        config["mode"] = read_result & (0b111)
+        return config
 
     def configure(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
         """Configures the current sensor.
@@ -287,22 +317,22 @@ class CurrentSensor(Device):
             shunt_ct: (optional) Shunt voltage conversion time.
             mode: (optional) Operating mode.
         """
-        config = self.read_register("config", complement=False)
-        upper = config & (0b1111<<12)
+        config = self.get_configuration()
+        upper = config["upper"] << 12
         if avg is None:
-            avg = config & (0b111<<9)
+            avg = config["avg"] << 9
         else:
             avg = avg<<9
         if bus_ct is None:
-            bus_ct = config & (0b111<<6)
+            bus_ct = config["bus_ct"] << 6
         else:
             bus_ct = bus_ct<<6
         if shunt_ct is None:
-            shunt_ct = config & (0b111<<3)
+            shunt_ct = config["shunt_ct"] << 3
         else:
             shunt_ct = shunt_ct<<3
         if mode is None:
-            mode = config & (0b111)
+            mode = config["mode"]
 
         self.write_register("config", upper + avg + bus_ct + shunt_ct + mode)
 
@@ -316,6 +346,12 @@ class CurrentSensor(Device):
         Args:
             register: The name of the register to be read.
         """
+        # Force a read if triggered mode.
+        if 0 < self.get_configuration()["mode"] <= 3:
+            self.configure()
+        while not self.get_alerts()["ready"]:
+            pass
+
         try:
             return self.read_register(register) * self.lsbs[register]
         except KeyError:
@@ -323,13 +359,17 @@ class CurrentSensor(Device):
                    if you want to read any known register.".format(register))
             raise
 
-    def calibrate(self, max_current, r_shunt):
+    def calibrate(self, max_current, r_shunt=0.002):
         """Calibrate the current sensor.
+
+        The minimum usable max_current is 2.6 A, with a resolution of 0.08 mA.
         
         Args:
             max_current: The maximum current expected, in Amperes.
-            r_shunt:: The resistance of the shunt resistor, in Ohms.
+            r_shunt: (optional) The resistance of the shunt resistor, in Ohms.
         """
+        if max_current < 2.6:
+            raise ValueError("max_current should be at least 2.6 A.")
         self.lsbs["current"] = max_current / 2**15  # Amperes
         self.lsbs["power"] = 25 * self.lsbs["current"]  # Watts
         calib_value = 0.00512 / (self.lsbs["current"] * r_shunt)
