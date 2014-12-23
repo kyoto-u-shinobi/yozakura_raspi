@@ -11,7 +11,7 @@ i2c_bus = 1  # /dev/i2c-1
 warnings.simplefilter("error", UserWarning)
 
 
-class CRCError(Exception):
+class CRCError(ValueError):
     """This exception is raised when a cyclic redundancy check fails."""
     pass
 
@@ -367,6 +367,9 @@ class CurrentSensor(Device):
         Args:
             max_current: The maximum current expected, in Amperes.
             r_shunt: (optional) The resistance of the shunt resistor, in Ohms.
+
+        Raises:
+            ValueError: The max_current value is too small.
         """
         if max_current < 2.6:
             raise ValueError("max_current should be at least 2.6 A.")
