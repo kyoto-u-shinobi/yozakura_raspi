@@ -358,6 +358,9 @@ class CurrentSensor(Device):
             print("{} is not a measurement. Try the read_register() function \
                    if you want to read any known register.".format(register))
             raise
+        except TypeError:
+            print("{} has not been calibrated yet!")
+            raise
 
     def calibrate(self, max_current, r_shunt=0.002):
         """Calibrate the current sensor.
