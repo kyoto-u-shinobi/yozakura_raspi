@@ -1,7 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import pygame
-import sys
+from sys import stdout
 
 
 def interpret_direction(pos, invert_vertical=False):
@@ -84,21 +84,19 @@ def read_joystick(stick):
 
 if __name__ == "__main__":
     pygame.init()
-    stick = pygame.joystick.Joystick(0)
+    stick = pygame.joystick.Joystick(0)  # Only one controller connected.
     stick.init()
 
     while True:
         try:
             pressed, dpad, lstick, rstick = read_joystick(stick)
-            sys.stdout.write("dpad: {:4}  \
-                              lstick: [{:5.2f}, {:5.2f}]  \
-                              rstick: [{:5.2f}, {:5.2f}]  \
-                              {:75}\r".format(interpret_direction(dpad),
-                                              lstick[0], lstick[1],
-                                              rstick[0], rstick[1],
-                                              str(pressed)))
-            sys.stdout.flush()
-        except KeyboardInterrupt:
+            out_1 = "dpad: {:4}".format(interpret_direction(dpad))
+            out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(lstick[0], lstick[1])
+            out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(rstick[0], rstick[1])
+            out_4 = "buttons: {:75}".format(str(pressed))
+            stdout.write("{}  {}  {}  {}\r".format(out_1, out_2, out_3, out_4))
+            stdout.flush()  # Go back to the start of the line.
+        except KeyboardInterrupt:  # Exit safely.
             stick.quit()
             pygame.quit()
             print()
