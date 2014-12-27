@@ -4,7 +4,7 @@ import pygame
 import sys
 
 
-def interpret(dirs):
+def interpret(dirs, invert_vertical=False):
     """Interpret joystick axis position values to obtain a direction.
 
     The directions are Up, Down, Left, and Right, as well as their
@@ -13,6 +13,8 @@ def interpret(dirs):
     Args:
         dirs: A tuple (x, y) containing the positions to be interpreted.
             Up and Right are normally positive.
+        invert_vertical: (optional) Makes Down positive instead of Up. Default
+            is False.
 
     Returns:
         direction: "U", "D", "L", "R" if the motion is completely in a cardinal
@@ -23,9 +25,9 @@ def interpret(dirs):
     """
 
     if dirs[1] > 0:
-        vert = "U"
+        vert = "D" if invert_vertical else "U"
     elif dirs[1] < 0:
-        vert = "D"
+        vert = "U" if invert_vertical else "D"
     else:
         vert = ""
 
@@ -45,7 +47,10 @@ def interpret(dirs):
     
 
 def read_joystick(stick):
-    """Read the state of all the inputs of a given joystick.
+    """Read the state of all the inputs of a given joystick or controller.
+
+    Note that this is only tested with the Logitech RumblePad 2. Other input
+    devices may have different configurations.
 
     Args:
         stick: The controller that needs to be checked. Should be a pygame
