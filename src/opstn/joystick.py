@@ -4,14 +4,14 @@ import pygame
 import sys
 
 
-def interpret(dirs, invert_vertical=False):
+def interpret_direction(pos, invert_vertical=False):
     """Interpret joystick axis position values to obtain a direction.
 
     The directions are Up, Down, Left, and Right, as well as their
     intermediates.
 
     Args:
-        dirs: A tuple (x, y) containing the positions to be interpreted.
+        pos: A tuple (x, y) containing the positions to be interpreted.
             Up and Right are normally positive.
         invert_vertical: (optional) Makes Down positive instead of Up. Default
             is False.
@@ -24,16 +24,16 @@ def interpret(dirs, invert_vertical=False):
             motion detected, return "none".
     """
 
-    if dirs[1] > 0:
+    if pos[1] > 0:
         vert = "D" if invert_vertical else "U"
-    elif dirs[1] < 0:
+    elif pos[1] < 0:
         vert = "U" if invert_vertical else "D"
     else:
         vert = ""
 
-    if dirs[0] > 0:
+    if pos[0] > 0:
         hrz = "R"
-    elif dirs[0] < 0:
+    elif pos[0] < 0:
         hrz = "L"
     else:
         hrz = ""
@@ -93,7 +93,7 @@ if __name__ == "__main__":
             sys.stdout.write("dpad: {:4}  \
                               lstick: [{:5.2f}, {:5.2f}]  \
                               rstick: [{:5.2f}, {:5.2f}]  \
-                              {:75}\r".format(interpret(dpad),
+                              {:75}\r".format(interpret_direction(dpad),
                                               lstick[0], lstick[1],
                                               rstick[0], rstick[1],
                                               str(pressed)))
