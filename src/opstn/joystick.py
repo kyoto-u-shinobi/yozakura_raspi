@@ -96,23 +96,10 @@ def read_joystick(stick):
     return state
 
 
-def initialize(joystick_id):
-    """Creates and initializes a joystick object.
-    
-    Args:
-        joystick_id: The ID of the joystick to be initialized.
-
-    Returns:
-        An initialized pygame joystick object.
-    """
-    pygame.init()
-    stick = pygame.joystick.Joystick(joystick_id)
-    stick.init()
-    return stick
-
-
 if __name__ == "__main__":
-    stick = initialize(0)  # First controller connected.
+    pygame.init()
+    stick = pygame.joystick.Joystick(0)  # First controller
+    stick.init()
 
     while True:
         try:
