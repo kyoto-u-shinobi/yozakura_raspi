@@ -3,6 +3,7 @@
 import pygame
 import sys
 
+
 def interpret(dirs):
     if dirs[1] > 0:
         vert = "U"
@@ -25,7 +26,8 @@ def interpret(dirs):
 
     return direction
     
-def read_joystick():
+
+def read_joystick(stick):
     button_list = ["□", "×", "○", "△",  # 0-3
                    "L1", "R1", "L2", "R2",  # 4-7
                    "select", "start",  # 8-9
@@ -48,7 +50,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            pressed, dpad, lstick, rstick = read_joystick()
+            pressed, dpad, lstick, rstick = read_joystick(stick)
             sys.stdout.write("dpad: {:4}  lstick: [{:5.2f}, {:5.2f}]  rstick: [{:5.2f}, {:5.2f}]  {:75}\r".format(interpret(dpad), lstick[0], lstick[1], rstick[0], rstick[1], str(pressed)))
             sys.stdout.flush()
         except KeyboardInterrupt:
