@@ -1,6 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import pygame
+from collections import namedtuple
 
 
 def interpret_direction(pos, invert_vertical=False):
@@ -56,18 +57,22 @@ def read_joystick(stick):
             joystick object.
 
     Returns:
-        pressed: The buttons that are pressed. This is a list containing a
-            human-readable representation of all the buttons pressed on the
-            controller.
-        dpad: A tuple containing the dpad position. The position is either -1,
-            0, or 1.
-        lstick: A tuple containing the positions for the left analog stick.
-            Ranges between -1 and 1.
-        rstick: A tuple containing the positions for the right analog stick.
-            Ranges between -1 and 1.
+        A named tuple containing:
+            buttons: The buttons that are pressed. This is a list containing a
+                human-readable representation of all the buttons pressed on the
+                controller.
+            dpad: A tuple containing the dpad position. The position is either
+                -1, 0, or 1.
+            lstick: A tuple (x, y) containing the positions for the left analog
+                stick. Ranges between -1 and 1.
+            rstick: A tuple (x, y) containing the positions for the right
+                analog stick. Ranges between -1 and 1.
     """
+    JoystickState = namedtuple("JoystickState",
+                               ["buttons", "dpad", "lstick", "rstick"])
+    Position = namedtuple("Position", ["x", "y"])
     button_list = ("□", "×", "○", "△",  # 0-3
-                   "L1", "R1", "L2", "R2",  # 4-7
+                   "L1", "R1", "L2", "R2", # 4-7
                    "select", "start",  # 8-9
                    "L3", "R3")  # 10-11
 
@@ -76,10 +81,11 @@ def read_joystick(stick):
     pressed = [button_list[i] for i in range(stick.get_numbuttons())
                if stick.get_button(i) != 0]
     dpad = stick.get_hat(0)
-    lstick = (stick.get_axis(0), -stick.get_axis(1))
-    rstick = (stick.get_axis(2), -stick.get_axis(3))
+    lstick = Position(stick.get_axis(0), -stick.get_axis(1))  # Make Up > 0.
+    rstick = Position(stick.get_axis(2), -stick.get_axis(3))  # Make Up > 0.
 
-    return pressed, dpad, lstick, rstick
+    state = JoystickState(pressed, dpad, lstick, rstick)
+    return state
 
 
 def initialize(joystick_id):
@@ -104,8 +110,8 @@ if __name__ == "__main__":
         try:
             pressed, dpad, lstick, rstick = read_joystick(stick)
             out_1 = "dpad: {:4}".format(interpret_direction(dpad))
-            out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(lstick[0], lstick[1])
-            out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(rstick[0], rstick[1])
+            out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(lstick.x, lstick.y)
+            out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(rstick.x, rstick.y)
             out_4 = "buttons: {:75}".format(str(pressed))
             output = "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
             print(output, end="\r")
