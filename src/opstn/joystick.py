@@ -66,10 +66,10 @@ def read_joystick(stick):
         rstick: A tuple containing the positions for the right analog stick.
             Ranges between -1 and 1.
     """
-    button_list = ["□", "×", "○", "△",  # 0-3
+    button_list = ("□", "×", "○", "△",  # 0-3
                    "L1", "R1", "L2", "R2",  # 4-7
                    "select", "start",  # 8-9
-                   "L3", "R3"]  # 10-11
+                   "L3", "R3")  # 10-11
 
     pygame.event.pump()  # Synchronize pygame with computer (i.e. Refresh)
 
