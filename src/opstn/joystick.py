@@ -5,7 +5,7 @@ from collections import namedtuple
 
 
 class Position(object):
-    """A class representing the joystick axis position.
+    """A class representing a joystick axis position.
 
     Attributes:
             x: The x-position of the axis.
@@ -60,6 +60,75 @@ class Position(object):
         return direction
     
 
+class Buttons(object):
+    """A class representing the button configuration of a joystick.
+
+    Attributes:
+        buttons: A list containing the state of each button.
+    """
+    _button_list = ("□", "×", "○", "△",  # 0-3
+                "L1", "R1", "L2", "R2", # 4-7
+                "select", "start",  # 8-9
+                "L3", "R3")  # 10-11
+
+    def __init__(self, buttons):
+        """Inits the buttons.
+
+        Args:
+            buttons: A list containing the state of each button.
+        """
+        self.buttons = buttons
+
+    def __repr__(self):
+        return self.buttons
+
+    def __str__(self):
+        """A list of buttons which are pressed, in human-readable form."""
+        return str([self._button_list[i] for i, button
+                    in enumerate(self.buttons) if button])
+
+
+class State(object):
+    """The state of the object.
+
+    Attributes:
+        dpad: The position of the dpad.
+        lstick: The position of the left analog stick.
+        rstick: The position of the right analog stick.
+        buttons: The state of the buttons.
+    """
+    def __init__(self, dpad, lstick, rstick, buttons):
+        """Inits the state.
+
+        Args:
+            dpad: The position of the dpad.
+            lstick: The position of the left analog stick.
+            rstick: The position of the right analog stick.
+            buttons: The state of the buttons.
+        """
+        self.dpad = dpad
+        self.lstick = lstick
+        self.rstick = rstick
+        self.buttons = buttons
+
+    def __repr__(self):
+        return self.dpad, self.lstick, self.rstick, self.buttons
+
+    def __str__(self):
+        """A human-readable representation of the state.
+
+        To print on a single line, ensure that the terminal is at least 144
+        characters wide.
+        """
+        out_1 = "dpad: {:4}".format(self.dpad.direction)
+        out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(self.lstick.x,
+                                                    self.lstick.y)
+        out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(self.rstick.x,
+                                                    self.rstick.y)
+        out_4 = "buttons: {:75}".format(str(self.buttons))
+        return "{}  {}  {}  {}\r".format(out_1, out_2, out_3, out_4)
+
+
 def read_joystick(stick):
     """Read the state of all the inputs of a given joystick or controller.
 
@@ -67,33 +136,21 @@ def read_joystick(stick):
     devices may have different configurations.
 
     Args:
-        stick: The joystick that needs to be checked. Should be a pygame
-            joystick object.
+        stick: The joystick to be checked. Should be a pygame joystick object.
 
     Returns:
-        A named tuple containing:
-            buttons: A list containing a human-readable representation of all
-                the currently-depressed buttons on the controller.
-            dpad: The dpad position. Can contain either -1, 0, or 1.
-            lstick: The left analog stick position. Ranges from -1 to 1.
-            rstick: The right analog stick position. Ranges from -1 to 1.
+        The joystick state.
     """
-    State = namedtuple("State", ["buttons", "dpad", "lstick", "rstick"])
-    buttons = ("□", "×", "○", "△",  # 0-3
-               "L1", "R1", "L2", "R2", # 4-7
-               "select", "start",  # 8-9
-               "L3", "R3")  # 10-11
     n_buttons = stick.get_numbuttons()
 
     pygame.event.pump()  # Synchronize pygame with computer (i.e. Refresh)
 
-    pressed = [buttons[i] for i in range(n_buttons) if stick.get_button(i) > 0]
     dpad = Position(*stick.get_hat(0))  # Unpack the tuple.
     lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
     rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
+    buttons = Buttons([stick.get_button(i) for i in range(n_buttons)])
 
-    state = State(pressed, dpad, lstick, rstick)
-    return state
+    return State(dpad, lstick, rstick, buttons)
 
 
 if __name__ == "__main__":
@@ -103,13 +160,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            pressed, dpad, lstick, rstick = read_joystick(stick)
-            out_1 = "dpad: {:4}".format(dpad.direction)
-            out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(lstick.x, lstick.y)
-            out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(rstick.x, rstick.y)
-            out_4 = "buttons: {:75}".format(str(pressed))
-            output = "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
-            print(output, end="\r")
+            print(read_joystick(stick), end="")
         except KeyboardInterrupt:  # Exit safely.
             stick.quit()
             pygame.quit()
