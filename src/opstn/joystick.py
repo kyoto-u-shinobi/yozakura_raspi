@@ -58,6 +58,12 @@ class Position(object):
             direction = vert + hrz
 
         return direction
+
+    def __repr__(self):
+        return self.x, self.y
+
+    def __str__(self):
+        return str(self.__repr__())
     
 
 class Buttons(object):
@@ -79,13 +85,17 @@ class Buttons(object):
         """
         self.buttons = buttons
 
+    def human(self):
+        """A list of buttons which are pressed, in human-readable form."""
+        return str([self._button_list[i] for i, button
+                    in enumerate(self.buttons) if button])
+
     def __repr__(self):
         return self.buttons
 
     def __str__(self):
-        """A list of buttons which are pressed, in human-readable form."""
-        return str([self._button_list[i] for i, button
-                    in enumerate(self.buttons) if button])
+        return str(self.buttons)
+
 
 
 class State(object):
@@ -111,10 +121,7 @@ class State(object):
         self.rstick = rstick
         self.buttons = buttons
 
-    def __repr__(self):
-        return self.dpad, self.lstick, self.rstick, self.buttons
-
-    def __str__(self):
+    def human(self):
         """A human-readable representation of the state.
 
         To print on a single line, ensure that the terminal is at least 144
@@ -125,8 +132,24 @@ class State(object):
                                                     self.lstick.y)
         out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(self.rstick.x,
                                                     self.rstick.y)
-        out_4 = "buttons: {:75}".format(str(self.buttons))
-        return "{}  {}  {}  {}\r".format(out_1, out_2, out_3, out_4)
+        out_4 = "buttons: {:75}".format(self.buttons.human())
+        return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
+
+    @property
+    def data(self):
+        return self.dpad, self.lstick, self.rstick, self.buttons
+
+    def __repr__(self):
+        return str(self.data)
+
+    def __str__(self):
+        out_1 = "dpad: {:4}".format(self.dpad.direction)
+        out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(self.lstick.x,
+                                                    self.lstick.y)
+        out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(self.rstick.x,
+                                                    self.rstick.y)
+        out_4 = "buttons: {:38}".format(str(self.buttons))
+        return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
 
 
 class Controller(object):
@@ -180,10 +203,17 @@ class Controller(object):
         return State(dpad, lstick, rstick, buttons)
     
     def quit(self):
+        """Safely quits a controller."""
         self.controller.quit()
-        Controller.controllers.remove(self)
+        del Controller.controllers[self]
         if not Controller.controllers:
             pygame.quit()
+
+    @classmethod
+    def quit_all(self):
+        """A class method. Safely quits all controllers."""
+        for controller in list(Controller.controllers.keys()):
+            controller.quit()
 
     def __repr__(self):
         return "{} (ID#{})".format(self.name, self.stick_id())
@@ -197,9 +227,8 @@ if __name__ == "__main__":
 
     while True:
         try:
-            print(stick_body.get_state(), end="")
+            print(stick_body.get_state().human(), end="\r")
         except KeyboardInterrupt:  # Exit safely.
             print("\nExiting!")
-            for controller in Controller.controllers:
-                controller.quit()
+            Controller.quit_all()
             break
