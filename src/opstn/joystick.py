@@ -129,41 +129,77 @@ class State(object):
         return "{}  {}  {}  {}\r".format(out_1, out_2, out_3, out_4)
 
 
-def read_joystick(stick):
-    """Read the state of all the inputs of a given joystick or controller.
+class Controller(object):
+    """A controller to control the robot.
 
-    Note that this is only tested with the Logitech RumblePad 2. Other input
-    devices may have different configurations.
-
-    Args:
-        stick: The joystick to be checked. Should be a pygame joystick object.
-
-    Returns:
-        The joystick state.
+    Attributes:
+        controller: The controller itself. (A pygame Joystick object.)
+        stick_id: The ID of the controller.
+        name: The name of the controller.
+        controllers: A class variable containing all registered controllers.
     """
-    n_buttons = stick.get_numbuttons()
+    pygame.init()
+    controllers = {}
 
-    pygame.event.pump()  # Synchronize pygame with computer (i.e. Refresh)
+    def __init__(self, stick_id, name=None):
+        """Inits a controller.
 
-    dpad = Position(*stick.get_hat(0))  # Unpack the tuple.
-    lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
-    rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
-    buttons = Buttons([stick.get_button(i) for i in range(n_buttons)])
+        Args:
+            stick_id: The ID of the controller.
+            name: (optional) The name of the controller.
+        """
+        self.controller = pygame.joystick.Joystick(stick_id)
+        self.stick_id = stick_id
+        Controller.controllers[self] = stick_id
 
-    return State(dpad, lstick, rstick, buttons)
+        if name is not None:
+            self.name = name
+        else:
+            self.name = self.controller.get_name()
+        self.controller.init()
+
+    def get_state(self):
+        """Read the state of all the inputs of the controller.
+
+        Note that this is only tested with the Logitech RumblePad 2. Other
+        input devices may have different configurations.
+
+        Returns:
+            The joystick state.
+        """
+        stick = self.controller
+        n_buttons = stick.get_numbuttons()
+
+        pygame.event.pump()  # Synchronize pygame with computer (i.e. Refresh)
+
+        dpad = Position(*stick.get_hat(0))  # Unpack the tuple.
+        lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
+        rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
+        buttons = Buttons([stick.get_button(i) for i in range(n_buttons)])
+
+        return State(dpad, lstick, rstick, buttons)
+    
+    def quit(self):
+        self.controller.quit()
+        Controller.controllers.remove(self)
+        if not Controller.controllers:
+            pygame.quit()
+
+    def __repr__(self):
+        return "{} (ID#{})".format(self.name, self.stick_id())
+
+    def __str__(self):
+        return self.name
 
 
 if __name__ == "__main__":
-    pygame.init()
-    stick = pygame.joystick.Joystick(0)  # First controller
-    stick.init()
+    stick_body = Controller(0, "Body controller")
 
     while True:
         try:
-            print(read_joystick(stick), end="")
+            print(stick_body.get_state(), end="")
         except KeyboardInterrupt:  # Exit safely.
-            stick.quit()
-            pygame.quit()
-            print()
-            print("Exiting!")
+            print("\nExiting!")
+            for controller in Controller.controllers:
+                controller.quit()
             break
