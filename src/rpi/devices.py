@@ -106,7 +106,7 @@ class Device(object):
 
     def remove(self):
         """Deregister the device."""
-        Device.devices.pop(self)
+        del Device.devices[self]
         del self
 
     def __repr__(self):
