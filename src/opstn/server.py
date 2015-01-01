@@ -28,6 +28,7 @@ class Server(object):
         self.logger = logging.getLogger("server")
         self.hostname = hostname
         self.port = port
+        self.logger.debug("Server created")
 
     def start(self):
         """Starts the server."""
