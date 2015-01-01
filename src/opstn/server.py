@@ -32,10 +32,11 @@ class Server(object):
 
     def start(self):
         """Starts the server."""
-        self.logger.debug("Listening...")
+        self.logger.debug("Starting server")
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.hostname, self.port))
         self.socket.listen(1)
+        self.logger.info("Server started")
         
         while True:
             """Fork a new process to deal with a new client."""
@@ -55,30 +56,35 @@ class Server(object):
         """
         logger = logging.getLogger("process-{}".format(address[1]))
         try:
-            logger.debug("Connected to {}".format(address[0]))
+            logger.info("Connected to {}".format(address[0]))
             while True:
                 data_raw = connection.recv(1024)
                 data = data_raw.decode("utf-8")
+                logger.debug('Received data: "{}"'.format(data))
                 if data == "":
                     logger.debug("Socket closed remotely")
                     break
                 elif data == "body":
-                    logger.debug("Getting body controller data")
+                    logger.debug("Client requesting body controller input")
                     state = stick_body.get_state()
                     reply = pickle.dumps(state.data)
-                else:
-                    reply = "Did not understand '{}'".format(data)
-                logger.debug("Received data '{}'".format(data))
                 try:
                     connection.sendall(str.encode(reply))
-                except TypeError:
+                except TypeError:  # Already bytecode
                     connection.sendall(reply)
                 logger.debug("Sent reply")
         except KeyboardInterrupt:
-            logger.exception("Keyboard interrupt")
+            logger.debug("Keyboard interrupt received")
         finally:
-            logger.debug("Closing socket")
+            logger.info("Closing socket")
             connection.close()
+
+    def quit(self):
+        """Quits the server and kills all subprocesses."""
+        for process in mp.active_children():
+            logging.info("Shutting down process {}".format(process))
+            process.terminate()
+            process.join()
 
 
 if __name__=="__main__":
@@ -87,16 +93,13 @@ if __name__=="__main__":
 
     server = Server("localhost", 9000)
     try:
-        logging.info("Starting server...")
         server.start()
     except KeyboardInterrupt:
-        logging.exception("Keyboard interrupt received!")
+        logging.debug("Keyboard interrupt received")
+        pass
     finally:
         logging.info("Shutting down...")
-        logging.info("Quitting joystick {}".format(stick_body.stick_id))
+        logging.info("Closing joystick handlers")
         joystick.Controller.quit_all()
-        for process in mp.active_children():
-            logging.info("Shutting down process {}".format(process))
-            process.terminate()
-            process.join()
+        server.quit()
     logging.info("All done")
