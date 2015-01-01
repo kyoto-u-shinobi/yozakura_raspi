@@ -1,10 +1,11 @@
+# (C) 2015  Kyoto University Mechatronics Laboratory
+# Released under the GNU General Public License, version 3
 import multiprocessing as mp
 import joystick
 import socket
 import logging
 import pickle
 
-logging.basicConfig(level=logging.DEBUG)
 
 class Server(object):
     def __init__(self, hostname, port):
@@ -56,6 +57,7 @@ class Server(object):
 
 
 if __name__=="__main__":
+    logging.basicConfig(level=logging.ERROR)
     stick_body = joystick.Controller(0)
 
     server = Server("localhost", 9000)
