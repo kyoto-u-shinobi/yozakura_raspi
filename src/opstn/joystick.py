@@ -60,10 +60,10 @@ class Position(object):
         return direction
 
     def __repr__(self):
-        return self.x, self.y
+        return str((self.x, self.y))
 
     def __str__(self):
-        return str(self.__repr__())
+        return "[{:5.2f}, {:5.2f}]".format(self.x, self.y)
     
 
 class Buttons(object):
@@ -91,7 +91,7 @@ class Buttons(object):
                     in enumerate(self.buttons) if button])
 
     def __repr__(self):
-        return self.buttons
+        return str(self.buttons)
 
     def __str__(self):
         return str(self.buttons)
@@ -128,15 +128,14 @@ class State(object):
         characters wide.
         """
         out_1 = "dpad: {:4}".format(self.dpad.direction)
-        out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(self.lstick.x,
-                                                    self.lstick.y)
-        out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(self.rstick.x,
-                                                    self.rstick.y)
+        out_2 = "lstick: {}".format(self.lstick)
+        out_3 = "rstick: {}".format(self.rstick)
         out_4 = "buttons: {:75}".format(self.buttons.human())
         return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
 
     @property
     def data(self):
+        """Return the raw data."""
         return self.dpad, self.lstick, self.rstick, self.buttons
 
     def __repr__(self):
@@ -144,10 +143,8 @@ class State(object):
 
     def __str__(self):
         out_1 = "dpad: {:4}".format(self.dpad.direction)
-        out_2 = "lstick: [{:5.2f}, {:5.2f}]".format(self.lstick.x,
-                                                    self.lstick.y)
-        out_3 = "rstick: [{:5.2f}, {:5.2f}]".format(self.rstick.x,
-                                                    self.rstick.y)
+        out_2 = "lstick: {}".format(self.lstick)
+        out_3 = "rstick: {}".format(self.rstick)
         out_4 = "buttons: {:38}".format(str(self.buttons))
         return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
 
@@ -195,7 +192,7 @@ class Controller(object):
 
         pygame.event.pump()  # Synchronize pygame with computer (i.e. Refresh)
 
-        dpad = Position(*stick.get_hat(0))  # Unpack the tuple.
+        dpad = Position(*stick.get_hat(0))
         lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
         rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
         buttons = Buttons([stick.get_button(i) for i in range(n_buttons)])
