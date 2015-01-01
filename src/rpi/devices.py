@@ -3,12 +3,10 @@
 from collections import OrderedDict
 import smbus
 import subprocess
-import warnings
+import logging
 
 
 i2c_bus = 1  # /dev/i2c-1
-
-warnings.simplefilter("error", UserWarning)
 
 
 class CRCError(ValueError):
@@ -86,16 +84,16 @@ class Device(object):
             bus_number: (optional) The i2c bus being used.
 
         Raises:
-            UserWarning: The address maps to a non-detected device, or the
-                device itself is busy.
             KeyError: The address is valid, but another device has already been
                 registered at that address and has not been removed yet.
         """
+        self.logger = logging.getLogger("i2c-{}-{}".format(name, hex(address)))
+        self.logger.debug("Initializing device".format(hex(address)))
         slots = get_used_i2c_slots()
         if address not in slots.keys():
-            warnings.warn("No device detected at {}!".format(hex(address)))
+            self.logger.warning("No device detected")
         elif slots[address] == "UU":
-            warnings.warn("The device at {} is busy!".format(hex(address)))
+            self.logger.warning("Device at address is busy")
         elif address in Device.devices.values():
             raise KeyError("A device is already registered at this address.")
         else:
@@ -103,11 +101,12 @@ class Device(object):
             self.name = name
             self.bus = smbus.SMBus(bus_number)
             Device.devices[self] = address
+        self.logger.info("Device initialized")
 
     def remove(self):
         """Deregister the device."""
+        self.logger.info("Deregistering device")
         del Device.devices[self]
-        del self
 
     def __repr__(self):
         return "{} at {} ({})".format(self.__class__.__name__,
@@ -169,10 +168,15 @@ class ThermalSensor(Device):
         Raises:
             CRCError: A CRC check failed. i.e., bad data was received.
         """
+        self.logger.debug("Getting temperature")
+        self.logger.debug("Writing to start read")
         self.bus.write_byte_data(self.write_address, ThermalSensor.start_read)
+        self.logger.debug("Reading")
         readout = self.bus.read_i2c_block_data(self.read_address, 0, 35)
+        self.logger.debug("Checking error")
         self._error_check(readout)  # Data integrity check
 
+        self.logger.debug("Concatenating data")
         temp_ref = concatenate(readout[:2], endianness="little") / 10
         matrix = [concatenate(readout[i:i+2], endianness="little") / 10
                   for i in range(2, 34, 2)]
@@ -252,7 +256,7 @@ class CurrentSensor(Device):
             bus_number: (optional) The i2c bus being used.
         """
         super().__init__(address, name, bus_number)
-        self.calibrate(15)  # Always calibrate first!
+        self.calibrate(15)
 
     def read_register(self, register, complement=True):
         """Read a register on the device.
@@ -266,6 +270,7 @@ class CurrentSensor(Device):
             The data from the register. If the result is a signed integer,
             return its two's complement.
         """
+        self.logger.debug("Reading {} register".format(register))
         data = self.bus.read_word_data(self.address, self.registers[register])
         data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
 
@@ -281,6 +286,7 @@ class CurrentSensor(Device):
             register: The name of the register to be written to.
             data: The data to be written.
         """
+        self.logger.debug("Writing {} to {} register".format(data, register))
         data = int(data)
         data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
         self.bus.write_word_data(self.address, self.registers[register], data)
@@ -296,6 +302,7 @@ class CurrentSensor(Device):
                 shunt_ct: Shunt voltage conversion time.
                 mode: Operating mode.
         """
+        self.logger.debug("Getting configuration")
         read_result = self.read_register("config", complement=False)
         config = OrderedDict()
         config["upper"] = (read_result & (0b1111<<12)) >> 12
@@ -317,6 +324,7 @@ class CurrentSensor(Device):
             shunt_ct: (optional) Shunt voltage conversion time.
             mode: (optional) Operating mode.
         """
+        self.logger.debug("Setting configuration")
         config = self.get_configuration()
         upper = config["upper"] << 12
         if avg is None:
@@ -338,6 +346,7 @@ class CurrentSensor(Device):
 
     def reset(self):
         """Reset the current sensor."""
+        self.logger.debug("Resetting sensor")
         self.write_register("config", 0b1<<15)
 
     def get_measurement(self, register):
@@ -346,6 +355,7 @@ class CurrentSensor(Device):
         Args:
             register: The name of the register to be read.
         """
+        self.logger.debug("Getting {} measurement".format(register))
         # Force a read if triggered mode.
         if 0 < self.get_configuration()["mode"] <= 3:
             self.configure()
@@ -370,10 +380,12 @@ class CurrentSensor(Device):
         Args:
             max_current: The maximum current expected, in Amperes.
             r_shunt: (optional) The resistance of the shunt resistor, in Ohms.
+                The resistor used on the sensor is 0.002 Ohms.
 
         Raises:
             ValueError: The max_current value is too small.
         """
+        self.logger.debug("Calibrating sensor")
         if max_current < 2.6:
             raise ValueError("max_current should be at least 2.6 A.")
         self.lsbs["current"] = max_current / 2**15  # Amperes
@@ -400,6 +412,7 @@ class CurrentSensor(Device):
             invert: (optional) Whether to invert the alert pin polarity.
             latch: (optional) Whether to latch the alert output.
         """
+        self.logger.debug("Setting alerts")
         alerts = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11,
                   "cnvr": 10, "apol": 1, "len": 0}
         alert_value = 1<<alerts[alert]
@@ -425,6 +438,7 @@ class CurrentSensor(Device):
         Returns:
             A dictionary containing the state of the alerts.
         """
+        self.logger.debug("Getting alert flags")
         data = self.read_register("alert_reg", complement=False)
         alerts = {"aff": 4, "cvrf": 3, "ovf": 2}
         flags = {"alert": (data & (1<<alerts["aff"]) > 0),
@@ -468,6 +482,7 @@ class ADConverter(Device):
             sample_rate: (optional) The sampling rate. Can be 0~2.
             gain: (optional) The PGA gain. Can be 0~3.
         """
+        self.logger.debug("Configuring ADC")
         config = self.bus.read_byte(self.address)
         upper = config & (0b111<<5)
         if mode is None:
