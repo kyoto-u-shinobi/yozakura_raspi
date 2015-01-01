@@ -14,7 +14,6 @@ class Server(object):
     creating a subprocess handler for each new client.
 
     Attributes:
-        logger: The logger for the main server class.
         hostname: The hostname or IP Address of the server.
         port: The port used for communication.
         socket: The socket opened by the server.
