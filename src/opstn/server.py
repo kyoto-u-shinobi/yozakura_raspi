@@ -56,7 +56,7 @@ class Server(object):
         """
         logger = logging.getLogger("process-{}".format(address[1]))
         try:
-            logger.info("Connected to {}".format(address[0]))
+            logger.info("Connected to {}:{}".format(address[0], self.port))
             while True:
                 data_raw = connection.recv(1024)
                 data = data_raw.decode("utf-8")
@@ -96,10 +96,8 @@ if __name__=="__main__":
         server.start()
     except KeyboardInterrupt:
         logging.debug("Keyboard interrupt received")
-        pass
     finally:
         logging.info("Shutting down...")
-        logging.info("Closing joystick handlers")
         joystick.Controller.quit_all()
         server.quit()
     logging.info("All done")

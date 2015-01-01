@@ -1,6 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import pygame
+import logging
 from collections import namedtuple
 
 
@@ -97,7 +98,6 @@ class Buttons(object):
         return str(self.buttons)
 
 
-
 class State(object):
     """The state of the object.
 
@@ -168,6 +168,8 @@ class Controller(object):
             stick_id: The ID of the controller.
             name: (optional) The name of the controller.
         """
+        self.logger = logging.getLogger("controller-{}".format(stick_id))
+        self.logger.debug("Initializing controller")
         self.controller = pygame.joystick.Joystick(stick_id)
         self.stick_id = stick_id
         Controller.controllers[self] = stick_id
@@ -177,6 +179,7 @@ class Controller(object):
         else:
             self.name = self.controller.get_name()
         self.controller.init()
+        self.logger.info("Controller initialized")
 
     def get_state(self):
         """Read the state of all the inputs of the controller.
@@ -190,8 +193,10 @@ class Controller(object):
         stick = self.controller
         n_buttons = stick.get_numbuttons()
 
-        pygame.event.pump()  # Synchronize pygame with computer (i.e. Refresh)
+        self.logger.debug("Syncronizing pygame")
+        pygame.event.pump()
 
+        self.logger.debug("Getting state")
         dpad = Position(*stick.get_hat(0))
         lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
         rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
@@ -201,6 +206,7 @@ class Controller(object):
     
     def quit(self):
         """Safely quits a controller."""
+        self.logger.info("Closing controller handler")
         self.controller.quit()
         del Controller.controllers[self]
         if not Controller.controllers:
@@ -209,23 +215,26 @@ class Controller(object):
     @classmethod
     def quit_all(self):
         """A class method. Safely quits all controllers."""
+        logging.info("Closing all controller handlers")
         for controller in list(Controller.controllers.keys()):
             controller.quit()
 
     def __repr__(self):
-        return "{} (ID#{})".format(self.name, self.stick_id())
+        return "{} (ID# {})".format(self.name, self.stick_id())
 
     def __str__(self):
         return self.name
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     stick_body = Controller(0, "Body controller")
 
     while True:
         try:
             print(stick_body.get_state().human(), end="\r")
         except KeyboardInterrupt:  # Exit safely.
-            print("\nExiting!")
+            logging.info("")
+            logging.info("Exiting")
             Controller.quit_all()
             break
