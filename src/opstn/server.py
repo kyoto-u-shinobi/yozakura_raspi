@@ -34,6 +34,7 @@ class Server(object):
         """Starts the server."""
         self.logger.debug("Starting server")
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.hostname, self.port))
         self.socket.listen(1)
         self.logger.info("Server started")
@@ -64,10 +65,16 @@ class Server(object):
                 if data == "":
                     logger.debug("Socket closed remotely")
                     break
-                elif data == "body":
+                elif data.startswith("body"):
                     logger.debug("Client requesting body controller input")
                     state = stick_body.get_state()
-                    reply = pickle.dumps(state.data)
+                    dpad, lstick, rstick, buttons = state.data
+                    reply = pickle.dumps(((dpad.x, dpad.y),
+                                         (lstick.x, lstick.y),
+                                         (rstick.x, rstick.y),
+                                         buttons.buttons))
+                else:
+                    reply = 'Unable to parse command: "{}"'.format(data)
                 try:
                     connection.sendall(str.encode(reply))
                 except TypeError:  # Already bytecode
@@ -91,7 +98,7 @@ if __name__=="__main__":
     logging.basicConfig(level=logging.INFO)
     stick_body = joystick.Controller(0)
 
-    server = Server("localhost", 9000)
+    server = Server("", 9000)
     try:
         server.start()
     except KeyboardInterrupt:
