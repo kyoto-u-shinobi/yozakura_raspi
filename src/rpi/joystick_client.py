@@ -12,7 +12,7 @@ if __name__ == "__main__":
             s.sendall(data.encode())
             result = s.recv(1024)
             dpad, lstick, rstick, buttons = pickle.loads(result)
-            print(dpad, lstick, rstick, buttons, end="\r")
+            print(dpad, lstick, rstick, buttons)
         except KeyboardInterrupt:
             break
     s.close()
