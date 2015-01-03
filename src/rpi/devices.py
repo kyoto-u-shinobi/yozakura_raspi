@@ -505,8 +505,8 @@ def __test_current_sensor():
     lower_sensor = CurrentSensor(0x44, name="lower current sensor")
     upper_sensor.calibrate(2.6)
     lower_sensor.calibrate(2.6)
-    print("Upper Sensor          Lower Sensor")
-    print("==================================")
+    print("Upper Sensor                         Lower Sensor")
+    print("="*64)
     while True:
         upper_current = upper_sensor.get_measurement("current")
         upper_power = upper_sensor.get_measurement("power")
@@ -514,7 +514,13 @@ def __test_current_sensor():
         lower_current = lower_sensor.get_measurement("current")
         lower_power = lower_sensor.get_measurement("power")
         lower_voltage = lower_power / lower_current
-        print("{:8.5f} A, {:8.5f} W, {:8.5f} V".format(upper_current, upper_power, upper_voltage), end="\r")
+        print_upper = "{:5.3f} A, {:6.3f} W, {:6.3f} V".format(upper_current,
+                                                               upper_power,
+                                                               upper_voltage)
+        print_lower = "{:5.3f} A, {:6.3f} W, {:6.3f} V".format(upper_current,
+                                                               upper_power,
+                                                               upper_voltage)
+        print("{}          {}".format(print_upper, print_lower), end="\r")
 
 
 if __name__ == "__main__":
