@@ -9,6 +9,7 @@ import logging
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     left_motor = motors.Motor(31, 33, 35, 37, "left_motor")
+    #left_motor = motors.Motor(31, 33, 35, 37, "left_motor")
     #right_motor = motors.Motor(32, 36, 38, 40, "right_motor")
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

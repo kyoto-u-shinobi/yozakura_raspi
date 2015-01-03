@@ -3,7 +3,6 @@
 from RPi import GPIO as gpio
 import logging
 
-
 class Motor(object):
     motors = {}
     gpio.setmode(gpio.BOARD)
@@ -37,8 +36,8 @@ class Motor(object):
             Motor.motors[self] = name
             self.logger.info("Motor initialized")
 
-    def drive(speed):
-        if is_sleeping:
+    def drive(self, speed):
+        if self.is_sleeping:
             self.logger.info("Waking up")
             gpio.output(self.pin_enable, gpio.HIGH)
         if speed < 0:
