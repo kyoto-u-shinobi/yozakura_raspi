@@ -3,7 +3,8 @@ import RPi.GPIO as GPIO
 import math
 GPIO.setmode(GPIO.BOARD)
 chan_list = (11, 13, 15)  # 11 is for EN, 13 is for PWMP, 15 is for PWMN
-GPIO.setup(chan_list, GPIO.OUT)
+for channel in chan_list:
+    GPIO.setup(channel, GPIO.OUT)
 
 # Reverse
 def test_reverse():
