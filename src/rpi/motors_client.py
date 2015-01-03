@@ -13,10 +13,6 @@ def gpio_setup():
     for channel in channels.values():
         gpio.setup(channel, gpio.OUT)
     gpio.output(channels["EN"], gpio.HIGH)
-    driver_forward = gpio.PWM(channels["PWMP"], 50)  # Frequency = 50 Hz
-    driver_reverse = gpio.PWM(channels["PWMN"], 50)  # Frequency = 50 Hz
-    driver_forward.start()
-    driver_reverse.start()
 
 
 def drive_motor(speed):
@@ -38,6 +34,10 @@ def shut_down():
 
 if __name__ == "__main__":
     gpio_setup()
+    driver_forward = gpio.PWM(channels["PWMP"], 50)  # Frequency = 50 Hz
+    driver_reverse = gpio.PWM(channels["PWMN"], 50)  # Frequency = 50 Hz
+    driver_forward.start(0)
+    driver_reverse.start(0)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("10.249.255.151", 9000))
     data = "sticks_y"
