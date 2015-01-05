@@ -117,7 +117,7 @@ class Motor(object):
         self._rev.stop()
 
         self.logger.debug("Cleaning up pins.")
-        gpio.output(self.pin_enable, gpio.LOW)
+        #gpio.output(self.pin_enable, gpio.LOW)
         if self.hard:
             wiringpi.pwmWrite(self.pin_pwm_pos, 0)
             wiringpi.pwmWrite(self.pin_pwm_neg, 0)
