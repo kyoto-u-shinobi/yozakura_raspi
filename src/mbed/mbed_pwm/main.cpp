@@ -10,7 +10,7 @@ void drive_motor(float speed) {  // Assume only motor 1 here.
         motor_1_forward_pin = 0;
         motor_1_reverse_pin = -speed;
     }
-    else {
+    else {  // Speed is positive.
         motor_1_forward_pin = speed;
         motor_1_reverse_pin = 0;
     }
