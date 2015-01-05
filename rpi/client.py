@@ -8,8 +8,8 @@ import logging
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    left_motor = motors.Motor(12, 33, 35, 37, "left_motor", hard=False)
-    right_motor = motors.Motor(32, 38, 36, 40, "right_motor", hard=False)
+    left_motor = motors.Motor(12, 8, 10, 11, "left_motor", hard=True, scaling=0.9)
+    right_motor = motors.Motor(35, 32, 36, 38, "right_motor", hard=True, scaling=0.9)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("192.168.54.125", 9999))
