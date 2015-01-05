@@ -57,7 +57,10 @@ class Motor(object):
         gpio.setup(enable, gpio.OUT)
         gpio.setup(pwm_pos, gpio.OUT)
         gpio.setup(pwm_neg, gpio.OUT)
-        gpio.setup(fault, gpio.IN)
+
+        self.logger.debug("Setting up interrupt")
+        gpio.setup(fault, gpio.IN, pull_up_down=gpio.PUD_UP)  # Pull up
+        gpio.add_event_detect(fault, gpio.FALLING, callback=self._catch_fault)
 
         self.logger.debug("Starting PWM drivers")
         self.is_sleeping = False
@@ -76,6 +79,12 @@ class Motor(object):
         self.logger.debug("Registering motor")
         Motor.motors[self] = name
         self.logger.info("Motor initialized")
+
+    def _catch_fault(self):
+        """Threaded callback for fault detection."""
+        self.logger.error("Fault detected")
+        self.logger.info("Shutting down motors")
+        Motor.shut_down_all()
 
     def drive(self, speed):
         """Set the motor to a given speed.
@@ -133,7 +142,7 @@ class Motor(object):
         self.logger.info("Motor shut down")
 
     @classmethod
-    def shut_down_all(self):
+    def shut_down_all():
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
         for motor in list(Motor.motors.keys()):
