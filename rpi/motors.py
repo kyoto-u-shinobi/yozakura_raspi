@@ -72,10 +72,6 @@ class Motor(object):
             gpio.output(pwm_neg, gpio.LOW)
             wiringpi.pinMode(enable, 2)
             wiringpi.pwmWrite(enable, 0)
-            #wiringpi.pinMode(pwm_pos, 2)
-            #wiringpi.pinMode(pwm_neg, 1)
-            #wiringpi.pwmWrite(pwm_pos, 0)
-            #wiringpi.digitalWrite(pwm_neg, 0)
 
         self.logger.debug("Registering motor")
         Motor.motors[self] = name
@@ -102,8 +98,6 @@ class Motor(object):
                 gpio.output(self.pin_pwm_pos, gpio.LOW)
                 gpio.output(self.pin_pwm_neg, gpio.HIGH)
                 wiringpi.pwmWrite(self.pin_enable, int(-speed * 1024))
-                #wiringpi.digitalWrite(self.pin_pwm_pos, 0)
-                #wiringpi.pwmWrite(self.pin_pwm_neg, int(speed * 1024))
             else:
                 self._fwd.ChangeDutyCycle(0)
                 self._rev.ChangeDutyCycle(-speed * 100)
@@ -112,8 +106,6 @@ class Motor(object):
                 gpio.output(self.pin_pwm_pos, gpio.HIGH)
                 gpio.output(self.pin_pwm_neg, gpio.LOW)
                 wiringpi.pwmWrite(self.pin_enable, int(speed * 1024))
-                #wiringpi.pwmWrite(self.pin_pwm_pos, int(speed * 1024))
-                #wiringpi.digitalWrite(self.pin_pwm_neg, 0)
             else:
                 self._fwd.ChangeDutyCycle(speed * 100)
                 self._rev.ChangeDutyCycle(0)
@@ -130,8 +122,6 @@ class Motor(object):
         self.logger.debug("Stopping motor")
         if self.hard:
             wiringpi.pwmWrite(self.pin_enable, 0)
-            #wiringpi.pwmWrite(self.pin_pwm_pos, 0)
-            #wiringpi.pwmWrite(self.pin_pwm_neg, 0)
         else:
             self._fwd.stop()
             self._rev.stop()
