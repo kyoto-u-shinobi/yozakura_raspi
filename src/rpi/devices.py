@@ -498,3 +498,24 @@ class ADConverter(Device):
 
         configuration = upper + mode + sample_rate + gain
         self.bus.write_byte(self.address, configuration)
+
+
+def __test_current_sensor():
+    upper_sensor = CurrentSensor(0x40, name="upper current sensor")
+    lower_sensor = CurrentSensor(0x44, name="lower current sensor")
+    upper_sensor.calibrate(2.6)
+    lower_sensor.calibrate(2.6)
+    print("Upper Sensor          Lower Sensor")
+    print("==================================")
+    while True:
+        upper_current = upper_sensor.get_measurement("current")
+        upper_power = upper_sensor.get_measurement("power")
+        upper_voltage = upper_power / upper_current
+        lower_current = lower_sensor.get_measurement("current")
+        lower_power = lower_sensor.get_measurement("power")
+        lower_voltage = lower_power / lower_current
+        print("{:8.5f} A, {:8.5f} W, {:8.5f} V".format(upper_current, upper_power, upper_voltage), end="\r")
+
+
+if __name__ == "__main__":
+    __test_current_sensor()
