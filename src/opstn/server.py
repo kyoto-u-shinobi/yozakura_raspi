@@ -65,6 +65,11 @@ class Server(object):
                 if data == "":
                     logger.debug("Socket closed remotely")
                     break
+                elif data.startswith("sticks_y"):
+                    logger.debug("Client requesting stick y-postions")
+                    state = stick_body.get_state()
+                    dpad, lstick, rstick, buttons = state.data
+                    reply = pickle.dumps((lstick.y, rstick.y))
                 elif data.startswith("body"):
                     logger.debug("Client requesting body controller input")
                     state = stick_body.get_state()
