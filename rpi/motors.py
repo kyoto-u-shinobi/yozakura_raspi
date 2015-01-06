@@ -15,11 +15,13 @@ class Motor(object):
         pin_fault: GPIO pin for motor Fault line.
         name: The name of the motor.
         is_sleeping: A boolean indicating whether the device is sleeping.
-        motors: A class variable containing all registered motors.
         hard: Whether to use hardware pwm. Default is False.
         scaling: Value range to work with, from scaling to 1.
+        motors: A class variable containing all registered motors.
+        fault: A class variable indicating whether there was a fault.
     """
     motors = {}
+    fault = False
     gpio.setmode(gpio.BOARD)
     wiringpi.wiringPiSetupPhys()
 
@@ -80,10 +82,10 @@ class Motor(object):
         Motor.motors[self] = name
         self.logger.info("Motor initialized")
 
-    def _catch_fault(self):
+    def _catch_fault(self, channel):
         """Threaded callback for fault detection."""
         self.logger.error("Fault detected")
-        self.logger.info("Shutting down motors")
+        Motor.fault = True
         Motor.shut_down_all()
 
     def drive(self, speed):
@@ -135,18 +137,19 @@ class Motor(object):
             self._fwd.stop()
             self._rev.stop()
         self.logger.debug("Cleaning up pins.")
-        gpio.cleanup()
 
         self.logger.debug("Deregistering motor")
         del Motor.motors[self]
         self.logger.info("Motor shut down")
 
     @classmethod
-    def shut_down_all():
+    def shut_down_all(self):
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
         for motor in list(Motor.motors.keys()):
             motor.shut_down()
+        gpio.cleanup()
+        logging.info("All motors shut down")
 
     def __repr__(self):
         return self.name
