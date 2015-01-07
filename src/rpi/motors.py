@@ -1,6 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 from RPi import GPIO as gpio
+import wiringpi2 as wiringpi
 import logging
 
 
@@ -18,7 +19,9 @@ class Motor(object):
     """
     motors = {}
     gpio.setmode(gpio.BOARD)
+    wiringpi.wiringPiSetupPhys()
 
+<<<<<<< HEAD
     def __init__(self, enable, pwm_pos, pwm_neg, fault, name):
         """Inits and registers the motor.
 
@@ -32,17 +35,22 @@ class Motor(object):
         Raises:
             KeyError: Another motor has been registered with the same name.
         """
+=======
+    def __init__(self, enable, pwm_pos, pwm_neg, fault, name, frequency=28000, hard=False):
+>>>>>>> f38f6d12e666ae88ca5badd7d2480f73b37fe454
         if name in Motor.motors.values():
             raise KeyError("This name is already in use.")
-        else:
-            self.logger = logging.getLogger("{}".format(name))
-            self.logger.debug("Initializing motor".format(name))
-            self.pin_enable = enable
-            self.pin_pwm_pos = pwm_pos
-            self.pin_pwm_neg = pwm_neg
-            self.pin_fault = fault
-            self.name = name
+            return
+        self.logger = logging.getLogger(name)
+        self.logger.debug("Initializing motor")
+        self.pin_enable = enable
+        self.pin_pwm_pos = pwm_pos
+        self.pin_pwm_neg = pwm_neg
+        self.pin_fault = fault
+        self.name = name
+        self.hard = hard
 
+<<<<<<< HEAD
             self.logger.debug("Setting up GPIO pins")
             gpio.setup(enable, gpio.OUT)
             gpio.setup(pwm_pos, gpio.OUT)
@@ -54,9 +62,29 @@ class Motor(object):
             self.is_sleeping = False
             self._fwd = gpio.PWM(pwm_pos, 50)  # 50 Hz
             self._rev = gpio.PWM(pwm_neg, 50)  # 50 Hz
+=======
+        # Setup all pins
+        gpio.setup(enable, gpio.OUT)
+        gpio.setup(fault, gpio.IN)
+        gpio.setup(pwm_pos, gpio.OUT)
+        gpio.setup(pwm_neg, gpio.OUT)
+
+        # Start PWM drivers
+        gpio.output(enable, gpio.HIGH)
+        self.is_sleeping = False
+        if not hard:
+            self._fwd = gpio.PWM(pwm_pos, frequency)
+            self._rev = gpio.PWM(pwm_neg, frequency)
+>>>>>>> f38f6d12e666ae88ca5badd7d2480f73b37fe454
             self._fwd.start(0)
             self._rev.start(0)
+        else:
+            wiringpi.pinMode(pwm_pos, 2)
+            wiringpi.pinMode(pwm_neg, 1)
+            wiringpi.pwmWrite(pwm_pos, 0)
+            wiringpi.digitalWrite(pwm_neg, 0)
 
+<<<<<<< HEAD
             self.logger.debug("Registering motor")
             Motor.motors[self] = name
             self.logger.info("Motor initialized")
@@ -68,15 +96,32 @@ class Motor(object):
             speed: A value from -1 to 1 indicating the requested speed of the
                 motor. The speed is changed by changing the PWM duty cycle.
         """
+=======
+        Motor.motors[self] = name
+        self.logger.info("Motor initialized")
+
+    def drive(self, speed):
+        if self.hard:
+            speed = (speed * 0.3) + (0.7 if speed > 0 else -0.7)
+        speed = round(speed, 4)
+>>>>>>> f38f6d12e666ae88ca5badd7d2480f73b37fe454
         if self.is_sleeping:
             self.logger.info("Waking up")
             gpio.output(self.pin_enable, gpio.HIGH)
         if speed < 0:
-            self._fwd.ChangeDutyCycle(0)
-            self._rev.ChangeDutyCycle(-speed * 100)
+            if self.hard:
+                wiringpi.digitalWrite(self.pin_pwm_pos, 0)
+                wiringpi.pwmWrite(self.pin_pwm_neg, int(-speed * 1024))
+            else:
+                self._fwd.ChangeDutyCycle(0)
+                self._rev.ChangeDutyCycle(-speed * 100)
         else:
-            self._fwd.ChangeDutyCycle(speed * 100)
-            self._rev.ChangeDutyCycle(0)
+            if self.hard:
+                wiringpi.pwmWrite(self.pin_pwm_pos, int(speed * 1024))
+                wiringpi.digitalWrite(self.pin_pwm_neg, 0)
+            else:
+                self._fwd.ChangeDutyCycle(speed * 100)
+                self._rev.ChangeDutyCycle(0)
 
     def sleep(self):
         """Put the motor driver to sleep to save power."""
@@ -87,14 +132,21 @@ class Motor(object):
     def shut_down(self):
         """Shut down and deregister the motor."""
         self.logger.debug("Shutting down motor")
+<<<<<<< HEAD
         self.logger.debug("Stopping motor")
         self._fwd.stop()
         self._rev.stop()
 
         self.logger.debug("Cleaning up pins.")
+=======
+>>>>>>> f38f6d12e666ae88ca5badd7d2480f73b37fe454
         gpio.output(self.pin_enable, gpio.LOW)
-        gpio.output(self.pin_pwm_pos, gpio.LOW)
-        gpio.output(self.pin_pwm_neg, gpio.LOW)
+        if self.hard:
+            wiringpi.pwmWrite(self.pin_pwm_pos, 0)
+            wiringpi.pwmWrite(self.pin_pwm_neg, 0)
+        else:
+            self._fwd.stop()
+            self._rev.stop()
         gpio.cleanup()
 
         self.logger.debug("Deregistering motor")
