@@ -88,7 +88,7 @@ class Device(object):
                 registered at that address and has not been removed yet.
         """
         self.logger = logging.getLogger("i2c-{}-{}".format(name, hex(address)))
-        self.logger.debug("Initializing device".format(hex(address)))
+        self.logger.debug("Initializing device")
         slots = get_used_i2c_slots()
         if address not in slots.keys():
             self.logger.warning("No device detected")
