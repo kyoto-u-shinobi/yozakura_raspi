@@ -1,0 +1,1 @@
+import kaginawa.common.test

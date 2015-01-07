@@ -11,11 +11,10 @@ if __name__ == "__main__":
     left_motor = motors.Motor(31, 33, 35, 37, "left_motor")
     right_motor = motors.Motor(32, 36, 38, 40, "right_motor")
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("10.249.255.151", 9000))
-
     while True:
         try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("10.249.255.151", 9000))
             s.sendall(str.encode("sticks_y"))
             result = s.recv(1024)
             lstick_y, rstick_y = pickle.loads(result)
