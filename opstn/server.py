@@ -1,44 +1,43 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-from common.networking import Server, Handler
-from common import joystick
-import logging
+from common.networking import ServerBase, HandlerBase
 import pickle
 
 
-class OpstnHandler(Handler):
+class Handler(HandlerBase):
     def handle(self):
         self.data = self.request.recv(1024).decode().strip()
-        self.logger.info("{}".format(self.data))
-        if self.data == "sticks_y":
-            state = stick_body.get_state()
+        self.logger.info('Received: "{}"'.format(self.data))
+        if self.data == "body_sticks_y":
+            state = self.server.controllers["body"].get_state()
             dpad, lstick, rstick, buttons = state.data
-            reply = pickle.dumps((lstick.y, rstick.y))
-        elif self.data == "state":
-            state = stick_body.get_state()
-            reply = pickle.dumps(state)
+            self.reply = pickle.dumps((lstick.y, rstick.y))
+        elif self.data == "body_state":
+            state = self.server.controllers["body"].get_state()
+            self.reply = pickle.dumps(state)
         elif self.data == "body":
-            state = stick_body.get_state()
+            state = self.server.controllers["body"].get_state()
             dpad, lstick, rstick, buttons = state.data
-            reply = pickle.dumps(((dpad.x, dpad.y),
+            self.reply = pickle.dumps(((dpad.x, dpad.y),
                                  (lstick.x, lstick.y),
                                  (rstick.x, rstick.y),
                                  buttons.buttons))
+        elif self.data.split()[0] == "echo":
+            self.reply = " ".join(self.data.split()[1:])
         else:
-            reply = 'Unable to parse command: "{}"'.format(self.data)
+            self.reply = 'Unable to parse command: "{}"'.format(self.data)
         try:
-            self.request.sendall(str.encode(reply))
+            self.request.sendall(str.encode(self.reply))
         except TypeError:  # Already bytecode
-            self.request.sendall(reply)
+            self.request.sendall(self.reply)
 
-if __name__=="__main__":
-    logging.basicConfig(level=logging.INFO)
-    server = Server(("localhost", 9999), OpstnHandler)
-    stick_body = joystick.Controller(0)
 
-    try:
-        server.serve_forever()
-    finally:
-        logging.info("Shutting down...")
-        joystick.Controller.quit_all()
-    logging.info("All done")
+class Server(ServerBase):
+    def add_controller(self, controller):
+        self.logger.debug("Adding controller")
+        if not self.controllers:
+            self.controllers = {}
+        self.controllers[controller.name] = controller
+
+    def remove_controller(self, controller):
+        del self.controllers[controller.name]
