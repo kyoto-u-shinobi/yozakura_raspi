@@ -8,8 +8,8 @@ import logging
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    left_motor = motors.Motor(31, 33, 35, 37, "left_motor")
-    right_motor = motors.Motor(32, 36, 38, 40, "right_motor")
+    left_motor = motors.Motor(12, 8, 10, 11, "left_motor"，hard=True, scaling=0.9)
+    right_motor = motors.Motor(35, 32, 36, 38, "right_motor", hard=True, scaling=0.9)
 
     while True:
         try:
