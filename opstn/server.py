@@ -33,10 +33,12 @@ class Handler(HandlerBase):
 
 
 class Server(ServerBase):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.controllers = {}
+
     def add_controller(self, controller):
-        self.logger.debug("Adding controller")
-        if not self.controllers:
-            self.controllers = {}
+        self.logger.debug("Adding controller {}".format(controller))
         self.controllers[controller.name] = controller
 
     def remove_controller(self, controller):
