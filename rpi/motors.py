@@ -16,6 +16,8 @@ class Motor(object):
         name: The name of the motor.
         is_sleeping: A boolean indicating whether the device is sleeping.
         motors: A class variable containing all registered motors.
+        hard: (optional) Whether to use hardware pwm. Default is False.
+
     """
     motors = {}
     gpio.setmode(gpio.BOARD)
