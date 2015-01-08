@@ -11,7 +11,6 @@ class HandlerBase(socketserver.BaseRequestHandler):
 class ServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
     def __init__(self, server_address, handler_class):
-        self.logger = logging.getLogger("{}_server".format(server_address[0]))
-        self.logger.debug("Creating server")
         super().__init__(server_address, handler_class)
+        self.logger = logging.getLogger("{}_server".format(self.server_address[0]))
         self.logger.info("Listening to port {}".format(server_address[1]))
