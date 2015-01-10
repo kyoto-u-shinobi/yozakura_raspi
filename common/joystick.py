@@ -76,7 +76,7 @@ class Buttons(object):
     _button_list = ("□", "×", "○", "△",  # 0-3
                 "L1", "R1", "L2", "R2", # 4-7
                 "select", "start",  # 8-9
-                "L3", "R3")  # 10-11
+                "L3", "R3", "PS")  # 10-12
 
     def __init__(self, buttons):
         """Inits the buttons.
