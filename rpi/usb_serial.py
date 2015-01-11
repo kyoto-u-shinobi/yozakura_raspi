@@ -1,5 +1,5 @@
 import serial
-import tt
+import time
 
 ser = serial.Serial("/dev/ttyACM0", 9600)
 time.sleep(2)

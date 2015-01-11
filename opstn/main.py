@@ -1,3 +1,5 @@
+# (C) 2015  Kyoto University Mechatronics Laboratory
+# Released under the GNU General Public License, version 3
 from opstn.server import Server, Handler
 from common import joystick
 import logging
