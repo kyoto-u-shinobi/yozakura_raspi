@@ -148,21 +148,6 @@ class Motor(object):
                 self._fwd.ChangeDutyCycle(speed * 100)
                 self._rev.ChangeDutyCycle(0)
 
-    def _encode_byte(self, speed):
-        """Create a byte containing the motor ID and speed information.
-            
-            Args:
-                speed: A value from -1 to 1 indicating the requested speed.
-            
-            Returns:
-                The encoded byte.
-        """
-        speed = self._scale_speed(speed)
-        top = self.motor_id << 6
-        mid = 1 << 5 if speed < 0 else 0
-        lower = int(abs(speed) * 31)
-        return bytes([top + mid + lower])
-
     def send_byte(self, speed, ser):
         """Send a byte through a serial connection.
             
@@ -170,7 +155,11 @@ class Motor(object):
                 speed: A value from -1 to 1 indicating the requested speed.
                 ser: A Serial object.
         """
-        byte = self._encode_byte(speed)
+        speed = self._scale_speed(speed)
+        top = self.motor_id << 6
+        mid = 1 << 5 if speed < 0 else 0
+        lower = int(abs(speed) * 31)
+        byte = bytes([top + mid + lower])
         ser.write(byte)
 
     def sleep(self):
