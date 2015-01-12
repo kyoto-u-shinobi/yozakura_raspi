@@ -15,7 +15,7 @@ import subprocess
 from RPi import GPIO as gpio
 import smbus
 
-from common.exceptions import InvalidArgError, I2CSlotBusyError, \
+from common.exceptions import BadArgError, I2CSlotBusyError, \
     NotCalibratedError
 from rpi.bitfields import CurrentConfiguration, CurrentAlerts
 
@@ -149,7 +149,7 @@ def concatenate(byte_array, big_endian=True, size=8):
 
     Raises
     ------
-    InvalidArgError
+    BadArgError
         A bad argument was given.
 
     """
@@ -200,25 +200,25 @@ class Device(object):
         self._logger = logging.getLogger("i2c-{name}-{address}".format(
                                          name=name,
                                          address=hex(address)))
-        self.logger.debug("Initializing device")
+        self._logger.debug("Initializing device")
         slots = get_used_i2c_slots()
         if address not in slots.keys():
-            self.logger.warning("No device detected")
+            self._logger.warning("No device detected")
         elif slots[address] == "UU":
-            self.logger.warning("Device at address is busy")
+            self._logger.warning("Device at address is busy")
         elif address in Device.devices.values():
-            self.logger.error("Address belongs to a registered device.")
+            self._logger.error("Address belongs to a registered device.")
             raise I2CSlotBusyError
         else:
             self.address = address
             self.name = name
             self.bus = smbus.SMBus(bus_number)
             Device.devices[address] = self
-        self.logger.info("Device initialized")
+        self._logger.info("Device initialized")
 
     def remove(self):
         """Deregister the device."""
-        self.logger.info("Deregistering device")
+        self._logger.info("Deregistering device")
         del Device.devices[self.address]
 
     def __repr__(self):
@@ -305,17 +305,17 @@ class ThermalSensor(Device):
                http://www.omron.com/ecb/products/sensor/special/mems/pdf/AN-D6T-01EN_r2.pdf
 
         """
-        self.logger.debug("Getting temperature")
+        self._logger.debug("Getting temperature")
         readout = self.bus.read_i2c_block_data(self.address,
                                                ThermalSensor.start_read,
                                                35)
 
-        self.logger.debug("Checking error")
+        self._logger.debug("Checking error")
         good_data = self._error_check(readout)  # Data integrity check
         if not good_data:
-            self.logger.warning("CRC check fialed.")
+            self._logger.warning("CRC check fialed.")
 
-        self.logger.debug("Concatenating data")
+        self._logger.debug("Concatenating data")
         temp_ref = concatenate(readout[:2], big_endian=False) / 10
         matrix = [concatenate(readout[i:i+2], big_endian=False) / 10
                   for i in range(2, 34, 2)]
@@ -477,7 +477,7 @@ class CurrentSensor(Device):
             return its two's complement.
 
         """
-        self.logger.debug("Reading {} register".format(register))
+        self._logger.debug("Reading {} register".format(register))
         data = self.bus.read_word_data(self.address, self.registers[register])
         data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
 
@@ -497,7 +497,7 @@ class CurrentSensor(Device):
         data : word
             The data to be written.
         """
-        self.logger.debug("Writing {} to {} register".format(data, register))
+        self._logger.debug("Writing {} to {} register".format(data, register))
         data = int(data)
 
         # bus.write_word_data writes one byte at a time, so we switch the byte
@@ -539,7 +539,7 @@ class CurrentSensor(Device):
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
-        self.logger.debug("Getting configuration")
+        self._logger.debug("Getting configuration")
         config = CurrentConfiguration()
         config.as_byte = self._read_register("config", signed=False)
         return config
@@ -573,7 +573,7 @@ class CurrentSensor(Device):
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
-        self.logger.debug("Setting configuration")
+        self._logger.debug("Setting configuration")
         config = self.get_configuration()
 
         if reset is not None:
@@ -587,11 +587,11 @@ class CurrentSensor(Device):
         if mode is not None:
             config.mode = mode
 
-        self._write_register("config", config)
+        self._write_register("config", config.as_byte)
 
     def reset(self):
         """Reset the current sensor."""
-        self.logger.debug("Resetting sensor")
+        self._logger.debug("Resetting sensor")
         self.set_configuration(reset=1)
 
     def get_measurement(self, register):
@@ -610,13 +610,13 @@ class CurrentSensor(Device):
 
         Raises
         ------
-        InvalidArgError
+        BadArgError
             The register specified does not contain a measurement.
         NotCalibratedError
             The device has not yet been calibrated.
 
         """
-        self.logger.debug("Getting {} measurement".format(register))
+        self._logger.debug("Getting {} measurement".format(register))
         # Force a read if triggered mode.
         if 0 < self.get_configuration().mode <= 3:
             self.set_configuration()
@@ -624,12 +624,12 @@ class CurrentSensor(Device):
             pass
 
         if register not in self.lsbs:
-            self.logger.error("{} is not a measurement!".format(register))
-            raise InvalidArgError("{} is not a measurement!".format(register))
+            self._logger.error("{} is not a measurement!".format(register))
+            raise BadArgError("{} is not a measurement!".format(register))
         try:
             return self._read_register(register) * self.lsbs[register]
         except TypeError:
-            self.logger.error("{} has not been calibrated yet!".format(self))
+            self._logger.error("{} has not been calibrated yet!".format(self))
             raise NotCalibratedError(self)
 
     def calibrate(self, max_current, r_shunt=0.002):
@@ -652,13 +652,13 @@ class CurrentSensor(Device):
 
         Raises
         ------
-        InvalidArgError
+        BadArgError
             The max_current value is too small.
 
         """
-        self.logger.debug("Calibrating sensor")
+        self._logger.debug("Calibrating sensor")
         if max_current < 2.6:
-            raise InvalidArgError("max_current should be at least 2.6 A.")
+            raise BadArgError("max_current should be at least 2.6 A.")
 
         self.lsbs["current"] = max_current / 2**15  # Amperes
         self.lsbs["power"] = 25 * self.lsbs["current"]  # Watts
@@ -718,7 +718,7 @@ class CurrentSensor(Device):
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
-        self.logger.debug("Setting alerts")
+        self._logger.debug("Setting alerts")
         alerts = CurrentAlerts()
         functions = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11}
 
@@ -728,7 +728,7 @@ class CurrentSensor(Device):
         alerts.invert = invert
         alerts.latch = latch
 
-        self._write_register("alert_reg", alerts)
+        self._write_register("alert_reg", alerts.as_byte)
 
         if alert == "sol" or alert == "sul":
             lsb = self.lsbs["shunt"]
@@ -749,7 +749,7 @@ class CurrentSensor(Device):
 
     def _catch_alert(self, channel):
         """Threaded callback for alert detection"""
-        self.logger.debug("Alert detected")
+        self._logger.debug("Alert detected")
 
     def get_alerts(self):
         """
@@ -767,7 +767,7 @@ class CurrentSensor(Device):
                 Math overflow flag
 
         """
-        self.logger.debug("Getting alert flags")
+        self._logger.debug("Getting alert flags")
         alerts = CurrentAlerts()
         alerts.as_byte = self._read_register("alert_reg", signed=False)
         flags = {"aff": alerts.alert_func,
@@ -776,7 +776,7 @@ class CurrentSensor(Device):
 
         # Clear aff bit in the register.
         alerts.alert_func = 0
-        self._write_register("alert_reg", alerts)
+        self._write_register("alert_reg", alerts.as_byte)
 
         return flags
 
