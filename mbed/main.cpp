@@ -8,6 +8,7 @@ class Motor {
   public:    
     Motor(PinName pin_enable, PinName pin_pos, PinName pin_neg) : enable(pin_enable), pos(pin_pos),  neg(pin_neg) {
         enable = pos = neg = 0;
+        enable.period_us(40);
     }
 
     void drive(float speed) {
