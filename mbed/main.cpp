@@ -7,7 +7,7 @@ Serial rpi(USBTX, USBRX);
 class Motor {
   public:    
     Motor(PinName pin_enable, PinName pin_pos, PinName pin_neg) : enable(pin_enable), pos(pin_pos),  neg(pin_neg) {
-      enable = pos = neg = 0;
+        enable = pos = neg = 0;
     }
 
     void drive(float speed) {
@@ -27,15 +27,16 @@ int main() {
                         Motor(p23, p27, p28), 
                         Motor(p24, p29, p30) };
 
-  char c;
-  int motor_id, sign, speed;
-  while(1) {
-    c = rpi.getc();
+    char c;
+    int motor_id, sign, speed;
 
-    motor_id = c >> 6;
-    sign = (c & (1 << 5)) ? -1 : 1;
-    speed = c & 31;
+    while(1) {
+        c = rpi.getc();
+        
+        motor_id = c >> 6;
+        sign = (c & (1 << 5)) ? -1 : 1;
+        speed = c & 31;
 
-    motors[motor_id].drive(sign * speed / 31);
-  }
+        motors[motor_id].drive(sign * speed / 31.0);
+    }
 }
