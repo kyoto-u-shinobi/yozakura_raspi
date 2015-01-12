@@ -1,6 +1,8 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 from rpi.motors import Motor
+import serial
+import time
 import socket
 import pickle
 import logging
@@ -8,28 +10,62 @@ import logging
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    left_motor = Motor(12, 8, 10, 11, "left_motor",
-                       hard=False, max_speed=0.6)
-                       #hard=True, start_input=0.9, max_speed=0.6)
-    right_motor = Motor(35, 32, 36, 38, "right_motor",
-                        hard=False, max_speed=0.6)
-                        #hard=True, start_input=0.9, max_speed=0.6)
+    time_stamp = time.time()
+
+    left_motor = Motor(13, 8, 10, 11, "left_motor", 0, max_speed=0.6)
+    right_motor = Motor(12, 36, 32, 38, "right_motor", 1, max_speed=0.6)
+    ser = serial.Serial("/dev/ttyACM0", 9600)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("192.168.54.125", 9999))
-    s.connect(("10.249.255.202", 9999))
+    #s.connect(("10.249.255.151", 9999))
+    single_stick = False
     while not Motor.fault:
         try:
-            s.sendall(str.encode("body_sticks_y"))
+            #s.sendall(str.encode("body_sticks_y"))
+            s.sendall(str.encode("body"))
             result = s.recv(1024)
-            lstick_y, rstick_y = pickle.loads(result)
-            logging.debug("{:9.7} {:9.7}".format(lstick_y, rstick_y))
-            #lstick_y = rstick_y = 0
-            left_motor.drive(-lstick_y)
-            right_motor.drive(-rstick_y)
+            #lstick_y, rstick_y = pickle.loads(result)
+            dpad, lstick, rstick, buttons = pickle.loads(result)
+            if buttons[8]:  # Select button pressed
+                current_time = time.time()
+                if current_time - time_stamp >= 1:
+                    if single_stick:
+                        single_stick = False
+                        logging.info("Control mode switched: Use lstick and rstick to control robot.")
+                    else:
+                        single_stick = True
+                        logging.info("Control mode switched: Use lstick to control robot.")
+                    time_stamp = current_time
+
+            if single_stick:
+                logging.debug("lstick: {:9.7} {:9.7}".format(lstick[0], lstick[1]))
+            else:
+                logging.debug("leftright {:9.7} {:9.7}".format(lstick[1], rstick[1]))
+
+            #lstick[1] = rstick[1] = 0
+            if single_stick:
+                if -0.1 < lstick[1] < 0.1:  # Rotate in place
+                    #left_motor.drive(lstick[0])
+                    #right_motor.drive(-lstick[0])
+                    left_motor.send_byte(lstick[0], ser)
+                    right_motor.send_byte(-lstick[0], ser)
+                else:
+                    #left_motor.drive(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])))
+                    #right_motor.drive(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])))
+                    left_motor.send_byte(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])), ser)
+                    right_motor.send_byte(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])), ser)
+            else:
+                #left_motor.drive(-lstick[1])
+                #right_motor.drive(-rstick[1])
+                left_motor.send_byte(-lstick[1], ser)
+                right_motor.send_byte(-rstick[1], ser)
+
         except (KeyboardInterrupt, RuntimeError):
             break
     Motor.shut_down_all()
+    logging.debug("Closing serial port")
+    ser.close()
     logging.debug("Client closing")
     s.close()
     logging.debug("Client closed")

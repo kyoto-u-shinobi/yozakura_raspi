@@ -18,6 +18,7 @@ class Motor(object):
         hard: Whether to use hardware pwm. Default is False.
         start_input: The input at which the motor starts
         max_speed: The maximum speed to use with the motor.
+        motor_id: The motor ID.
         motors: A class variable containing all registered motors.
         fault: A class variable indicating whether there was a fault.
     """
@@ -26,8 +27,8 @@ class Motor(object):
     gpio.setmode(gpio.BOARD)
     wiringpi.wiringPiSetupPhys()
 
-    def __init__(self, enable, pwm_pos, pwm_neg, fault, name, frequency=28000,
-                 hard=False, start_input=0, max_speed=1):
+    def __init__(self, enable, pwm_pos, pwm_neg, fault, name, motor_id,
+            frequency=28000, hard=False, start_input=0, max_speed=1):
         """Inits and registers the motor.
 
         Args:
@@ -36,6 +37,7 @@ class Motor(object):
             pwm_neg: GPIO pin for motor PWMN line.
             fault: GPIO pin for motor Fault line.
             name: The name of the motor.
+            motor_id: The motor ID. An integer be between 0 and 3.
             frequency: (optional) The frequency of the software pwm.
             hard: (optional) Whether to use hardware pwm. Default is False.
             start_input: (optional) The input at which the motor starts
@@ -46,12 +48,14 @@ class Motor(object):
         Raises:
             KeyError: Another motor has been registered with the same name.
         """
-        if name in Motor.motors.values():
-            raise KeyError("This name is already in use.")
+        if motor_id in Motor.motors.values():
+            raise KeyError("This ID is already in use.")
         if not 0 <= start_input <= 1:
             raise ValueError("start_input can only range between 0 and 1.")
         if not 0 <= max_speed <= 1:
             raise ValueError("max_speed can only range between 0 and 1.")
+        if not 0 <= motor_id <= 3:
+            raise ValueError("The motor ID can only range between 0 and 3.")
         self.logger = logging.getLogger(name)
         self.logger.debug("Initializing motor")
         self.pin_enable = enable
@@ -59,6 +63,7 @@ class Motor(object):
         self.pin_pwm_neg = pwm_neg
         self.pin_fault = fault
         self.name = name
+        self.motor_id = motor_id
         self.hard = hard
         self.start_input = start_input
         self.max_speed = max_speed
@@ -87,21 +92,23 @@ class Motor(object):
             wiringpi.pwmWrite(enable, 0)
 
         self.logger.debug("Registering motor")
-        Motor.motors[self] = name
+        Motor.motors[self] = motor_id
         self.logger.info("Motor initialized")
 
     def _catch_fault(self, channel):
         """Threaded callback for fault detection."""
-        self.logger.error("Fault detected")
-        Motor.fault = True
+        self.logger.warning("Fault detected")
+        #Motor.fault = True
         #Motor.shut_down_all()
 
-    def drive(self, speed):
-        """Set the motor to a given speed.
-
+    def _scale_speed(self, speed):
+        """Get the scaled speed according to input parameters.
+            
         Args:
-            speed: A value from -1 to 1 indicating the requested speed of the
-                motor. The speed is changed by changing the PWM duty cycle.
+            speed: A value from -1 to 1 indicating the requested speed.
+            
+        Returns:
+            The scaled speed
         """
         # Map (start_input) to (0:1)
         if speed > 0:
@@ -110,6 +117,16 @@ class Motor(object):
             speed = (speed * (1 - self.start_input)) - self.start_input
         speed *= self.max_speed  # Map (0:1) to (0:max_speed)
         speed = round(speed, 4)
+        return speed
+
+    def drive(self, speed):
+        """Set the motor to a given speed.
+
+        Args:
+            speed: A value from -1 to 1 indicating the requested speed of the
+                motor. The speed is changed by changing the PWM duty cycle.
+        """
+        speed = self._scale_speed(speed)
 
         if self.is_sleeping and not self.hard:
             self.logger.info("Waking up")
@@ -131,11 +148,37 @@ class Motor(object):
                 self._fwd.ChangeDutyCycle(speed * 100)
                 self._rev.ChangeDutyCycle(0)
 
+    def _encode_byte(self, speed):
+        """Create a byte containing the motor ID and speed information.
+            
+            Args:
+                speed: A value from -1 to 1 indicating the requested speed.
+            
+            Returns:
+                The encoded byte.
+        """
+        speed = self._scale_speed(speed)
+        top = self.motor_id << 6
+        mid = 1 << 5 if speed < 0 else 0
+        lower = int(abs(speed) * 31)
+        return bytes([top + mid + lower])
+
+    def send_byte(self, speed, ser):
+        """Send a byte through a serial connection.
+            
+            Args:
+                speed: A value from -1 to 1 indicating the requested speed.
+                ser: A Serial object.
+        """
+        byte = self._encode_byte(speed)
+        ser.write(byte)
+
     def sleep(self):
         """Put the motor driver to sleep to save power."""
         self.logger.info("Going to sleep")
-        gpio.output(self.pin_enable, gpio.LOW)
-        self.is_sleeping = True
+        if not self.hard:
+            gpio.output(self.pin_enable, gpio.LOW)
+            self.is_sleeping = True
 
     def shut_down(self):
         """Shut down and deregister the motor."""
