@@ -20,39 +20,7 @@ from common.exceptions import BadArgError, I2CSlotBusyError, \
 from rpi.bitfields import CurrentConfiguration, CurrentAlerts
 
 
-def get_i2c_bus():
-    """
-    Detect the revision number of a Raspberry Pi, useful for changing
-    functionality like default I2C bus based on revision. The revision list is
-    available online. [1]_
-
-    Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.
-
-    This function is based on an Adafruit I2C implementation. [2]_
-
-    References
-    ----------
-    .. [1] ELinux.org. "RPi Hardware History."
-           http://elinux.org/RPi_HardwareHistory#Board_Revision_History
-    .. [2] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
-           https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53
-
-    """
-    with open('/proc/cpuinfo', 'r') as infile:
-        for line in infile:
-            # Match a line of the form "Revision : 0002" while ignoring extra
-            # info in front of the revsion (like 1000 when RPi is over-volted).
-            match = re.match('Revision\s+:\s+.*(\w{4})$',
-                             line, flags=re.IGNORECASE)
-            if match and match.group(1) in ['0000', '0002', '0003']:  # Rev. 1
-                return 0
-            elif match:  # Rev. 2
-                return 1
-        # Couldn't find the revision, throw an exception.
-        raise RuntimeError('Could not determine Raspberry Pi revision.')
-
-
-i2c_bus = get_i2c_bus()  # /dev/i2c-0 or /dev/i2c-1
+i2c_bus = 1
 
 
 def get_used_i2c_slots(bus_number=i2c_bus):
@@ -84,79 +52,6 @@ def get_used_i2c_slots(bus_number=i2c_bus):
             if item != "--":
                 slots[16*i + (j if i > 0 else j + 3)] = item
     return slots
-
-
-def require_repeated_start():
-    """
-    Enable repeated start conditions for I2C register reads.
-
-    This is the normal behaviour for I2C. However, on the Raspberry Pi,
-    there is a bug which disables repeated starts unless explicitly enabled
-    with this function.
-
-    The bug occurs during register reads, and does not send a repeated start
-    condition as the Linux kernel smbus I2C driver functions define. As a
-    workaround, this bit in the BMC2708 driver sysfs tree can be changed to
-    enable I2C repeated starts.
-
-    Note that the Raspberry Pi models A, B, and B+ all use the BMC2835 CPU,
-    and the Raspberry Pi 2 uses the BCM2836 CPU. [1]_ Both CPUs are
-    implementations of the BCM2708 series, [2]_ so this fix should work for
-    all models.
-
-    See this Raspberry Pi forum thread for more details. [3]_
-
-    This function is based on an Adafruit I2C implementation, shown to
-    @masasin by Tony DiCola, one of the authors and contributors. [4]_
-
-    References
-    ----------
-    .. [1] Wikipedia. "Raspberry Pi."
-           https://en.wikipedia.org/wiki/Raspberry_Pi
-
-    .. [2] Linux, Raspberry Pi, Github. "Issue #22. BCM2708 vs. BCM2835."
-           https://github.com/raspberrypi/linux/issues/22
-
-    .. [3] Raspberry Pi Forums. "i2c repeated start transactions"
-           http://www.raspberrypi.org/forums/viewtropic.php?f=44&t=15840
-
-    .. [4] Adafruit Python GPIO, Adafruit, Github. "I2C.py"
-           https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/I2C.py#L68
-
-    """
-    sysfs_tree = "/sys/module/i2c_bcm2708/parameters/combined"
-    subprocess.check_call("chmod 666 {}".format(sysfs_tree), shell=True)
-    subprocess.check_call("echo -n 1 > {}".format(sysfs_tree), shell=True)
-
-
-def concatenate(byte_array, big_endian=True, size=8):
-    """
-    Concatenate multiple bytes to form a single number.
-
-    Parameters
-    ----------
-    byte_array : byte_array
-        The array of bytes to be concatenated.
-    big_endian : bool, optional
-        Whether the byte array is big endian.
-    size : int, optional
-        Number of bits per byte.
-
-    Returns
-    -------
-    total : int
-        The result of the concatenation.
-
-    Raises
-    ------
-    BadArgError
-        A bad argument was given.
-
-    """
-    total = 0
-    for byte in (byte_array if big_endian else reversed(byte_array)):
-        total = (total << size) + byte
-    return total
 
 
 class Device(object):
@@ -193,8 +88,6 @@ class Device(object):
 
     """
     devices = {}
-    # TODO(masasin): Fix segfaulting.
-    # require_repeated_start()
 
     def __init__(self, address, name, bus_number=i2c_bus):
         self._logger = logging.getLogger("i2c-{name}-{address}".format(
@@ -227,145 +120,6 @@ class Device(object):
 
     def __str__(self):
         return self.name
-
-
-class ThermalSensor(Device):
-    """
-    Omron D6T-44L-06 Thermal Sensor. [1]_
-
-    The device returns a 4x4 matrix containing temperatures. It has two
-    addresses: a write address and a read address. The ``start_read`` byte
-    needs to be written to the address before starting to read. [2]_
-
-    .. note:: All words are little-endian.
-
-    Parameters
-    ----------
-    address : byte, optional
-        The address of the device.
-    name : str, optional
-        The name of the device.
-    bus_number : int, optional
-        The I2C bus being used.
-
-    Attributes
-    ----------
-    address : byte
-        The address of the device.
-    name : str
-        The name of the device.
-    bus_number : int
-        The I2C bus being used.
-    start_read : byte
-        The byte to be written to start a read.
-
-    References
-    ----------
-    .. [1] Omron, D6T-44L-06 datasheet.
-           http://www.omron.com/ecb/products/pdf/en-d6t.pdf
-
-    .. [2] Omron, D6T-44L-06 application note 01.
-           http://www.omron.com/ecb/products/sensor/special/mems/pdf/AN-D6T-01EN_r2.pdf
-
-    """
-    start_read = 0x4C  # Defined in the application note.
-
-    def __init__(self, address=0xa, name="Thermal Sensor", bus_number=i2c_bus):
-        super().__init__(address, name, bus_number)
-
-    def get_temperature_matrix(self):
-        """
-        Return the temperature matrix.
-
-        0x4C is first written to the device, then 35 bytes are read.
-
-        Error detection is provided using CRC-8. Temperature data consists of
-        16-bit signed ints, 10x Celsius value.
-
-        The structure of the readout is:
-            - 2 bytes : Reference temperature.
-            - 32 bytes : Cell temperature for 16 cells.
-            - 1 byte : Error byte.
-
-        This function is based on an official application note. [1]_
-
-        Returns
-        -------
-        temp_ref : float
-            The reference temperature, in Celsius.
-        matrix : list of float
-            The temperature matrix, containing 16 temperatures in Celsius.
-        good_data : bool
-            Whether the data is good.
-
-
-        References
-        ----------
-        .. [1] Omron, D6T-44L-06 application note 01.
-               http://www.omron.com/ecb/products/sensor/special/mems/pdf/AN-D6T-01EN_r2.pdf
-
-        """
-        self._logger.debug("Getting temperature")
-        readout = self.bus.read_i2c_block_data(self.address,
-                                               ThermalSensor.start_read,
-                                               35)
-
-        self._logger.debug("Checking error")
-        good_data = self._error_check(readout)  # Data integrity check
-        if not good_data:
-            self._logger.warning("CRC check fialed.")
-
-        self._logger.debug("Concatenating data")
-        temp_ref = concatenate(readout[:2], big_endian=False) / 10
-        matrix = [concatenate(readout[i:i+2], big_endian=False) / 10
-                  for i in range(2, 34, 2)]
-
-        return temp_ref, matrix, good_data
-
-    @staticmethod
-    def _crc8_check(data):
-        """
-        Perform a cyclic redundancy check calculation for CRC-8.
-
-        Args
-        ----
-        data : byte
-            The byte to perform the calculation on.
-
-        Returns
-        -------
-        data : byte
-            The result of the calculation.
-
-        """
-        for i in range(8):
-            temp = data
-            data <<= 1
-        if temp & 0x80:
-            data ^= 0x07
-        return data
-
-    def _error_check(self, data):
-        """
-        Check for data integrity using CRC-8.
-
-        Parameters
-        ----------
-        data : byte_array
-            The buffer to be checked. Must have the error byte as the last
-            byte.
-
-        Returns
-        -------
-        bool
-            Whether the data is good.
-
-        """
-        crc = self._crc8_check(0x15)
-        for datum in data[:-1]:
-            crc = self._crc8_check(datum ^ crc)
-
-        return crc == data[-1]
 
 
 class CurrentSensor(Device):
@@ -620,7 +374,7 @@ class CurrentSensor(Device):
         # Force a read if triggered mode.
         if 0 < self.get_configuration().mode <= 3:
             self.set_configuration()
-        while not self.get_alerts()["ready"]:
+        while not self.get_alerts()["cvrf"]:
             pass
 
         if register not in self.lsbs:
@@ -779,59 +533,6 @@ class CurrentSensor(Device):
         self._write_register("alert_reg", alerts.as_byte)
 
         return flags
-
-
-def __test_current_sensor():
-    """
-    Test the current sensor.
-
-    This assumes that there are two current sensors. One is connected to the
-    high voltage side, and has an address of 0x40. The other is connected to
-    the low voltage side, and has an address of 0x44. Both current sensors
-    should show the same values for current and power and voltage.
-
-    """
-    upper_sensor = CurrentSensor(0x40, name="upper current sensor")
-    lower_sensor = CurrentSensor(0x44, name="lower current sensor")
-    upper_sensor.calibrate(2.6)
-    lower_sensor.calibrate(2.6)
-    print("Upper Sensor                         Lower Sensor")
-    print("="*64)
-    while True:
-        upper_current = upper_sensor.get_measurement("current")
-        upper_power = upper_sensor.get_measurement("power")
-        upper_voltage = upper_power / upper_current
-        print_upper = "{:5.3f} A, ".format(upper_current) + \
-                      "{:6.3f} W, ".format(upper_power) + \
-                      "{:6.3f} V".format(upper_voltage)
-
-        lower_current = lower_sensor.get_measurement("current")
-        lower_power = lower_sensor.get_measurement("power")
-        lower_voltage = lower_power / lower_current
-        print_lower = "{:5.3f} A, ".format(lower_current) + \
-                      "{:6.3f} W, ".format(lower_power) + \
-                      "{:6.3f} V".format(lower_voltage)
-
-        print("{}          {}".format(print_upper, print_lower), end="\r")
-
-
-def __test_thermal_sensor():
-    """
-    Test the thermal sensor.
-
-    This assumes that the thermal sensor is connected properly.
-
-    """
-    thermal_sensor = ThermalSensor()
-    while True:
-        temp_ref, matrix, good_data = thermal_sensor.get_temperature_matrix()
-        if not good_data:
-            print("CRC Error!")
-        print(temp_ref)
-        for i in range(4):
-            for j in range(4):
-                print(matrix[i * 4 + j], end=" ")
-            print()
 
 
 if __name__ == "__main__":
