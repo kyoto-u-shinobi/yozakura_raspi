@@ -146,7 +146,7 @@ class Client(object):
                 # Get current sensor data to send back.
                 current_data = []
                 for motor in ("left_motor", "right_motor",
-                              "left_flipper", "right_flipper"):
+                              "left_flipper", "right_flipper", "motor"):
                     try:
                         sensor = self.current_sensors[motor]
                     except KeyError:
@@ -154,12 +154,15 @@ class Client(object):
                         continue
                     current = sensor.get_measurement("current")
                     power = sensor.get_measurement("power")
-                    voltage = power / current
+                    if current == 0:
+                        voltage = 0
+                    else:
+                        voltage = power / current
                     current_data.append((current, power, voltage))
 
                 # Send sensor data back to base station.
-                self._sensors_server.sendto(pickle.dumps(adc_data, 
-                                                         current_data),
+                self._sensors_server.sendto(pickle.dumps((adc_data, 
+                                                         current_data)),
                                             self.server_address)
 
         except (KeyboardInterrupt, SystemExit):

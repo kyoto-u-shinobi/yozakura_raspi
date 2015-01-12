@@ -20,7 +20,7 @@ def main():
     if ip_address.startswith("192.168"):  # Contec
         opstn_address = "192.168.54.125"
     elif ip_address.startswith("10.249"):  # Lab dev
-        opstn_address = "10.249.255.151"
+        opstn_address = "10.249.255.172"
 
     client = Client((opstn_address, 9999))
 
@@ -32,11 +32,10 @@ def main():
 
     logging.debug("Initializing current sensors")
     current_sensors = [
-                       CurrentSensor(0x40, name="left_motor"),
-                       CurrentSensor(0x44, name="right_motor"),
-                       CurrentSensor(0x47, name="left_flipper"),
-                       CurrentSensor(0x48, name="right_flipper")
+                       CurrentSensor(0x48, name="left_flipper")
                       ]
+
+    current_sensors[0].set_alerts("pol", 10, pin_alert=40)
 
     try:
         logging.debug("Connecting mbed")
