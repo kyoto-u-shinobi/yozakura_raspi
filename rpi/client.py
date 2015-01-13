@@ -14,7 +14,10 @@ if __name__ == "__main__":
 
     left_motor = Motor(13, 8, 10, 11, "left_motor", 0, max_speed=0.6)
     right_motor = Motor(12, 36, 32, 38, "right_motor", 1, max_speed=0.6)
-    ser = serial.Serial("/dev/ttyACM0", 9600)
+    try:
+        ser = serial.Serial("/dev/ttyACM0", 9600)
+    except serial.SerialException:
+        logging.warning("mbed is not connected!")
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("192.168.54.125", 9999))
