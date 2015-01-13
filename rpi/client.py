@@ -19,23 +19,30 @@ if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("192.168.54.125", 9999))
     #s.connect(("10.249.255.151", 9999))
+    s.settimeout(0.5)
     single_stick = False
     while not Motor.fault:
         try:
-            #s.sendall(str.encode("body_sticks_y"))
             s.sendall(str.encode("body"))
-            result = s.recv(1024)
-            #lstick_y, rstick_y = pickle.loads(result)
+            try:
+                result = s.recv(1024)
+            except socket.timeout:
+                logging.warning("Lost connection to operating station")
+                logging.info("Turning off motors")
+                left_motor.send_byte(0, ser)
+                right_motor.send_byte(0, ser)
+                continue
+
             dpad, lstick, rstick, buttons = pickle.loads(result)
-            if buttons[8]:  # Select button pressed
+            if buttons[8]:  # The select button was pressed
                 current_time = time.time()
                 if current_time - time_stamp >= 1:
                     if single_stick:
                         single_stick = False
-                        logging.info("Control mode switched: Use lstick and rstick to control robot.")
+                        logging.info("Control mode switched: Use lstick and rstick to control robot")
                     else:
                         single_stick = True
-                        logging.info("Control mode switched: Use lstick to control robot.")
+                        logging.info("Control mode switched: Use lstick to control robot")
                     time_stamp = current_time
 
             if single_stick:
@@ -43,21 +50,14 @@ if __name__ == "__main__":
             else:
                 logging.debug("leftright {:9.7} {:9.7}".format(lstick[1], rstick[1]))
 
-            #lstick[1] = rstick[1] = 0
             if single_stick:
                 if -0.1 < lstick[1] < 0.1:  # Rotate in place
-                    #left_motor.drive(lstick[0])
-                    #right_motor.drive(-lstick[0])
                     left_motor.send_byte(lstick[0], ser)
                     right_motor.send_byte(-lstick[0], ser)
                 else:
-                    #left_motor.drive(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])))
-                    #right_motor.drive(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])))
                     left_motor.send_byte(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])), ser)
                     right_motor.send_byte(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])), ser)
             else:
-                #left_motor.drive(-lstick[1])
-                #right_motor.drive(-rstick[1])
                 left_motor.send_byte(-lstick[1], ser)
                 right_motor.send_byte(-rstick[1], ser)
 

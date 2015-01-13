@@ -2,13 +2,21 @@
 # Released under the GNU General Public License, version 3
 from common.networking import ServerBase, HandlerBase
 import pickle
+import socket
 
 
 class Handler(HandlerBase):
     def handle(self):
         self.logger.info("Connected to client")
+        self.request.settimeout(0.5)
+
         while True:
-            self.data = self.request.recv(1024).decode().strip()
+            try:
+                self.data = self.request.recv(1024).decode().strip()
+            except socket.timeout:
+                self.warning("Lost connection to robot")
+                self.info("Robot will shut down motors")
+                continue
             self.logger.debug('Received: "{}"'.format(self.data))
             if self.data == "":
                 self.logger.info("Terminating client session")
