@@ -374,9 +374,9 @@ class CurrentSensor(Device):
         # Force a read if triggered mode.
         if 0 < self.get_configuration().mode <= 3:
             self.set_configuration()
-        if self.pin_alert is not None:
-            while not self.get_alerts()["cvrf"]:
-                pass
+        #if self.pin_alert is not None:
+            #while not self.get_alerts()["cvrf"]:
+                #pass
 
         if register not in self.lsbs:
             self._logger.error("{} is not a measurement!".format(register))

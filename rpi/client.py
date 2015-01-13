@@ -127,13 +127,15 @@ class Client(object):
 
                 # Get flipper positions from last two items of mbed reply.
                 try:
-                    mbed_data = self.serials["mbed"].readline().split()
+                    for _ in range(4):
+                        mbed_data = self.serials["mbed"].readline().split()
                     adc_data = [int(i, 16) / 0xFFFF for i in mbed_data]
                     lpos, rpos = adc_data[-2:]
                     self._logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
                 except ValueError:
                     self._logger.debug("An error occured when trying to read" +
                                        " the flipper positions from the mbed.")
+                    adc_data = None
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
@@ -158,6 +160,8 @@ class Client(object):
                         voltage = 0
                     else:
                         voltage = power / current
+
+                    current_tuple = (current, power, voltage)
                     current_data.append((current, power, voltage))
 
                 # Send sensor data back to base station.

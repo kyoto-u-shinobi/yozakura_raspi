@@ -35,7 +35,7 @@ def main():
                        CurrentSensor(0x48, name="left_flipper")
                       ]
 
-    current_sensors[0].set_alerts("pol", 10, pin_alert=40)
+    #current_sensors[0].set_configuration(bus_ct=0, shunt_ct=0)
 
     try:
         logging.debug("Connecting mbed")
