@@ -15,12 +15,13 @@ if __name__ == "__main__":
     except OSError:
         ip_address = get_ip_address("enp2s0")
 
+    # Connect to correct server based on local IP address.
     if ip_address.startswith("192.168"):  # Contec
         client = Client(("192.168.54.125", 9999))
     elif ip_address.startswith("10.249"):  # Arch dev
         client = Client(("10.249.255.151", 9999))
     
-    logging.debug("Creating motors")
+    logging.debug("Initializing motors")
     left_motor = Motor("left_motor", 11, max_speed=0.6)
     right_motor = Motor("right_motor", 38, max_speed=0.6)
 
@@ -34,11 +35,9 @@ if __name__ == "__main__":
         logging.warning("The mbed is not connected!")
 
     try:
-        logging.debug("Starting client")
         client.run()
     finally:
         logging.info("Shutting down...")
-        logging.debug("Shutting down motors")
         Motor.shut_down_all()
         try:
             logging.debug("Shutting down connection with mbed")
@@ -46,6 +45,5 @@ if __name__ == "__main__":
         except NameError:
             logging.debug("The mbed was not connected")
             pass
-        logging.debug("Quitting client")
         client.quit()
     logging.info("All done")
