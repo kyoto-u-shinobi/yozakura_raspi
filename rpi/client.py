@@ -1,83 +1,93 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 from common.networking import ClientBase
-from rpi.motors import Motor
-import serial
-import time
-import socket
 import pickle
-import logging
+import socket
+import time
 
 
 class Client(ClientBase):
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, server_address):
+        super().__init__(server_address)
         self.request.settimeout(0.5)
+        self.motors = {}
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    time_stamp = time.time()
+    def run(self):
+        if not self.motors:
+            self.logger.critical("No motors registered!")
+            return
 
-    left_motor = Motor("left_motor", 11, max_speed=0.6)
-    right_motor = Motor("right_motor", 38, max_speed=0.6)
+        self.timestamp = time.time()
+        self.body_single_stick = False
+        timeout_mode = False
 
-    try:
-        mbed_ser = serial.Serial("/dev/ttyACM0", 9600)
-        left_motor.enable_serial(mbed_ser)
-        right_motor.enable_serial(mbed_ser)
-    except serial.SerialException:
-        logging.warning("mbed is not connected!")
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("192.168.54.125", 9999))
-    #s.connect(("10.249.255.151", 9999))
-    s.settimeout(0.5)
-    single_stick = False
-    while not Motor.fault:
-        try:
+        while True:
             try:
-                s.sendall(str.encode("body"))
-                result = s.recv(1024)
-            except socket.timeout:
-                logging.warning("Lost connection to operating station")
-                logging.info("Turning off motors")
-                left_motor.send_byte(0)
-                right_motor.send_byte(0)
-                continue
+                try:
+                    self.send("body")
+                    result = self.receive()
+                except socket.timeout:
+                    if not timeout_mode:
+                        timeout_mode = True
+                        self.logger.warning("Lost connection with base station")
+                        self.logger.info("Turning off motors")
+                        self.turn_off_motors()
+                    continue
 
-            dpad, lstick, rstick, buttons = pickle.loads(result)
-            if buttons[8]:  # The select button was pressed
-                current_time = time.time()
-                if current_time - time_stamp >= 1:
-                    if single_stick:
-                        single_stick = False
-                        logging.info("Control mode switched: Use lstick and rstick to control robot")
+                if timeout_mode:
+                    timeout_mode = False
+
+                dpad, lstick, rstick, buttons = pickle.loads(result).data
+                if buttons.buttons[8]:  # The select button was pressed
+                    self.switch_control_mode()
+
+                if self.body_single_stick:
+                    self.logger.debug("lx: {:9.7}  ly: {:9.7}".format(lstick.x,
+                                                                      lstick.y))
+                    if abs(lstick.y) < 0.1:  # Rotate in place
+                        self.motors["left_motor"].drive(lstick.x)
+                        self.motors["right_motor"].drive(-lstick.x)
                     else:
-                        single_stick = True
-                        logging.info("Control mode switched: Use lstick to control robot")
-                    time_stamp = current_time
-
-            if single_stick:
-                logging.debug("lstick: {:9.7} {:9.7}".format(lstick[0], lstick[1]))
-            else:
-                logging.debug("leftright {:9.7} {:9.7}".format(lstick[1], rstick[1]))
-
-            if single_stick:
-                if -0.1 < lstick[1] < 0.1:  # Rotate in place
-                    left_motor.send_byte(lstick[0])
-                    right_motor.send_byte(-lstick[0])
+                        l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
+                        r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
+                        self.motors["left_motor"].drive(-lstick.y * l_mult)
+                        self.motors["right_motor"].drive(-lstick.y * r_mult)
                 else:
-                    left_motor.send_byte(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])))
-                    right_motor.send_byte(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])))
-            else:
-                left_motor.send_byte(-lstick[1])
-                right_motor.send_byte(-rstick[1])
+                    self.logger.debug("ly: {:9.7}  ry: {:9.7}".format(lstick.y,
+                                                                      rstick.y))
+                    self.motors["left_motor"].drive(-lstick.y)
+                    self.motors["right_motor"].drive(-rstick.y)
 
-        except (KeyboardInterrupt, RuntimeError):
-            break
-    Motor.shut_down_all()
-    logging.debug("Closing serial port")
-    mbed_ser.close()
-    logging.debug("Client closing")
-    s.close()
-    logging.debug("Client closed")
+            except (KeyboardInterrupt, RuntimeError):
+                break
+
+    def add_motor(self, motor, pwm_pins=None, ser=None):
+        if pwm_pins is not None:
+            motor.enable_pwm(*pwm_pins)
+        if ser is not None:
+            motor.enable_serial(ser)
+
+        self.motors[motor.name] = motor
+
+    def remove_motor(self, motor):
+        del self.motors[motor.name]
+
+    def turn_off_motors(self):
+        for motor in self.motors.values():
+            if self.has_serial:
+                motor.send_byte(0)
+            if self.has_pwm:
+                motor.drive(0)
+
+    def switch_control_mode(self):
+        current_time = time.time()
+        if current_time - self.timestamp >= 1:  # Debounce for 1 second.
+            if self.body_single_stick:
+                self.body_single_stick = False
+                self.logger.info("Control mode switched: Use " +\
+                                 "lstick and rstick to control robot")
+            else:
+                self.body_single_stick = True
+                self.logger.info("Control mode switched: Use " +\
+                                 "lstick to control robot")
+            self.timestamp = current_time

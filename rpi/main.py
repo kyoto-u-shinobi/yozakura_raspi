@@ -2,12 +2,14 @@
 # Released under the GNU General Public License, version 3
 from common.networking import get_ip_address
 from rpi.client import Client
+from rpi.motors import Motor
 import logging
 import serial
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
+    logging.debug("Connecting to server")
     try:
         ip_address = get_ip_address("eth0")
     except OSError:
@@ -18,7 +20,32 @@ if __name__ == "__main__":
     elif ip_address.startswith("10.249"):  # Arch dev
         client = Client(("10.249.255.151", 9999))
     
+    logging.debug("Creating motors")
+    left_motor = Motor("left_motor", 11, max_speed=0.6)
+    right_motor = Motor("right_motor", 38, max_speed=0.6)
+
     try:
+        logging.debug("Connecting mbed")
         mbed_ser = serial.Serial("/dev/ttyACM0", 9600)
+        logging.debug("Registering motors to client")
+        client.add_motor(left_motor, ser=mbed_ser)
+        client.add_motor(right_motor, ser=mbed_ser)
     except serial.SerialException:
-        logging.warning("mbed is not connected!")
+        logging.warning("The mbed is not connected!")
+
+    try:
+        logging.debug("Starting client")
+        client.run()
+    finally:
+        logging.info("Shutting down...")
+        logging.debug("Shutting down motors")
+        Motor.shut_down_all()
+        try:
+            logging.debug("Shutting down connection with mbed")
+            mbed_ser.close()
+        except NameError:
+            logging.debug("The mbed was not connected")
+            pass
+        logging.debug("Quitting client")
+        client.quit()
+    logging.info("All done")
