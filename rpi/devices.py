@@ -5,6 +5,8 @@ import subprocess
 
 import smbus
 
+from common.exceptions import CRCError
+
 
 i2c_bus = 1  # /dev/i2c-1
 

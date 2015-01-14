@@ -3,7 +3,7 @@
 import pickle
 import socket
 
-from ..common.networking import ServerBase, HandlerBase
+from common.networking import ServerBase, HandlerBase
 
 
 class Handler(HandlerBase):
