@@ -66,6 +66,8 @@ class Motor(object):
 
     def enable_pwm(self, enable, pwm_pos, pwm_neg, frequency=28000):
         """Allow soft pwm to control the motor.
+
+        The motor in this case needs to be attached directly to the rpi.
         
         Args: 
             enable: The GPIO pin for the motor driver Enable line.
@@ -94,8 +96,11 @@ class Motor(object):
     def enable_serial(self, connection):
         """Allow the use of a USB serial connection.
 
+        This is needed if you want to use hardware PWM with an external
+        microcontroller, such as the mbed.
+
         Args:
-            connection: A Serial object.
+            connection: The Serial object used to communicate.
         """
         self.connection = connection
         self.has_serial = True
@@ -113,13 +118,13 @@ class Motor(object):
         Returns:
             The scaled speed
         """
-        # Map (start_input:1) to (0:1)
+        # Map [start_input:1] to [0:1]
         if speed > 0:
             speed = (speed * (1 - self.start_input)) + self.start_input
         elif speed < 0:
             speed = (speed * (1 - self.start_input)) - self.start_input
 
-        # Map (0:1) to (0:max_speed)
+        # Map [0:1] to [0:max_speed]
         speed *= self.max_speed
         speed = round(speed, 4)
         return speed
