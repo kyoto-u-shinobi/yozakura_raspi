@@ -1,7 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 from opstn.server import Server, Handler
-from common import networking, joystick
+from common import networking, controller
 import logging
 
 if __name__ == "__main__":
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     server = Server((ip_address, 9999), Handler)
 
     logging.debug("Initializing controllers")
-    stick_body = joystick.Controller(0, name="body")
+    stick_body = controller.Controller(0, name="wheels")
     server.add_controller(stick_body)
 
     try:
@@ -22,5 +22,5 @@ if __name__ == "__main__":
         server.serve_forever()
     finally:
         logging.info("Shutting down...")
-        joystick.Controller.quit_all()
+        controller.Controller.shutdown_all()
     logging.info("All done")

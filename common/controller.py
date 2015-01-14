@@ -6,7 +6,7 @@ from collections import namedtuple
 
 
 class Position(object):
-    """A class representing a joystick axis position.
+    """A class representing a controller axis position.
 
     Attributes:
             x: The x-position of the axis.
@@ -28,7 +28,7 @@ class Position(object):
 
     @property
     def direction(self):
-        """Determine the direction represented by the joystick axis position.
+        """Determine the direction represented by the controller axis position.
 
         The directions are Up, Down, Left, and Right, and their intermediates.
 
@@ -68,7 +68,7 @@ class Position(object):
     
 
 class Buttons(object):
-    """A class representing the button configuration of a joystick.
+    """A class representing the button configuration of a controller.
 
     Attributes:
         buttons: A list containing the state of each button.
@@ -188,7 +188,7 @@ class Controller(object):
         input devices may have different configurations.
 
         Returns:
-            The joystick state.
+            The controller state.
         """
         stick = self.controller
         n_buttons = stick.get_numbuttons()
@@ -204,7 +204,7 @@ class Controller(object):
 
         return State(dpad, lstick, rstick, buttons)
     
-    def quit(self):
+    def shutdown(self):
         """Safely quits a controller."""
         self.logger.info("Closing controller handler")
         self.controller.quit()
@@ -213,11 +213,11 @@ class Controller(object):
             pygame.quit()
 
     @classmethod
-    def quit_all(self):
+    def shutdown_all(self):
         """A class method. Safely quits all controllers."""
         logging.info("Closing all controller handlers")
         for controller in list(Controller.controllers.keys()):
-            controller.quit()
+            controller.shutdown()
 
     def __repr__(self):
         return "{} (ID# {})".format(self.name, self.stick_id())
@@ -236,5 +236,5 @@ if __name__ == "__main__":
         except KeyboardInterrupt:  # Exit safely.
             logging.info("")
             logging.info("Exiting")
-            Controller.quit_all()
+            Controller.shutdown_all()
             break
