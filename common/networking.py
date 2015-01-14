@@ -121,7 +121,7 @@ class ClientBase(object):
         Subclasses must implement this method."""
         pass
 
-    def quit(self):
+    def shutdown(self):
         """Shut down the client."""
         self.logger.debug("Shutting down client")
         self.request.close()
