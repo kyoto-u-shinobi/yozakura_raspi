@@ -52,5 +52,8 @@ class ClientBase(object):
         return self.request.recv(length)
 
     @abc.abstractmethod
-    def handle():
+    def run(self):
         pass
+
+    def quit(self):
+        self.request.close()
