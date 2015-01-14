@@ -162,7 +162,7 @@ class Controller(object):
     controllers = {}
 
     def __init__(self, stick_id, name=None):
-        """Inits a controller.
+        """Inits and registers a controller.
 
         Args:
             stick_id: The ID of the controller.
