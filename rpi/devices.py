@@ -66,7 +66,7 @@ def concatenate(byte_array, endianness="big", size=8):
 
 class Device(object):
     """This is a catch-all for i2c devices.
-    
+
     Attributes:
         address: The address of the i2c device
         name: The name of the device.
@@ -138,7 +138,7 @@ class ThermalSensor(Device):
     def __init__(self, write_address=0x14, read_address=0x15,
                  name="Thermal Sensor", bus_number=i2c_bus):
         """Inits the thermal sensor.
-        
+
         Args:
             write_address: The write address of the device.
             read_address: The read address of the device.
@@ -160,7 +160,7 @@ class ThermalSensor(Device):
             2 bytes: Reference temperature.
             32 bytes: Cell temperature for 16 cells.
             1 byte: Error bit.
-        
+
         Returns:
             temp_ref: The reference temperature
             matrix: The temperature matrix.
@@ -195,7 +195,7 @@ class ThermalSensor(Device):
         """
         def crc8_check(byte):
             """Perform a cyclic redundancy check calculation for CRC-8.
-            
+
             Args:
                 byte: The byte to perform the calculation on.
 
@@ -249,7 +249,7 @@ class CurrentSensor(Device):
 
     def __init__(self, address, name="Current Sensor", bus_number=i2c_bus):
         """Inits the current sensor.
-        
+
         Args:
             address: The address of the device.
             name: (optional) The name of the device.
@@ -314,7 +314,7 @@ class CurrentSensor(Device):
 
     def configure(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
         """Configures the current sensor.
-        
+
         c.f. page 18 in the datasheet. This function only changes the
         parameters that are specified. All other parameters remain unchanged.
 
@@ -376,7 +376,7 @@ class CurrentSensor(Device):
         """Calibrate the current sensor.
 
         The minimum usable max_current is 2.6 A, with a resolution of 0.08 mA.
-        
+
         Args:
             max_current: The maximum current expected, in Amperes.
             r_shunt: (optional) The resistance of the shunt resistor, in Ohms.
@@ -462,7 +462,7 @@ class ADConverter(Device):
     """
     def __init__(self, address, name="ADC", bus_number=i2c_bus):
         """Inits the A/D converter.
-        
+
         Args:
             address: The address of the device.
             name: (optional) The name of the device.
@@ -472,10 +472,10 @@ class ADConverter(Device):
 
     def configure(self, mode=None, sample_rate=None, gain=None):
         """Configure the A/D converter.
-        
+
         This function only changes the parameters that are specified. All other
         parameters remain unchanged.
-        
+
         Args:
             mode: (optional) The conversion mode. Continuous (1) or
                 One-shot (0).

@@ -68,8 +68,8 @@ class Motor(object):
         """Allow soft pwm to control the motor.
 
         The motor in this case needs to be attached directly to the rpi.
-        
-        Args: 
+
+        Args:
             enable: The GPIO pin for the motor driver Enable line.
             pwm_pos: The GPIO pin for the motor driver PWMP line.
             pwm_neg: The GPIO pin for the motor driver PWMN line.
@@ -111,10 +111,10 @@ class Motor(object):
 
     def _scale_speed(self, speed):
         """Get the scaled speed according to input parameters.
-            
+
         Args:
             speed: A value from -1 to 1 indicating the requested speed.
-            
+
         Returns:
             The scaled speed
         """
@@ -139,7 +139,7 @@ class Motor(object):
 
         This allows only the relevant information to be transmitted, and also
         lets the mbed perform asynchronously.
-            
+
         Args:
             speed: A value from -1 to 1 indicating the requested speed.
         """
@@ -154,7 +154,7 @@ class Motor(object):
 
     def _pwm_drive(self, speed):
         """Drive the motor using pwm on the enable pin.
-        
+
         PWMP and PWMN are held high or low depending on the speed requested.
 
         Args:
@@ -172,10 +172,10 @@ class Motor(object):
 
         The priority goes to the mbed if serial is enabled. Software PWM is
         used as a backup, if it is enabled.
-        
+
         Args:
             speed: A value from -1 to 1 indicating the requested speed.
-        
+
         Raises:
             AttributeError: Neither serial nor PWM are enabled.
         """

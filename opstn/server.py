@@ -7,7 +7,7 @@ import socket
 
 class Handler(HandlerBase):
     """A handler for connection requests.
-    
+
     Attributes:
         request: A socket object handling communication with the client.
     """

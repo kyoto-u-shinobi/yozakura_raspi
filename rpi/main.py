@@ -20,7 +20,7 @@ if __name__ == "__main__":
         client = Client(("192.168.54.125", 9999))
     elif ip_address.startswith("10.249"):  # Arch dev
         client = Client(("10.249.255.151", 9999))
-    
+
     logging.debug("Initializing motors")
     left_motor = Motor("left_motor", 11, max_speed=0.6)
     right_motor = Motor("right_motor", 38, max_speed=0.6)

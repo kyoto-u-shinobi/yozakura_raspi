@@ -65,7 +65,7 @@ class Position(object):
 
     def __str__(self):
         return "[{:5.2f}, {:5.2f}]".format(self.x, self.y)
-    
+
 
 class Buttons(object):
     """A class representing the button configuration of a controller.
@@ -203,7 +203,7 @@ class Controller(object):
         buttons = Buttons([stick.get_button(i) for i in range(n_buttons)])
 
         return State(dpad, lstick, rstick, buttons)
-    
+
     def shutdown(self):
         """Safely quits a controller."""
         self.logger.info("Closing controller handler")

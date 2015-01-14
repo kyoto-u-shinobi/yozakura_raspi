@@ -8,7 +8,7 @@ import time
 
 class Client(ClientBase):
     """A client to communicate with the server and control the robot.
-    
+
     Attributes:
         request: A socket object handling communication with the server.
         motors: A dictionary containing all registered motors.
@@ -98,7 +98,7 @@ class Client(ClientBase):
 
     def _switch_control_mode(self):
         """Toggle the control mode between single and dual analog sticks.
-        
+
         Ignores the toggle directive if the mode has been switched within the
         last second.
         """

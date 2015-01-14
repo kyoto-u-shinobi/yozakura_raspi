@@ -10,13 +10,13 @@ import struct
 
 def get_ip_address(interface):
     """Get the local IP address from the interface name.
-    
+
     References:
         Code taken from: http://goo.gl/zdkOeZ
 
     Args:
         interface: The name of the interface to be used.
-    
+
     Returns:
         The local IP address.
 
@@ -59,7 +59,7 @@ class ServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
 
     def serve_forever(self, poll_interval=0.5):
         """Handle requests until an explicit shutdown() request.
-        
+
         Args:
             poll_interval: (optional) The interval, in seconds,  with which to
                 poll for a shutdown() request. Default is 0.5 s.
@@ -70,7 +70,7 @@ class ServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
 
 class ClientBase(object):
     """A client base.
-    
+
     Attributes:
         request: Socket object handling communication with the server.
     """
@@ -117,7 +117,7 @@ class ClientBase(object):
     @abc.abstractmethod
     def run(self):
         """Keep sending requests until a KeyboardInterrupt is received.
-        
+
         Subclasses must implement this method."""
         pass
 
