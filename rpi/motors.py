@@ -1,7 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-from RPi import GPIO as gpio
 import logging
+from RPi import GPIO as gpio
 
 
 class Motor(object):

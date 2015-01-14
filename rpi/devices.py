@@ -1,9 +1,9 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 from collections import OrderedDict
-import smbus
-import subprocess
 import logging
+import subprocess
+import smbus
 
 
 i2c_bus = 1  # /dev/i2c-1

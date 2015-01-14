@@ -1,8 +1,8 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-from common.networking import ServerBase, HandlerBase
 import pickle
 import socket
+from common.networking import ServerBase, HandlerBase
 
 
 class Handler(HandlerBase):

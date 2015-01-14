@@ -1,9 +1,9 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-from common.networking import ClientBase
 import pickle
 import socket
 import time
+from common.networking import ClientBase
 
 
 class Client(ClientBase):

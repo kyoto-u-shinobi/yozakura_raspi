@@ -1,10 +1,10 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import abc
-import logging
-import socketserver
-import socket
 import fcntl
+import logging
+import socket
+import socketserver
 import struct
 
 

@@ -1,8 +1,5 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-from common.networking import get_ip_address
-from rpi.client import Client
-from rpi.motors import Motor
 import logging
 import serial
 
