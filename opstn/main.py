@@ -12,7 +12,7 @@ if __name__ == "__main__":
         ip_address = networking.get_ip_address("eth0")
     except OSError:
         ip_address = networking.get_ip_address("enp2s0")
-    
+
     if ip_address.startswith("192.168"):  # Contec
         server = Server(("192.168.54.125", 9999), Handler)
     elif ip_address.startswith("10.249"):  # Arch dev
