@@ -9,11 +9,6 @@ import smbus
 i2c_bus = 1  # /dev/i2c-1
 
 
-class CRCError(ValueError):
-    """This exception is raised when a cyclic redundancy check fails."""
-    pass
-
-
 def get_used_i2c_slots(bus_number=i2c_bus):
     """Find all used i2c slots.
 

@@ -176,7 +176,7 @@ class Motor(object):
             speed: A value from -1 to 1 indicating the requested speed.
 
         Raises:
-            AttributeError: Neither serial nor PWM are enabled.
+            DriverError: Neither serial nor PWM are enabled.
         """
         if self.has_serial:
             self._transmit(speed)
@@ -184,7 +184,7 @@ class Motor(object):
             self._pwm_drive(speed)
         else:
             self.logger.error("Cannot drive motor! No serial or PWM enabled.")
-            raise AttributeError("{} has no drivers enabled.".format(self.name))
+            raise DriverError("{} has no drivers enabled.".format(self.name))
 
     def shutdown(self):
         """Shut down and deregister the motor."""

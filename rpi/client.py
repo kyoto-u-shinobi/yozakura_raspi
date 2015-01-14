@@ -4,7 +4,7 @@ import pickle
 import socket
 import time
 
-from common.networking import ClientBase
+from ..common.networking import ClientBase
 
 
 class Client(ClientBase):
