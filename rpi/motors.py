@@ -10,19 +10,19 @@ class Motor(object):
     Attributes:
         name: The name of the motor.
         motor_id: The motor ID. It is generated automatically.
-        pin_fault: GPIO pin for motor Fault line.
-        pin_enable: GPIO pin for motor Enable line.
-        pin_pwm_pos: GPIO pin for motor PWMP line.
-        pin_pwm_neg: GPIO pin for motor PWMN line.
-        is_sleeping: A boolean indicating whether the device is sleeping.
+        pin_fault: The GPIO pin for motor Fault line.
+        has_serial: A serial port is open, and hardware PWM is available.
+        has_pwm: Software PWM is available.
+        connection: The serial port to be used for communication.
+        pin_enable: The GPIO pin for motor Enable line.
+        pin_pwm_pos: The GPIO pin for motor PWMP line.
+        pin_pwm_neg: The GPIO pin for motor PWMN line.
         start_input: The input at which the motor starts responding.
         max_speed: The maximum speed to use with the motor.
         motors: A class variable containing all registered motors.
-        fault: A class variable indicating whether there was a fault.
     """
     gpio.setmode(gpio.BOARD)
     motors = []
-    fault = False
 
     def __init__(self, name, fault, start_input=0, max_speed=1):
         """Inits and registers the motor.
@@ -31,9 +31,9 @@ class Motor(object):
             name: The name of the motor.
             fault: GPIO pin for motor Fault line.
             start_input: (optional) The input at which the motor starts
-                responding. Default is 0. Can range between 0 and 1.
+                responding. Can range between 0 and 1. Default is 0.
             max_speed: (optional) The maximum speed to use with the motor.
-                Default is 1. Can range between 0 and 1.
+                Can range between 0 and 1. Default is 1.
 
         Raises:
             IndexError: All four motors have been registered.
@@ -53,6 +53,8 @@ class Motor(object):
         self.pin_fault = fault
         self.start_input = start_input
         self.max_speed = max_speed
+        self.has_serial = False
+        self.has_pwm = False
 
         self.logger.debug("Setting up fault interrupt")
         gpio.setup(fault, gpio.IN, pull_up_down=gpio.PUD_UP)  # Pull up
@@ -66,10 +68,11 @@ class Motor(object):
         """Allow soft pwm to control the motor.
         
         Args: 
-            enable: GPIO pin for the motor driver Enable line.
-            pwm_pos: GPIO pin for the motor driver PWMP line.
-            pwm_neg: GPIO pin for the motor driver PWMN line.
-            frequency: (optional) The frequency of the software pwm.
+            enable: The GPIO pin for the motor driver Enable line.
+            pwm_pos: The GPIO pin for the motor driver PWMP line.
+            pwm_neg: The GPIO pin for the motor driver PWMN line.
+            frequency: (optional) The frequency of the software pwm. Default is
+                28000.
         """
         self.pin_enable = enable
         self.pin_pwm_pos = pwm_pos
@@ -81,20 +84,21 @@ class Motor(object):
         gpio.setup(pwm_neg, gpio.OUT)
 
         self.logger.debug("Starting PWM drivers")
-        self.is_sleeping = False
-        gpio.output(enable, gpio.HIGH)
-        self._fwd = gpio.PWM(pwm_pos, frequency)
-        self._rev = gpio.PWM(pwm_neg, frequency)
-        self._fwd.start(0)
-        self._rev.start(0)
+        gpio.output(pwm_pos, gpio.LOW)
+        gpio.output(pwm_neg, gpio.LOW)
+        self._enable = gpio.PWM(enable, frequency)
+        self._enable.start(0)
+
+        self.has_pwm = True
 
     def enable_serial(self, connection):
         """Allow the use of a USB serial connection.
 
         Args:
-            Connection: A Serial object.
+            connection: A Serial object.
         """
         self.connection = connection
+        self.has_serial = True
 
     def _catch_fault(self, channel):
         """Threaded callback for fault detection."""
@@ -120,8 +124,33 @@ class Motor(object):
         speed = round(speed, 4)
         return speed
 
-    def drive(self, speed):
-        """Set the motor to a given speed.
+    def _transmit(self, speed):
+        """Send a byte through a serial connection.
+
+        When connected to the mbed, motor control information is encoded as a
+        single byte, with the first two bits encoding the motor's ID, and the
+        next bit encoding the sign. The last five bits encode the absolute
+        value of the speed to a number between 0 and 31.
+
+        This allows only the relevant information to be transmitted, and also
+        lets the mbed perform asynchronously.
+            
+        Args:
+            speed: A value from -1 to 1 indicating the requested speed.
+        """
+        speed = self._scale_speed(speed)
+
+        top = self.motor_id << 6
+        mid = 1 << 5 if speed < 0 else 0
+        lower = int(abs(speed) * 31)
+        byte = bytes([top + mid + lower])
+
+        self.connection.write(byte)
+
+    def _pwm_drive(self, speed):
+        """Drive the motor using pwm on the enable pin.
+        
+        PWMP and PWMN are held high or low depending on the speed requested.
 
         Args:
             speed: A value from -1 to 1 indicating the requested speed of the
@@ -129,50 +158,35 @@ class Motor(object):
         """
         speed = self._scale_speed(speed)
 
-        if self.is_sleeping:
-            self.logger.info("Waking up")
-            gpio.output(self.pin_enable, gpio.HIGH)
-        try:
-            if speed < 0:
-                self._fwd.ChangeDutyCycle(0)
-                self._rev.ChangeDutyCycle(-speed * 100)
-            else:
-                self._fwd.ChangeDutyCycle(speed * 100)
-                self._rev.ChangeDutyCycle(0)
-        except AttributeError:
-            self.logger.error("Cannot drive! Direct control not enabled.")
+        gpio.output(self.pin_pwm_pos, gpio.LOW if speed < 0 else gpio.HIGH)
+        gpio.output(self.pin_pwm_neg, gpio.HIGH if speed < 0 else gpio.LOW)
+        self._enable.ChangeDutyCycle(abs(speed) * 100)
 
-    def transmit(self, speed):
-        """Send a byte through a serial connection.
-            
-            Args:
-                speed: A value from -1 to 1 indicating the requested speed.
+    def drive(self, speed):
+        """Drive the motor at a given speed.
+
+        The priority goes to the mbed if serial is enabled. Software PWM is
+        used as a backup, if it is enabled.
+        
+        Args:
+            speed: A value from -1 to 1 indicating the requested speed.
+        
+        Raises:
+            AttributeError: Neither serial nor PWM are enabled.
         """
-        speed = self._scale_speed(speed)
-        top = self.motor_id << 6
-        mid = 1 << 5 if speed < 0 else 0
-        lower = int(abs(speed) * 31)
-        byte = bytes([top + mid + lower])
-        try:
-            self.connection.write(byte)
-        except AttributeError:
-            self.logger.error("Cannot transmit! Serial comms not enabled.")
-
-    def sleep(self):
-        """Put the motor driver to sleep to save power."""
-        self.logger.info("Going to sleep")
-        try:
-            gpio.output(self.pin_enable, gpio.LOW)
-            self.is_sleeping = True
-        except AttributeError:
-            self.logger.error("Cannot sleep! Direct control not enabled.")
+        if self.has_serial:
+            self._transmit(speed)
+        elif self.has_pwm:
+            self._pwm_drive(speed)
+        else:
+            self.logger.error("Cannot drive motor! No serial or PWM enabled.")
+            raise AttributeError("{} has no drivers enabled.".format(self.name))
 
     def shut_down(self):
         """Shut down and deregister the motor."""
         self.logger.debug("Shutting down motor")
         self.logger.debug("Stopping motor")
-        self._fwd.stop()
-        self._rev.stop()
+        self.drive(0)
 
         self.logger.debug("Deregistering motor")
         Motor.motors.remove(self)
