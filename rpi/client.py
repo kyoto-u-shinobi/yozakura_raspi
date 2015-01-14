@@ -1,5 +1,6 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+from common.networking import ClientBase
 from rpi.motors import Motor
 import serial
 import time
@@ -7,6 +8,11 @@ import socket
 import pickle
 import logging
 
+
+class Client(ClientBase):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.request.settimeout(0.5)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
