@@ -187,7 +187,7 @@ class Motor(object):
             self.logger.error("Cannot drive motor! No serial or PWM enabled.")
             raise AttributeError("{} has no drivers enabled.".format(self.name))
 
-    def shut_down(self):
+    def shutdown(self):
         """Shut down and deregister the motor."""
         self.logger.debug("Shutting down motor")
         self.logger.debug("Stopping motor")
@@ -198,11 +198,11 @@ class Motor(object):
         self.logger.info("Motor shut down")
 
     @classmethod
-    def shut_down_all(self):
+    def shutdown_all(self):
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
         for motor in Motor.motors:
-            motor.shut_down()
+            motor.shutdown()
         gpio.cleanup()
         logging.info("All motors shut down")
 

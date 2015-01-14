@@ -38,12 +38,12 @@ if __name__ == "__main__":
         client.run()
     finally:
         logging.info("Shutting down...")
-        Motor.shut_down_all()
+        Motor.shutdown_all()
         try:
             logging.debug("Shutting down connection with mbed")
             mbed_ser.close()
         except NameError:
             logging.debug("The mbed was not connected")
             pass
-        client.quit()
+        client.shutdown()
     logging.info("All done")
