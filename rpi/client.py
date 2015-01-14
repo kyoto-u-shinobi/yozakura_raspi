@@ -18,10 +18,13 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     time_stamp = time.time()
 
-    left_motor = Motor(13, 8, 10, 11, "left_motor", 0, max_speed=0.6)
-    right_motor = Motor(12, 36, 32, 38, "right_motor", 1, max_speed=0.6)
+    left_motor = Motor("left_motor", 11, max_speed=0.6)
+    right_motor = Motor("right_motor", 38, max_speed=0.6)
+
     try:
-        ser = serial.Serial("/dev/ttyACM0", 9600)
+        mbed_ser = serial.Serial("/dev/ttyACM0", 9600)
+        left_motor.enable_serial(mbed_ser)
+        right_motor.enable_serial(mbed_ser)
     except serial.SerialException:
         logging.warning("mbed is not connected!")
 
@@ -32,14 +35,14 @@ if __name__ == "__main__":
     single_stick = False
     while not Motor.fault:
         try:
-            s.sendall(str.encode("body"))
             try:
+                s.sendall(str.encode("body"))
                 result = s.recv(1024)
             except socket.timeout:
                 logging.warning("Lost connection to operating station")
                 logging.info("Turning off motors")
-                left_motor.send_byte(0, ser)
-                right_motor.send_byte(0, ser)
+                left_motor.send_byte(0)
+                right_motor.send_byte(0)
                 continue
 
             dpad, lstick, rstick, buttons = pickle.loads(result)
@@ -61,20 +64,20 @@ if __name__ == "__main__":
 
             if single_stick:
                 if -0.1 < lstick[1] < 0.1:  # Rotate in place
-                    left_motor.send_byte(lstick[0], ser)
-                    right_motor.send_byte(-lstick[0], ser)
+                    left_motor.send_byte(lstick[0])
+                    right_motor.send_byte(-lstick[0])
                 else:
-                    left_motor.send_byte(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])), ser)
-                    right_motor.send_byte(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])), ser)
+                    left_motor.send_byte(-lstick[1] * (1 + lstick[0]) / (1 + abs(lstick[0])))
+                    right_motor.send_byte(-lstick[1] * (1 - lstick[0]) / (1 + abs(lstick[0])))
             else:
-                left_motor.send_byte(-lstick[1], ser)
-                right_motor.send_byte(-rstick[1], ser)
+                left_motor.send_byte(-lstick[1])
+                right_motor.send_byte(-rstick[1])
 
         except (KeyboardInterrupt, RuntimeError):
             break
     Motor.shut_down_all()
     logging.debug("Closing serial port")
-    ser.close()
+    mbed_ser.close()
     logging.debug("Client closing")
     s.close()
     logging.debug("Client closed")
