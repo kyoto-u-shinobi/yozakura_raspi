@@ -21,14 +21,7 @@ class Handler(HandlerBase):
             if self.data == "":
                 self.logger.info("Terminating client session")
                 break
-            if self.data == "body_sticks_y":
-                state = self.server.controllers["body"].get_state()
-                dpad, lstick, rstick, buttons = state.data
-                self.reply = pickle.dumps((lstick.y, rstick.y))
-            elif self.data == "body_state":
-                state = self.server.controllers["body"].get_state()
-                self.reply = pickle.dumps(state)
-            elif self.data == "body":
+            if self.data == "body":
                 state = self.server.controllers["body"].get_state()
                 dpad, lstick, rstick, buttons = state.data
                 self.reply = pickle.dumps(((dpad.x, dpad.y),
