@@ -57,15 +57,10 @@ class ServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
         super().__init__(server_address, handler_class)
         self.logger.info("Listening to port {}".format(server_address[1]))
 
-    def serve_forever(self, poll_interval=0.5):
-        """Handle requests until an explicit shutdown() request.
-
-        Args:
-            poll_interval: (optional) The interval, in seconds,  with which to
-                poll for a shutdown() request. Default is 0.5 s.
-        """
+    def serve_forever(self, *args, **kwargs):
+        """Handle requests until an explicit shutdown() request."""
         self.logger.info("Server started")
-        super().serve_forever(poll_interval)
+        super().serve_forever(*args, **kwargs)
 
 
 class ClientBase(object):

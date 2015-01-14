@@ -4,7 +4,7 @@ import logging
 
 from RPi import GPIO as gpio
 
-from common.exceptions import DriverError
+from ..common.exceptions import DriverError
 
 
 class Motor(object):

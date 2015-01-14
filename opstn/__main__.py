@@ -2,24 +2,32 @@
 # Released under the GNU General Public License, version 3
 import logging
 
-from common.controller import Controller
-from common.networking import get_ip_address
-from opstn.server import Server, Handler
+import pygame
+
+from ..common.controller import Controller
+from ....common.networking import get_ip_address
+from .server import Server, Handler
 
 def main():
     try:
         ip_address = get_ip_address("eth0")
     except OSError:
-        ip_address = get_ip_address("enp2s0")
+        #ip_address = get_ip_address("enp2s0")
+        ip_address = get_ip_address("wlan0")
     server = Server((ip_address, 9999), Handler)
 
     logging.debug("Initializing controllers")
-    stick_body = Controller(0, name="wheels")
-    server.add_controller(stick_body)
+    try:
+        stick_body = Controller(0, name="wheels")
+        server.add_controller(stick_body)
+    except pygame.error:
+        logging.warning("No joystick attached")
 
     try:
         logging.debug("Starting server")
         server.serve_forever()
+    except KeyboardInterrupt:
+        pass
     finally:
         logging.info("Shutting down...")
         Controller.shutdown_all()
