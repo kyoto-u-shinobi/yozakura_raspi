@@ -23,11 +23,7 @@ class Handler(HandlerBase):
                 break
             if self.data == "body":
                 state = self.server.controllers["body"].get_state()
-                dpad, lstick, rstick, buttons = state.data
-                self.reply = pickle.dumps(((dpad.x, dpad.y),
-                                     (lstick.x, lstick.y),
-                                     (rstick.x, rstick.y),
-                                     buttons.buttons))
+                self.reply = pickle.dumps(state)
             elif self.data.split()[0] == "echo":
                 self.reply = " ".join(self.data.split()[1:])
             else:
@@ -48,4 +44,5 @@ class Server(ServerBase):
         self.controllers[controller.name] = controller
 
     def remove_controller(self, controller):
+        self.logger.debug("Removing controller {}".format(controller))
         del self.controllers[controller.name]
