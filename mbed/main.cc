@@ -2,7 +2,22 @@
 // Released under the GNU General Public License, version 3
 #include "mbed.h"
 
+
 Serial rpi(USBTX, USBRX);  // USB port acts as a serial connection with rpi.
+
+
+// A bitfield representing the motor packet received from the rpi.
+//
+// The first two bits of the packet represent the motor ID, between 0 and 3.
+// The third bit is the sign, with a value of 1 when negative and 0 when
+// positive. The last five bits represent the speed, with a value between 0
+// and 31. [0:31] corresponds to a [0:1] requested speed.
+struct MotorPacket {
+  unsigned int motor_id : 2;
+  unsigned int negative : 1;
+  unsigned int speed : 5;
+};
+
 
 // Class representing a motor driver.
 // 
@@ -54,23 +69,20 @@ class Motor {
 
 int main() {
   // The four motors are in an array. The raspberry pi expects this order, so
-  // do not change it without changing the code for the pi as well.
+  // do not change it without changing the code for the pi as well. Note that
+  // in the prototype robot, the polarity of the right wheel has been flipped.
   Motor motors[4] = { Motor(p21, p11, p12),    // Left wheel
-                      Motor(p22, p13, p14),    // Right wheel; PWMP and PWMN
-                                               //   are physically switched.
+                      Motor(p22, p13, p14),    // Right wheel
                       Motor(p23, p27, p28),    // Left flipper
                       Motor(p24, p29, p30) };  // Left flipper
 
-  char c;
-  int motor_id, sign, speed;
+  char packet;
+  int sign;
 
   while(1) {
-    c = rpi.getc();  // Get byte from rpi.
-        
-    motor_id = c >> 6;               // First two bits represent the motor ID.
-    sign = (c & (1 << 5)) ? -1 : 1;  // Third bit represents the sign of speed.
-    speed = c & 31;                  // [0:31], corresponding to [0:1] input.
+    packet = rpi.getc();  // Get packet from rpi.
+    sign = packet.negative ? -1 : 1;
 
-    motors[motor_id].drive(sign * speed / 31.0);
+    motors[packet.motor_id].drive(sign * packet.speed / 31.0);  // Drive!
   }
 }
