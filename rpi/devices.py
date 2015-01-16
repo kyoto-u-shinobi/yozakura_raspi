@@ -313,8 +313,8 @@ class CurrentSensor(Device):
         config["mode"] = read_result & (0b111)
         return config
 
-    def _configure(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
-        """Configures the current sensor.
+    def set_configuration(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
+        """Configure the current sensor.
 
         c.f. page 18 in the datasheet. This function only changes the
         parameters that are specified. All other parameters remain unchanged.
@@ -359,7 +359,7 @@ class CurrentSensor(Device):
         self.logger.debug("Getting {} measurement".format(register))
         # Force a read if triggered mode.
         if 0 < self.get_configuration()["mode"] <= 3:
-            self.configure()
+            self.set_configuration()
         while not self.get_alerts()["ready"]:
             pass
 
@@ -475,7 +475,7 @@ class CurrentSensor(Device):
                  "ovf": (data & (1<<alerts["ovf"]) > 0)}
         
         # Clear aff bit in the register.
-        data &= ~(1<<alerts["aff])
+        data &= ~(1<<alerts["aff"])
         self._write_register("alert_reg", data)
         
         return flags
@@ -504,7 +504,7 @@ class ADConverter(Device):
         """
         super().__init__(address, name, bus_number)
 
-    def configure(self, mode=None, sample_rate=None, gain=None):
+    def set_configuration(self, mode=None, sample_rate=None, gain=None):
         """Configure the A/D converter.
 
         This function only changes the parameters that are specified. All other
