@@ -179,6 +179,23 @@ class ThermalSensor(Device):
                   for i in range(2, 34, 2)]
 
         return temp_ref, matrix
+    
+    @staticmethod
+    def _crc8_check(byte):
+        """Perform a cyclic redundancy check calculation for CRC-8.
+
+        Args:
+            byte: The byte to perform the calculation on.
+
+        Returns:
+            The result of the calculation.
+        """
+        for i in range(8):
+            temp = byte
+            byte <<= 1
+        if temp & 0x80:
+            byte ^= 0x07
+        return byte
 
     @staticmethod
     def _error_check(data):
@@ -190,25 +207,9 @@ class ThermalSensor(Device):
         Raises:
             CRCError: The CRC check failed.
         """
-        def crc8_check(byte):
-            """Perform a cyclic redundancy check calculation for CRC-8.
-
-            Args:
-                byte: The byte to perform the calculation on.
-
-            Returns:
-                The result of the calculation.
-            """
-            for i in range(8):
-                temp = byte
-                byte <<= 1
-                if temp & 0x80:
-                    byte ^= 0x07
-            return byte
-
-        crc = crc8_check(0x15)
+        crc = self._crc8_check(0x15)
         for datum in data:
-            crc = crc8_check(datum ^ crc)
+            crc = self._crc8_check(datum ^ crc)
 
         if crc != data[-1]:
             raise CRCError("A cyclic redundancy check failed.")
@@ -255,7 +256,7 @@ class CurrentSensor(Device):
         super().__init__(address, name, bus_number)
         self.calibrate(15)
 
-    def read_register(self, register, complement=True):
+    def _read_register(self, register, complement=True):
         """Read a register on the device.
 
         Args:
@@ -276,7 +277,7 @@ class CurrentSensor(Device):
                 return 2**16 - data
         return data
 
-    def write_register(self, register, data):
+    def _write_register(self, register, data):
         """Write to a register on the device.
 
         Args:
@@ -300,7 +301,7 @@ class CurrentSensor(Device):
                 mode: Operating mode.
         """
         self.logger.debug("Getting configuration")
-        read_result = self.read_register("config", complement=False)
+        read_result = self._read_register("config", complement=False)
         config = OrderedDict()
         config["upper"] = (read_result & (0b1111<<12)) >> 12
         config["avg"] = (read_result & (0b111<<9)) >> 9
@@ -309,7 +310,7 @@ class CurrentSensor(Device):
         config["mode"] = read_result & (0b111)
         return config
 
-    def configure(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
+    def _configure(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
         """Configures the current sensor.
 
         c.f. page 18 in the datasheet. This function only changes the
@@ -339,12 +340,12 @@ class CurrentSensor(Device):
         if mode is None:
             mode = config["mode"]
 
-        self.write_register("config", upper + avg + bus_ct + shunt_ct + mode)
+        self._write_register("config", upper + avg + bus_ct + shunt_ct + mode)
 
     def reset(self):
         """Reset the current sensor."""
         self.logger.debug("Resetting sensor")
-        self.write_register("config", 0b1<<15)
+        self._write_register("config", 0b1<<15)
 
     def get_measurement(self, register):
         """Return the measurement in a register.
@@ -360,10 +361,9 @@ class CurrentSensor(Device):
             pass
 
         try:
-            return self.read_register(register) * self.lsbs[register]
+            return self._read_register(register) * self.lsbs[register]
         except KeyError:
-            print("{} is not a measurement. Try the read_register() function \
-                   if you want to read any known register.".format(register))
+            print("{} is not a measurement.".format(register))
             raise
         except TypeError:
             print("{} has not been calibrated yet!".format(self))
@@ -388,9 +388,11 @@ class CurrentSensor(Device):
         self.lsbs["current"] = max_current / 2**15  # Amperes
         self.lsbs["power"] = 25 * self.lsbs["current"]  # Watts
         calib_value = 0.00512 / (self.lsbs["current"] * r_shunt)
-        self.write_register("calib", calib_value)
+        self._write_register("calib", calib_value)
 
-    def set_alerts(self, alert, limit, ready=False, invert=False, latch=False):
+    def set_alerts(self, alert, limit,
+                   ready=False, invert=False, latch=False,
+                   pin_alert=None, interrupt=False):
         """Set the alerts required.
 
         The five alert functions are:
@@ -401,13 +403,23 @@ class CurrentSensor(Device):
             pol: Power over limit
 
         Only one may be selected. c.f. page 21 in the datasheet.
+        
+        The three flags are:
+            cnvr: Conversion ready
+            apol: Alert polarity
+            len: Alert latch enable
 
         Args:
             alert: A string containing the alert to be triggered.
             limit: The limit at which the alert is triggered, in natural units.
             ready: (optional) Whether to trigger an alert if conversion ready.
-            invert: (optional) Whether to invert the alert pin polarity.
-            latch: (optional) Whether to latch the alert output.
+                Default is False.
+            invert: (optional) Whether to invert the alert pin polarity. Default
+                is False.
+            latch: (optional) Whether to latch the alert output. Default is
+                False.
+            pin_alert: (optional) The alert pin, if connected. Default is None.
+            interrupt: (optional) Whether to enable interrupts. Default is False.
         """
         self.logger.debug("Setting alerts")
         alerts = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11,
@@ -419,7 +431,7 @@ class CurrentSensor(Device):
             alert_value += 1<<alerts["apol"]
         if latch:
             alert_value += 1<<alerts["len"]
-        self.write_register("alert_reg", alert_value)
+        self._write_register("alert_reg", alert_value)
 
         if alert == "sol" or alert == "sul":
             lsb = self.lsbs["shunt"]
@@ -427,20 +439,25 @@ class CurrentSensor(Device):
             lsb = self.lsbs["bus"]
         else:  # alert == "pol"
             lsb = self.lsbs["power"]
-        self.write_register("alert_lim", limit/lsb)
+        self._write_register("alert_lim", limit/lsb)
 
     def get_alerts(self):
         """Check the state of the alerts.
+
+        The three alert flags are:
+            aff: Alert function flag
+            cvrf: Conversion ready flag
+            ovf: Math overflow flag
 
         Returns:
             A dictionary containing the state of the alerts.
         """
         self.logger.debug("Getting alert flags")
-        data = self.read_register("alert_reg", complement=False)
+        data = self._read_register("alert_reg", complement=False)
         alerts = {"aff": 4, "cvrf": 3, "ovf": 2}
-        flags = {"alert": (data & (1<<alerts["aff"]) > 0),
-                 "ready": (data & (1<<alerts["cvrf"]) > 0),
-                 "overflow": (data & (1<<alerts["ovf"]) > 0)}
+        flags = {"aff": (data & (1<<alerts["aff"]) > 0),
+                 "cvrf": (data & (1<<alerts["cvrf"]) > 0),
+                 "ovf": (data & (1<<alerts["ovf"]) > 0)}
         return flags
 
 
