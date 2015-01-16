@@ -1,10 +1,18 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+import ctypes
 import logging
 
 from RPi import GPIO as gpio
 
 from ..common.exceptions import DriverError
+
+
+class MotorPacket(ctypes.BigEndianStructure):
+    """The packet sent to the motors."""
+    _fields_ = [("motor_id", ctypes.c_uint8, 2),
+                ("negative", ctypes.c_uint8, 1),
+                ("speed", ctypes.c_uint8, 5)]
 
 
 class Motor(object):
@@ -146,14 +154,12 @@ class Motor(object):
         Args:
             speed: A value from -1 to 1 indicating the requested speed.
         """
-        speed = self._scale_speed(speed)
+        packet = MotorPacket()
+        packet.motor_id = self.motor_id
+        packet.negative = 1 if speed < 0 else 0
+        packet.speed = self._scale_speed(speed)
 
-        top = self.motor_id << 6
-        mid = 1 << 5 if speed < 0 else 0
-        lower = int(abs(speed) * 31)
-        byte = bytes([top + mid + lower])
-
-        self.connection.write(byte)
+        self.connection.write(bytes([packet]))
 
     def _pwm_drive(self, speed):
         """Drive the motor using pwm on the enable pin.
