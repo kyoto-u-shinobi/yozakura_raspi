@@ -3,6 +3,7 @@
 from collections import OrderedDict
 import subprocess
 
+from RPi import GPIO as gpio
 import smbus
 
 from common.exceptions import CRCError
@@ -225,6 +226,7 @@ class CurrentSensor(Device):
 
     Attributes:
         address: The address of the device.
+        pin_alert: The alert pin of the device. None if not connected.
         name: The name of the device.
         bus_number: The i2c bus being used.
         registers: A dictionary containing the addresses of each register.
@@ -254,6 +256,7 @@ class CurrentSensor(Device):
             bus_number: (optional) The i2c bus being used.
         """
         super().__init__(address, name, bus_number)
+        self.pin_alert = None
         self.calibrate(15)
 
     def _read_register(self, register, complement=True):
@@ -440,7 +443,19 @@ class CurrentSensor(Device):
         else:  # alert == "pol"
             lsb = self.lsbs["power"]
         self._write_register("alert_lim", limit/lsb)
+        
+        if pin_alert is not None:
+            self.pin_alert = pin_alert
+            gpio.setup(pin_alert, gpio.IN, pull_up_down=gpio.PUD_UP)  # Pull up
+            if interrupt:
+                gpio.add_event_detect(pin_alert, gpio.FALLING, 
+                                      callback=self._catch_alert)
 
+    def _catch_alert(self, channel):
+        """Threaded callback for alert detection"""
+        self.logger.debug("Alert detected")
+        return self.get_alerts()
+        
     def get_alerts(self):
         """Check the state of the alerts.
 
@@ -458,6 +473,11 @@ class CurrentSensor(Device):
         flags = {"aff": (data & (1<<alerts["aff"]) > 0),
                  "cvrf": (data & (1<<alerts["cvrf"]) > 0),
                  "ovf": (data & (1<<alerts["ovf"]) > 0)}
+        
+        # Clear aff bit in the register.
+        data &= ~(1<<alerts["aff])
+        self._write_register("alert_reg", data)
+        
         return flags
 
 
