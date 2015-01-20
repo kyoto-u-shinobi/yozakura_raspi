@@ -168,9 +168,9 @@ class ThermalSensor(Device):
         """
         self.logger.debug("Getting temperature")
         self.logger.debug("Writing to start read")
-        self.bus.write_byte_data(self.write_address, ThermalSensor.start_read)
+        self.bus.write_byte(self.write_address, ThermalSensor.start_read)
         self.logger.debug("Reading")
-        readout = self.bus.read_i2c_block_data(self.read_address, 0, 35)
+        readout = self.bus.read_i2c_block_data(self.read_address, 35)
         self.logger.debug("Checking error")
         self._error_check(readout)  # Data integrity check
 
@@ -276,7 +276,7 @@ class CurrentSensor(Device):
         data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
 
         if complement:
-            if data > 2**16/2-1:
+            if data > 2**16 / 2 - 1:
                 return 2**16 - data
         return data
 
@@ -306,10 +306,10 @@ class CurrentSensor(Device):
         self.logger.debug("Getting configuration")
         read_result = self._read_register("config", complement=False)
         config = OrderedDict()
-        config["upper"] = (read_result & (0b1111<<12)) >> 12
-        config["avg"] = (read_result & (0b111<<9)) >> 9
-        config["bus_ct"] = (read_result & (0b111<<6)) >> 6
-        config["shunt_ct"] = (read_result & (0b111<<3)) >> 3
+        config["upper"] = read_result >> 12
+        config["avg"] = (read_result & (0b111 << 9)) >> 9
+        config["bus_ct"] = (read_result & (0b111 << 6)) >> 6
+        config["shunt_ct"] = (read_result & (0b111 << 3)) >> 3
         config["mode"] = read_result & (0b111)
         return config
 
@@ -331,15 +331,15 @@ class CurrentSensor(Device):
         if avg is None:
             avg = config["avg"] << 9
         else:
-            avg = avg<<9
+            avg = avg << 9
         if bus_ct is None:
             bus_ct = config["bus_ct"] << 6
         else:
-            bus_ct = bus_ct<<6
+            bus_ct = bus_ct << 6
         if shunt_ct is None:
             shunt_ct = config["shunt_ct"] << 3
         else:
-            shunt_ct = shunt_ct<<3
+            shunt_ct = shunt_ct << 3
         if mode is None:
             mode = config["mode"]
 
@@ -348,7 +348,7 @@ class CurrentSensor(Device):
     def reset(self):
         """Reset the current sensor."""
         self.logger.debug("Resetting sensor")
-        self._write_register("config", 0b1<<15)
+        self._write_register("config", 0b1 << 15)
 
     def get_measurement(self, register):
         """Return the measurement in a register.
@@ -427,13 +427,13 @@ class CurrentSensor(Device):
         self.logger.debug("Setting alerts")
         alerts = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11,
                   "cnvr": 10, "apol": 1, "len": 0}
-        alert_value = 1<<alerts[alert]
+        alert_value = 1 << alerts[alert]
         if ready:
-            alert_value += 1<<alerts["cnvr"]
+            alert_value += 1 << alerts["cnvr"]
         if invert:
-            alert_value += 1<<alerts["apol"]
+            alert_value += 1 << alerts["apol"]
         if latch:
-            alert_value += 1<<alerts["len"]
+            alert_value += 1 << alerts["len"]
         self._write_register("alert_reg", alert_value)
 
         if alert == "sol" or alert == "sul":
@@ -470,12 +470,12 @@ class CurrentSensor(Device):
         self.logger.debug("Getting alert flags")
         data = self._read_register("alert_reg", complement=False)
         alerts = {"aff": 4, "cvrf": 3, "ovf": 2}
-        flags = {"aff": (data & (1<<alerts["aff"]) > 0),
-                 "cvrf": (data & (1<<alerts["cvrf"]) > 0),
-                 "ovf": (data & (1<<alerts["ovf"]) > 0)}
+        flags = {"aff": (data & (1 << alerts["aff"]) > 0),
+                 "cvrf": (data & (1 << alerts["cvrf"]) > 0),
+                 "ovf": (data & (1 << alerts["ovf"]) > 0)}
         
         # Clear aff bit in the register.
-        data &= ~(1<<alerts["aff"])
+        data &= ~(1 << alerts["aff"])
         self._write_register("alert_reg", data)
         
         return flags
@@ -494,7 +494,7 @@ class ADConverter(Device):
         name: The name of the device.
         bus_number: The i2c bus being used.
     """
-    def __init__(self, address, name="ADC", bus_number=i2c_bus):
+    def __init__(self, address=0x68, name="ADC", bus_number=i2c_bus):
         """Inits the A/D converter.
 
         Args:
@@ -503,35 +503,121 @@ class ADConverter(Device):
             bus_number: (optional) The i2c bus being used.
         """
         super().__init__(address, name, bus_number)
+        self.mode = 1
 
-    def set_configuration(self, mode=None, sample_rate=None, gain=None):
+    def _read(self):
+        """Read a register on the device.
+
+        The first two bytes received contain the data, and the third byte
+        contains the configuration.
+
+        Returns:
+            The data and the configuration.
+            
+            The configuration is a dictionary containing:
+                ready: Whether or not a conversion is ready.
+                channel: The channel selection bits (not used).
+                mode: The operating mode.
+                rate: The sampling rate; the resolution is tied to this rate.
+                gain: The gain of the ADC.
+        """
+        received = self.bus.read_i2c_byte_data(self.address, 3)
+        data = received >> 8
+        config_byte = received & 0xff
+
+        config = OrderedDict()
+
+        config["ready"] = config_byte >> 7
+        config["channel"] = (config_byte & (0b11 << 5)) >> 5
+        config["mode"] = (config_byte & (0b1 << 4)) >> 4
+        config["rate"] = (config_byte & (0b11 << 2)) >> 2
+        config["gain"] = config_byte & 0b11
+
+        return data, config
+
+    def get_data(self):
+        """Get the converted data from the conversion register.
+
+        Returns:
+            The data, converted to natural units.
+        """
+        # Start reading if in oneshot mode.
+        if self.mode:
+            self.set_configuration(ready=1)
+
+        data, config = self._read()
+
+        # Wait until we get new data.
+        while config["ready"]:
+            data, config = self._read()
+
+        # Set variables.
+        n_bits = 12 + 2 * config["rate"]
+        gain = 2**config["gain"]
+
+        lsb = 2 * 2.048 / (2 ** n_bits)
+        max_code = 2 ** (n_bits - 1) - 1
+
+        # Only use n_bits bits.
+        data &= ~(0b1111 << n_bits)
+
+        # Get two's complement if negative.
+        if data > 2**n_bits / 2 - 1:
+            data = 2**n_bits - data
+            sign = -1
+        else:
+            sign = 1
+
+        # Calculate result
+        result = data / (max_code + 1) / config["gain"] * 2.048
+
+        return result * sign
+
+    def get_configuration(self):
+        """Read the ADC configuration.
+
+        Returns:
+            The configuration.
+        """
+        data, config = self._read()
+        return config
+
+    def set_configuration(self, ready=None, mode=None, rate=None, gain=None):
         """Configure the A/D converter.
 
         This function only changes the parameters that are specified. All other
         parameters remain unchanged.
 
         Args:
-            mode: (optional) The conversion mode. Continuous (1) or
-                One-shot (0).
-            sample_rate: (optional) The sampling rate. Can be 0~2.
+            ready: (optional) The conversion ready bit. Set to 1 after reading
+                in continuous oneshot mode.
+            mode: (optional) The conversion mode. Continuous (1) or oneshot (0).
+            rate: (optional) The sample rate. Can be 0~2.
             gain: (optional) The PGA gain. Can be 0~3.
         """
         self.logger.debug("Configuring ADC")
-        config = self.bus.read_byte(self.address)
-        upper = config & (0b111<<5)
-        if mode is None:
-            mode = config & (1<<4)
+        config = self.get_configuration()
+        if ready is None:
+            ready = config["ready"] << 7
         else:
-            mode = mode<<4
-        if sample_rate is None:
-            sample_rate = config & (0b11<<2)
-        else:
-            sample_rate = sample_rate<<2
-        if gain is None:
-            gain = config & (0b11)
+            ready = ready << 7
 
-        configuration = upper + mode + sample_rate + gain
-        self.bus.write_byte(self.address, configuration)
+        channel = config["channel"] << 5
+
+        if mode is None:
+            mode = config["mode"] << 4
+        else:
+            mode = mode << 4
+        self.mode = mode
+
+        if rate is None:
+            rate = config["rate"] << 2
+        else:
+            rate = rate << 2
+        if gain is None:
+            gain = config["gain"]
+
+        self.write_byte(self.address, ready + channel + mode + rate + gain)
 
 
 def __test_current_sensor():
