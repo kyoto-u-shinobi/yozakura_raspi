@@ -522,6 +522,19 @@ class ADConverter(Device):
         name: The name of the device.
         bus_number: The i2c bus being used.
     """
+    class ConfigurationBits(ctypes.Structure):
+        _fields_ = [("ready", ctypes.c_uint8, 1),
+                    ("channel", ctypes.c_uint8, 2),
+                    ("mode", ctypes.c_uint8, 1),
+                    ("rate", ctypes.c_uint8, 2),
+                    ("gain", ctypes.c_uint8, 2)]
+
+    class Configuration(ctypes.Union):
+        _fields_ = [("bits", ADConverter.ConfigurationBits),
+                    ("as_byte", ctypes.c_uint8)]
+
+        _anonymous_ = ("bits")
+
     def __init__(self, address=0x68, name="ADC", bus_number=i2c_bus):
         """Inits the A/D converter.
 
@@ -549,18 +562,10 @@ class ADConverter(Device):
                 rate: The sampling rate; the resolution is tied to this rate.
                 gain: The gain of the ADC.
         """
+        config = ADConverter.Configuration()
         received = self.bus.read_i2c_byte_data(self.address, 3)
         data = received >> 8
-        config_byte = received & 0xff
-
-        config = OrderedDict()
-
-        config["ready"] = config_byte >> 7
-        config["channel"] = (config_byte & (0b11 << 5)) >> 5
-        config["mode"] = (config_byte & (0b1 << 4)) >> 4
-        config["rate"] = (config_byte & (0b11 << 2)) >> 2
-        config["gain"] = config_byte & 0b11
-
+        config.as_byte = received & 0xff
         return data, config
 
     def get_data(self):
@@ -575,13 +580,13 @@ class ADConverter(Device):
 
         data, config = self._read()
 
-        # Wait until we get new data.
-        while config["ready"]:
+        # Loop until we get new data.
+        while config.ready:
             data, config = self._read()
 
         # Set variables.
-        n_bits = 12 + 2 * config["rate"]
-        gain = 2**config["gain"]
+        n_bits = 12 + 2 * config.rate
+        gain = 2**config.gain
 
         lsb = 2 * 2.048 / (2 ** n_bits)
         max_code = 2 ** (n_bits - 1) - 1
@@ -597,7 +602,7 @@ class ADConverter(Device):
             sign = 1
 
         # Calculate result
-        result = data / (max_code + 1) / config["gain"] * 2.048
+        result = data / (max_code + 1) / gain * 2.048
 
         return result * sign
 
@@ -625,27 +630,17 @@ class ADConverter(Device):
         """
         self.logger.debug("Configuring ADC")
         config = self.get_configuration()
-        if ready is None:
-            ready = config["ready"] << 7
-        else:
-            ready = ready << 7
 
-        channel = config["channel"] << 5
+        if ready is not None:
+            config.ready = ready
+        if mode is not None:
+            config.mode = mode
+        if rate is not None:
+            config.rate = rate
+        if gain is not None:
+            config.gain = gain
 
-        if mode is None:
-            mode = config["mode"] << 4
-        else:
-            mode = mode << 4
-        self.mode = mode
-
-        if rate is None:
-            rate = config["rate"] << 2
-        else:
-            rate = rate << 2
-        if gain is None:
-            gain = config["gain"]
-
-        self.write_byte(self.address, ready + channel + mode + rate + gain)
+        self.bus.write_byte(self.address, config)
 
 
 def __test_current_sensor():
