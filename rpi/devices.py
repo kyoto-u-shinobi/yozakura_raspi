@@ -1,5 +1,6 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+import ctypes
 from collections import OrderedDict
 import subprocess
 
@@ -247,6 +248,40 @@ class CurrentSensor(Device):
             "power": None,  # Watts
             "current": None}  # Amperes
 
+    class ConfigurationBits(ctypes.Structure):
+        _fields_ = [("reset", ctypes.c_uint16, 1),
+                    ("upper", ctypes.c_uint16, 3),
+                    ("avg", ctypes.c_uint16, 3),
+                    ("bus_ct", ctypes.c_uint16, 3),
+                    ("shunt_ct", ctypes.c_uint16, 3),
+                    ("mode", ctypes.c_uint16, 3)]
+
+    class Configuration(ctypes.Union):
+        _fields_ = [("bits", CurrentSensor.ConfigurationBits),
+                    ("as_byte", ctypes.c_uint16)]
+
+        _anonymous_ = ("bits")
+
+    class AlertsBits(ctypes.Structure):
+        _fields_ = [("shunt_ol", ctypes.c_uint16, 1),
+                    ("shunt_ul", ctypes.c_uint16, 1),
+                    ("bus_ol", ctypes.c_uint16, 1),
+                    ("bus_ul", ctypes.c_uint16, 1),
+                    ("power_ol", ctypes.c_uint16, 1),
+                    ("conv_watch", ctypes.c_uint16, 1),
+                    ("empty", ctypes.c_uint16, 5),
+                    ("alert_func", ctypes.c_uint16, 1),
+                    ("conv_flag", ctypes.c_uint16, 1),
+                    ("overflow", ctypes.c_uint16, 1),
+                    ("polarity", ctypes.c_uint16, 1),
+                    ("latch", ctypes.c_uint16, 1)]
+
+    class Alerts(ctypes.Union):
+        _fields_ = [("bits", CurrentSensor.AlertsBits),
+                    ("as_byte", ctypes.c_uint16)]
+
+        _anonymous_ = ("bits")
+
     def __init__(self, address, name="Current Sensor", bus_number=i2c_bus):
         """Inits the current sensor.
 
@@ -304,22 +339,19 @@ class CurrentSensor(Device):
                 mode: Operating mode.
         """
         self.logger.debug("Getting configuration")
-        read_result = self._read_register("config", complement=False)
-        config = OrderedDict()
-        config["upper"] = read_result >> 12
-        config["avg"] = (read_result & (0b111 << 9)) >> 9
-        config["bus_ct"] = (read_result & (0b111 << 6)) >> 6
-        config["shunt_ct"] = (read_result & (0b111 << 3)) >> 3
-        config["mode"] = read_result & (0b111)
+        config = CurrentSensor.Configuration()
+        config.as_byte = self._read_register("config", complement=False)
         return config
 
-    def set_configuration(self, avg=None, bus_ct=None, shunt_ct=None, mode=None):
+    def set_configuration(self, reset=None, avg=None,
+                          bus_ct=None, shunt_ct=None, mode=None):
         """Configure the current sensor.
 
         c.f. page 18 in the datasheet. This function only changes the
         parameters that are specified. All other parameters remain unchanged.
 
         Args:
+            reset: (optional) Whether to reset.
             avg: (optional) The averaging mode.
             bus_ct: (optional) Bus voltage conversion time.
             shunt_ct: (optional) Shunt voltage conversion time.
@@ -327,28 +359,24 @@ class CurrentSensor(Device):
         """
         self.logger.debug("Setting configuration")
         config = self.get_configuration()
-        upper = config["upper"] << 12
-        if avg is None:
-            avg = config["avg"] << 9
-        else:
-            avg = avg << 9
-        if bus_ct is None:
-            bus_ct = config["bus_ct"] << 6
-        else:
-            bus_ct = bus_ct << 6
-        if shunt_ct is None:
-            shunt_ct = config["shunt_ct"] << 3
-        else:
-            shunt_ct = shunt_ct << 3
-        if mode is None:
-            mode = config["mode"]
 
-        self._write_register("config", upper + avg + bus_ct + shunt_ct + mode)
+        if reset is not None:
+            config.reset = reset
+        if avg is not None:
+            config.avg = avg
+        if bus_ct is not None:
+            config.bus_ct = bus_ct
+        if shunt_ct is not None:
+            config.shunt_ct = shunt_ct
+        if mode is not None:
+            config.mode = mode
+
+        self._write_register("config", config)
 
     def reset(self):
         """Reset the current sensor."""
         self.logger.debug("Resetting sensor")
-        self._write_register("config", 0b1 << 15)
+        self.set_configuration(reset=1)
 
     def get_measurement(self, register):
         """Return the measurement in a register.
@@ -358,7 +386,7 @@ class CurrentSensor(Device):
         """
         self.logger.debug("Getting {} measurement".format(register))
         # Force a read if triggered mode.
-        if 0 < self.get_configuration()["mode"] <= 3:
+        if 0 < self.get_configuration().mode <= 3:
             self.set_configuration()
         while not self.get_alerts()["ready"]:
             pass
@@ -425,16 +453,16 @@ class CurrentSensor(Device):
             interrupt: (optional) Whether to enable interrupts. Default is False.
         """
         self.logger.debug("Setting alerts")
-        alerts = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11,
-                  "cnvr": 10, "apol": 1, "len": 0}
-        alert_value = 1 << alerts[alert]
-        if ready:
-            alert_value += 1 << alerts["cnvr"]
-        if invert:
-            alert_value += 1 << alerts["apol"]
-        if latch:
-            alert_value += 1 << alerts["len"]
-        self._write_register("alert_reg", alert_value)
+        alerts = CurrentSensor.Alerts()
+        functions = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11}
+        
+        alert_value.as_byte = 1 << functions[alert]
+        
+        alerts.conv_watch = ready
+        alerts.polarity = invert
+        alerts.latch = latch
+
+        self._write_register("alert_reg", alerts)
 
         if alert == "sol" or alert == "sul":
             lsb = self.lsbs["shunt"]
@@ -468,15 +496,15 @@ class CurrentSensor(Device):
             A dictionary containing the state of the alerts.
         """
         self.logger.debug("Getting alert flags")
-        data = self._read_register("alert_reg", complement=False)
-        alerts = {"aff": 4, "cvrf": 3, "ovf": 2}
-        flags = {"aff": (data & (1 << alerts["aff"]) > 0),
-                 "cvrf": (data & (1 << alerts["cvrf"]) > 0),
-                 "ovf": (data & (1 << alerts["ovf"]) > 0)}
+        alerts = CurrentSensor.Alerts()
+        alerts.as_byte = self._read_register("alert_reg", complement=False)
+        flags = {"aff": alerts.alert_func,
+                 "cvrf": alerts.conv_flag,
+                 "ovf": alerts.overflow}
         
         # Clear aff bit in the register.
-        data &= ~(1 << alerts["aff"])
-        self._write_register("alert_reg", data)
+        alerts.alert_func = 0
+        self._write_register("alert_reg", alerts)
         
         return flags
 
