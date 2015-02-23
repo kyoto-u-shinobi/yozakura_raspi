@@ -76,7 +76,7 @@ int main() {
                       Motor(p23, p27, p28),    // Left flipper
                       Motor(p24, p29, p30) };  // Left flipper
 
-  char packet;
+  MotorPacket packet;
   int sign;
 
   while(1) {
