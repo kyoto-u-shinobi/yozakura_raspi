@@ -113,6 +113,24 @@ class Handler(HandlerBase):
             self._engage_reverse_mode()
 
         if self.reverse_mode:
+            # Wheels
+            if self.wheels_single_stick:
+                self.logger.debug("lx: {:9.7}  ly: {:9.7}".format(lstick.x,
+                                                                  lstick.y))
+                if abs(lstick.y) < 0.1:  # Rotate in place
+                    lmotor = -lstick.x
+                    rmotor = lstick.x
+                else:
+                    l_mult = (1 - lstick.x) / (1 + abs(lstick.x))
+                    r_mult = (1 + lstick.x) / (1 + abs(lstick.x))
+                    lmotor = lstick.y * l_mult
+                    rmotor = lstick.y * r_mult
+            else:
+                self.logger.debug("ly: {:9.7}  ry: {:9.7}".format(lstick.y,
+                                                                  rstick.y))
+                lmotor = rstick.y
+                rmotor = lstick.y
+
             # Flippers
             if buttons.buttons[4]:  # L1
                 rflipper = 1
