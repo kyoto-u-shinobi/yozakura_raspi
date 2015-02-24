@@ -55,7 +55,7 @@ class Client(TCPClientBase):
                     timed_out = False
 
                 # Get flipper positions
-                positions = serials["flipper_mbed"].readline()
+                positions = serials["mbed_flipper"].readline()
                 lpos, rpos = [int(i, 0) / 0xFFFF for i in positions.split()]
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
