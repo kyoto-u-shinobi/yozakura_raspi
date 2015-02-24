@@ -12,10 +12,15 @@ Serial rpi(USBTX, USBRX);  // USB port acts as a serial connection with rpi.
 // The third bit is the sign, with a value of 1 when negative and 0 when
 // positive. The last five bits represent the speed, with a value between 0
 // and 31. [0:31] corresponds to a [0:1] requested speed.
-struct MotorPacket {
+struct MotorPacketBits {
   unsigned int motor_id : 2;
   unsigned int negative : 1;
   unsigned int speed : 5;
+};
+
+union MotorPacket {
+  struct MotorPacketBits b;
+  unsigned char as_byte;
 };
 
 
@@ -67,6 +72,7 @@ class Motor {
     DigitalOut pos, neg;
 };
 
+
 int main() {
   // The four motors are in an array. The raspberry pi expects this order, so
   // do not change it without changing the code for the pi as well. Note that
@@ -76,13 +82,13 @@ int main() {
                       Motor(p23, p27, p28),    // Left flipper
                       Motor(p24, p29, p30) };  // Left flipper
 
-  MotorPacket packet;
+  union MotorPacket packet;
   int sign;
 
   while(1) {
-    packet = rpi.getc();  // Get packet from rpi.
-    sign = packet.negative ? -1 : 1;
+    packet.as_byte = rpi.getc();  // Get packet from rpi.
+    sign = packet.b.negative ? -1 : 1;
 
-    motors[packet.motor_id].drive(sign * packet.speed / 31.0);  // Drive!
+    motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
   }
 }
