@@ -58,7 +58,7 @@ class Handler(HandlerBase):
                 self.request.sendall(reply)
 
 
-class Server(ServerBase):
+class Server(TCPServerBase):
     """A TCP Server"""
     def __init__(self, *args, **kwargs):
         """Inits the server."""
