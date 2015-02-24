@@ -11,16 +11,18 @@ from ..common.exceptions import DriverError
 class Motor(object):
     """Class for encapsulating motors. Up to 4 motors can be registered.
 
+    Datasheet: https://www.pololu.com/product/755
+    
     Attributes:
         name: The name of the motor.
         motor_id: The motor ID. It is generated automatically.
-        pin_fault: The GPIO pin for motor Fault line.
+        pin_fault_1: The GPIO pin for the motor Fault line, F1.
+        pin_fault_2: The GPIO pin for the motor Fault line, F2.
         has_serial: A serial port is open, and hardware PWM is available.
         has_pwm: Software PWM is available.
         connection: The serial port to be used for communication.
-        pin_enable: The GPIO pin for motor Enable line.
-        pin_pwm_pos: The GPIO pin for motor PWMP line.
-        pin_pwm_neg: The GPIO pin for motor PWMN line.
+        pin_pwm: The GPIO pin for motor PWM line.
+        pin_dir: The GPIO pin for motor DIR line.
         start_input: The input at which the motor starts responding.
         max_speed: The maximum speed to use with the motor.
         motors: A class variable containing all registered motors.
@@ -41,12 +43,13 @@ class Motor(object):
     gpio.setmode(gpio.BOARD)
     motors = []
 
-    def __init__(self, name, fault, start_input=0, max_speed=1):
+    def __init__(self, name, fault_1, fault_2, start_input=0, max_speed=1):
         """Inits and registers the motor.
 
         Args:
             name: The name of the motor.
-            fault: GPIO pin for motor Fault line.
+            fault_1: GPIO pin for the motor Fault line, F1.
+            fault_2: GPIO pin for the motor Fault line, F2.
             start_input: (optional) The input at which the motor starts
                 responding. Can range between 0 and 1. Default is 0.
             max_speed: (optional) The maximum speed to use with the motor.
@@ -67,46 +70,45 @@ class Motor(object):
         self.logger.debug("Initializing motor")
         self.motor_id = len(Motor.motors)
         self.name = name
-        self.pin_fault = fault
+        self.pin_fault_1 = fault_1
+        self.pin_fault_2 = fault_2
         self.start_input = start_input
         self.max_speed = max_speed
         self.has_serial = False
         self.has_pwm = False
 
         self.logger.debug("Setting up fault interrupt")
-        gpio.setup(fault, gpio.IN, pull_up_down=gpio.PUD_UP)  # Pull up
-        gpio.add_event_detect(fault, gpio.FALLING, callback=self._catch_fault)
+        gpio.setup(fault_1, gpio.IN, pull_up_down=gpio.PUD_DOWN)  # Pull up
+        gpio.setup(fault_2, gpio.IN, pull_up_down=gpio.PUD_DOWN)  # Pull up
+        gpio.add_event_detect(fault_1, gpio.RISING, callback=self._catch_fault)
+        gpio.add_event_detect(fault_2, gpio.RISING, callback=self._catch_fault)
 
         self.logger.debug("Registering motor")
         Motor.motors.append(self)
         self.logger.info("Motor initialized")
 
-    def enable_pwm(self, enable, pwm_pos, pwm_neg, frequency=28000):
+    def enable_pwm(self, pwm, direction, frequency=28000):
         """Allow soft pwm to control the motor.
 
         The motor in this case needs to be attached directly to the rpi.
 
         Args:
-            enable: The GPIO pin for the motor driver Enable line.
-            pwm_pos: The GPIO pin for the motor driver PWMP line.
-            pwm_neg: The GPIO pin for the motor driver PWMN line.
+            pwm: The GPIO pin for the motor driver PWM line.
+            direction: The GPIO pin for the motor driver DIR line.
             frequency: (optional) The frequency of the software pwm. Default is
                 28000.
         """
-        self.pin_enable = enable
-        self.pin_pwm_pos = pwm_pos
-        self.pin_pwm_neg = pwm_neg
+        self.pin_pwm = pwm
+        self.pin_dir = direction
 
         self.logger.debug("Setting up GPIO pins")
-        gpio.setup(enable, gpio.OUT)
-        gpio.setup(pwm_pos, gpio.OUT)
-        gpio.setup(pwm_neg, gpio.OUT)
+        gpio.setup(self.pin_pwm, gpio.OUT)
+        gpio.setup(self.pin_dir, gpio.OUT)
 
         self.logger.debug("Starting PWM drivers")
-        gpio.output(pwm_pos, gpio.LOW)
-        gpio.output(pwm_neg, gpio.LOW)
-        self._enable = gpio.PWM(enable, frequency)
-        self._enable.start(0)
+        gpio.output(self.pin_dir, gpio.LOW)
+        self._pwm = gpio.PWM(self.pin_pwm, frequency)
+        self._pwm.start(0)
 
         self.has_pwm = True
 
@@ -178,9 +180,8 @@ class Motor(object):
         """
         speed = self._scale_speed(speed)
 
-        gpio.output(self.pin_pwm_pos, gpio.LOW if speed < 0 else gpio.HIGH)
-        gpio.output(self.pin_pwm_neg, gpio.HIGH if speed < 0 else gpio.LOW)
-        self._enable.ChangeDutyCycle(abs(speed) * 100)
+        gpio.output(self.pin_dir, gpio.LOW if speed < 0 else gpio.HIGH)
+        self._pwm.ChangeDutyCycle(abs(speed) * 100)
 
     def drive(self, speed):
         """Drive the motor at a given speed.
