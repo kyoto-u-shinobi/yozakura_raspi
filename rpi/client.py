@@ -7,7 +7,7 @@ import time
 from ..common.networking import ClientBase
 
 
-class Client(ClientBase):
+class Client(TCPClientBase):
     """A client to communicate with the server and control the robot.
 
     Attributes:
