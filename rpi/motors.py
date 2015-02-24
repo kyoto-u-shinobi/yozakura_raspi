@@ -25,11 +25,18 @@ class Motor(object):
         max_speed: The maximum speed to use with the motor.
         motors: A class variable containing all registered motors.
     """
-    class MotorPacket(ctypes.Structure):
-        """The packet sent to the motors."""
+    class MotorPacketBits(ctypes.BigEndianStructure):
+        """The bits for the packet sent to the motors."""
         _fields_ = [("motor_id", ctypes.c_uint8, 2),
                     ("negative", ctypes.c_uint8, 1),
                     ("speed", ctypes.c_uint8, 5)]
+    
+    class MotorPacket(ctypes.Union):
+        """The packet sent to the motors"""
+        _fields_ = [("b", MotorPacketBits),
+                    ("as_byte", ctypes.c_uint8)]
+        
+        _anonymous_ = ("b")
     
     gpio.setmode(gpio.BOARD)
     motors = []
@@ -158,7 +165,7 @@ class Motor(object):
         packet.negative = 1 if speed < 0 else 0
         packet.speed = self._scale_speed(speed)
 
-        self.connection.write(bytes([packet]))
+        self.connection.write(bytes([packet.as_byte]))
 
     def _pwm_drive(self, speed):
         """Drive the motor using pwm on the enable pin.
