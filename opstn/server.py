@@ -90,14 +90,14 @@ class Handler(HandlerBase):
             rstick: y-axis controls right-side wheels in dual-stick mode.
             L3: Toggle the control mode between single and dual analog sticks.
             R3: Toggle reverse mode
-        
+
         TODO (masasin):
             Handle select: Synchronize flipper positions.
             Handle start: Move flippers to a horizontal and forward position.
 
         Args:
             state: A state object representing the controller state.
-        
+
         Returns:
             The speed inputs for each of the four motors:
                 Left motor speed
@@ -112,41 +112,56 @@ class Handler(HandlerBase):
         if buttons.buttons[11]:  # The R3 button was pressed
             self._engage_reverse_mode()
 
-        flipper_mult = -1 if self.reverse_mode else 1
-        
-        # Wheels in forward mode
-        if self.wheels_single_stick:
-            self.logger.debug("lx: {:9.7}  ly: {:9.7}".format(lstick.x,
-                                                              lstick.y))
-            if abs(lstick.y) < 0.1:  # Rotate in place
-                lmotor = lstick.x
-                rmotor = -lstick.x
+        if self.reverse_mode:
+            # Flippers
+            if buttons.buttons[4]:  # L1
+                rflipper = 1
+            elif buttons.buttons[6]:  # L2
+                rflipper = -1
             else:
-                l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
-                r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
-                lmotor = -lstick.y * l_mult
-                rmotor = -lstick.y * r_mult
-        else:
-            self.logger.debug("ly: {:9.7}  ry: {:9.7}".format(lstick.y,
-                                                              rstick.y))
-            lmotor = -lstick.y
-            rmotor = -rstick.y
-        
-        # Flippers in forward mode
-        if buttons.buttons[4]:  # L1
-            lflipper = 1 * flipper_mult
-        elif buttons.buttons[6]:  # L2
-            lflipper = -1 * flipper_mult
-        else:
-            lflipper = 0
-        
-        if buttons.buttons[5]:  # R1
-            rflipper = 1 * flipper_mult
-        elif buttons.buttons[7]:  # R2
-            rflipper = -1 * flipper_mult
-        else:
-            rflipper = 0
-        
+                rflipper = 0
+
+            if buttons.buttons[5]:  # R1
+                lflipper = 1
+            elif buttons.buttons[7]:  # R2
+                lflipper = -1
+            else:
+                lflipper = 0
+
+        else:  # Forward mode
+            # Wheels
+            if self.wheels_single_stick:
+                self.logger.debug("lx: {:9.7}  ly: {:9.7}".format(lstick.x,
+                                                                  lstick.y))
+                if abs(lstick.y) < 0.1:  # Rotate in place
+                    lmotor = lstick.x
+                    rmotor = -lstick.x
+                else:
+                    l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
+                    r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
+                    lmotor = -lstick.y * l_mult
+                    rmotor = -lstick.y * r_mult
+            else:
+                self.logger.debug("ly: {:9.7}  ry: {:9.7}".format(lstick.y,
+                                                                  rstick.y))
+                lmotor = -lstick.y
+                rmotor = -rstick.y
+
+            # Flippers
+            if buttons.buttons[4]:  # L1
+                lflipper = 1
+            elif buttons.buttons[6]:  # L2
+                lflipper = -1
+            else:
+                lflipper = 0
+            
+            if buttons.buttons[5]:  # R1
+                rflipper = 1
+            elif buttons.buttons[7]:  # R2
+                rflipper = -1
+            else:
+                rflipper = 0
+
         return lmotor, rmotor, lflipper, rflipper
 
     def _switch_control_mode(self):
