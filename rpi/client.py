@@ -4,7 +4,7 @@ import pickle
 import socket
 import time
 
-from ..common.networking import ClientBase
+from ..common.networking import TCPClientBase
 
 
 class Client(TCPClientBase):
@@ -13,8 +13,6 @@ class Client(TCPClientBase):
     Attributes:
         request: A socket object handling communication with the server.
         motors: A dictionary containing all registered motors.
-        wheels_single_stick: A boolean indicating whether the wheels are
-            controlled by only one stick (i.e., the left analog stick).
     """
     def __init__(self, server_address):
         """Inits the client.
@@ -35,14 +33,12 @@ class Client(TCPClientBase):
             return
 
         self.logger.info("Client started")
-        self._timestamp = time.time()
-        self.wheels_single_stick = False
         timed_out = False
 
         while True:
             try:
                 try:
-                    self.send("wheels")
+                    self.send("speeds")
                     result = self.receive()
                 except socket.timeout:
                     if not timed_out:
@@ -56,65 +52,16 @@ class Client(TCPClientBase):
                 if timed_out:
                     timed_out = False
 
-                state = pickle.loads(result)
-                self._handle_input(state)
+                lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
+                self.motors["left_motor"].drive(lmotor)
+                self.motors["right_motor"].drive(rmotor)
+                
+                # TODO: Hold position if input is 0.
+                #self.motors["left_flipper"].drive(lflipper)
+                #self.motors["right_flipper"].drive(rflipper)
 
             except (KeyboardInterrupt, RuntimeError):
                 break
-
-    def _handle_input(self, state):
-        """Handle input from the joystick.
-
-        Inputs handled:
-            select: Toggle the control mode between single and dual analog
-                sticks.
-            lstick: x- and y- axes control wheels in single-stick mode; y-axis
-                controls left-side wheels in dual-stick mode.
-            rstick: y-axis controls right-side wheels in dual-stick mode.
-
-        Args:
-            state: A state object representing the controller state.
-        """
-        dpad, lstick, rstick, buttons = state.data
-
-        if buttons.buttons[8]:  # The select button was pressed
-            self._switch_control_mode()
-
-        if self.wheels_single_stick:
-            self.logger.debug("lx: {:9.7}  ly: {:9.7}".format(lstick.x,
-                                                              lstick.y))
-            if abs(lstick.y) < 0.1:  # Rotate in place
-                self.motors["left_motor"].drive(lstick.x)
-                self.motors["right_motor"].drive(-lstick.x)
-            else:
-                l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
-                r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
-                self.motors["left_motor"].drive(-lstick.y * l_mult)
-                self.motors["right_motor"].drive(-lstick.y * r_mult)
-        else:
-            self.logger.debug("ly: {:9.7}  ry: {:9.7}".format(lstick.y,
-                                                              rstick.y))
-            self.motors["left_motor"].drive(-lstick.y)
-            self.motors["right_motor"].drive(-rstick.y)
-
-    def _switch_control_mode(self):
-        """Toggle the control mode between single and dual analog sticks.
-
-        Ignores the toggle directive if the mode has been switched within the
-        last second.
-        """
-        current_time = time.time()
-
-        if current_time - self._timestamp >= 1:
-            if self.wheels_single_stick:
-                self.wheels_single_stick = False
-                self.logger.info("Control mode switched: Use " +\
-                                 "lstick and rstick to control robot")
-            else:
-                self.wheels_single_stick = True
-                self.logger.info("Control mode switched: Use " +\
-                                 "lstick to control robot")
-            self._timestamp = current_time
 
     def add_motor(self, motor, ser=None, pwm_pins=None):
         """Set up and register a motor.
