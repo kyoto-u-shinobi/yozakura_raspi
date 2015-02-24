@@ -13,6 +13,7 @@ class Client(TCPClientBase):
     Attributes:
         request: A socket object handling communication with the server.
         motors: A dictionary containing all registered motors.
+        serials: A dictionary containing all the registered serial conns.
     """
     def __init__(self, server_address):
         """Inits the client.
@@ -25,6 +26,7 @@ class Client(TCPClientBase):
         super().__init__(server_address)
         self.request.settimeout(0.5)
         self.motors = {}
+        self.serials = {}
 
     def run(self):
         """Send and handle requests until a KeyboardInterrupt is received."""
@@ -52,17 +54,31 @@ class Client(TCPClientBase):
                 if timed_out:
                     timed_out = False
 
+                # Get flipper positions
+                positions = serials["flipper_mbed"].readline()
+                lpos, rpos = [int(i, 0) / 0xFFFF for i in positions.split()]
+
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
                 self.motors["right_motor"].drive(rmotor)
                 
                 # TODO: Hold position if input is 0.
-                #self.motors["left_flipper"].drive(lflipper)
-                #self.motors["right_flipper"].drive(rflipper)
+                self.motors["left_flipper"].drive(lflipper)
+                self.motors["right_flipper"].drive(rflipper)
 
             except (KeyboardInterrupt, RuntimeError):
                 break
 
+    def add_serial_device(self, name, device):
+        """Register a serial device for ADC communication.
+        
+        Args:
+            name: The name of the device.
+            ser: The serial connection to the microcontroller.
+        """
+        self.logger.debug("Registering {}".format(name))
+        self.serials[name] = ser
+        
     def add_motor(self, motor, ser=None, pwm_pins=None):
         """Set up and register a motor.
 
@@ -71,7 +87,7 @@ class Client(TCPClientBase):
             ser: (optional) The serial connection to communicate with the
                 microcontroller to which the motor drivers are connected. This
                 is necessary in order to use hardware PWM. Default is None.
-            pwm_pins: (optional)
+            pwm_pins: (optional) The pins used for soft PWM. Default is None.
         """
         self.logger.debug("Adding motor {}".format(motor))
         if pwm_pins is not None:
@@ -80,6 +96,15 @@ class Client(TCPClientBase):
             motor.enable_serial(ser)
 
         self.motors[motor.name] = motor
+
+    def remove_serial_device(self, name):
+        """Deregister a serial device.
+
+        Args:
+            name: The name of the device to be deregistered.
+        """
+        self.logger.debug("Removing {}".format(name))
+        del self.serials[name]
 
     def remove_motor(self, motor):
         """Deregister a motor.
