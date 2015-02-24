@@ -91,6 +91,6 @@ int main() {
     motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
     
     // Send data to Rpi
-    rpi.printf("0x%04X 0x%04X", pots[0].read_u16(), pots[1].read_u16());
+    rpi.printf("0x%04X 0x%04X\n", pots[0].read_u16(), pots[1].read_u16());
   }
 }
