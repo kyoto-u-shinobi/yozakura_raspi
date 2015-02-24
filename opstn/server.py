@@ -3,7 +3,7 @@
 import pickle
 import socket
 
-from ..common.networking import ServerBase, HandlerBase
+from ..common.networking import TCPServerBase, HandlerBase
 
 
 class Handler(HandlerBase):
@@ -11,6 +11,10 @@ class Handler(HandlerBase):
 
     Attributes:
         request: A socket object handling communication with the client.
+        wheels_single_stick: A boolean indicating whether the wheels are
+            controlled by only one stick (i.e., the left analog stick).
+        reverse_mode: A boolean indicating whether reverse mode is engaged.
+            With reverse mode, the inputs are inverted for ease of operation.
     """
     def handle(self):
         """Handle the requests.
@@ -21,11 +25,17 @@ class Handler(HandlerBase):
 
         Inputs handled:
             state: Reply with the state of the controller.
+            inputs: Reply with the raw input data from the state.
+            speeds: Perform calculations and send motor speed data.
             echo: Reply with what the client has said.
             print: Reply with what the client has said, and print to screen.
         """
         self.logger.info("Connected to client")
         self.request.settimeout(0.5)
+        self.wheels_single_stick = False
+        self.reverse_mode = False
+        
+        self._sticks_timestamp = self._reverse_timestamp = time.time()
 
         while True:
             try:
@@ -43,6 +53,16 @@ class Handler(HandlerBase):
             if data == "state":
                 state = self.server.controllers["wheels"].get_state()
                 reply = pickle.dumps(state)
+            elif data == "inputs":
+                state = self.server.controllers["wheels"].get_state()
+                dpad, lstick, rstick, buttons = state.data
+                self.reply = pickle.dumps(((dpad.x, dpad.y),		
+                                           (lstick.x, lstick.y),		
+                                           (rstick.x, rstick.y),		
+                                           buttons.buttons))
+            elif data == "speeds":
+                state = self.server.controllers["wheels"].get_state()
+                self.reply = pickle.dumps(self._handle_inputs, state)
             elif data.split()[0] == "echo":
                 reply = " ".join(data.split()[1:])
             elif data.split()[0] == "print":
@@ -56,6 +76,117 @@ class Handler(HandlerBase):
                 self.request.sendall(str.encode(reply))
             except TypeError:  # Already bytecode
                 self.request.sendall(reply)
+
+        def _handle_input(self, state):
+        """Handle input from the joystick.
+
+        Inputs handled:
+            L1: Rotate left flipper upwards from start.
+            L2: Rotate left flipper downwards from start.
+            R1: Rotate right flipper upwards from start.
+            R2: Rotate right flipper downwards from start.
+            lstick: x- and y- axes control wheels in single-stick mode;
+                    y-axis controls left-side wheels in dual-stick mode.
+            rstick: y-axis controls right-side wheels in dual-stick mode.
+            L3: Toggle the control mode between single and dual analog sticks.
+            R3: Toggle reverse mode
+        
+        TODO (masasin):
+            Handle select: Synchronize flipper positions.
+            Handle start: Move flippers to a horizontal and forward position.
+
+        Args:
+            state: A state object representing the controller state.
+        
+        Returns:
+            The speed inputs for each of the four motors:
+                Left motor speed
+                Right motor speed
+                Left flipper speed
+                Right flipper speed
+        """
+        dpad, lstick, rstick, buttons = state.data
+
+        if buttons.buttons[10]:  # The L3 button was pressed
+            self._switch_control_mode()
+        if buttons.buttons[11]:  # The R3 button was pressed
+            self._engage_reverse_mode()
+
+        flipper_mult = -1 if self.reverse_mode else 1
+        
+        # Wheels in forward mode
+        if self.wheels_single_stick:
+            self.logger.debug("lx: {:9.7}  ly: {:9.7}".format(lstick.x,
+                                                              lstick.y))
+            if abs(lstick.y) < 0.1:  # Rotate in place
+                lmotor = lstick.x
+                rmotor = -lstick.x
+            else:
+                l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
+                r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
+                lmotor = -lstick.y * l_mult
+                rmotor = -lstick.y * r_mult
+        else:
+            self.logger.debug("ly: {:9.7}  ry: {:9.7}".format(lstick.y,
+                                                              rstick.y))
+            lmotor = -lstick.y
+            rmotor = -rstick.y
+        
+        # Flippers in forward mode
+        if buttons.buttons[4]:  # L1
+            lflipper = 1 * flipper_mult
+        elif buttons.buttons[6]:  # L2
+            lflipper = -1 * flipper_mult
+        else:
+            lflipper = 0
+        
+        if buttons.buttons[5]:  # R1
+            rflipper = 1 * flipper_mult
+        elif buttons.buttons[7]:  # R2
+            rflipper = -1 * flipper_mult
+        else:
+            rflipper = 0
+        
+        return lmotor, rmotor, lflipper, rflipper
+
+    def _switch_control_mode(self):
+        """Toggle the control mode between single and dual analog sticks.
+
+        Ignores the toggle directive if the mode has been switched within the
+        last second.
+        """
+        current_time = time.time()
+
+        if current_time - self._sticks_timestamp >= 1:
+            if self.wheels_single_stick:
+                self.wheels_single_stick = False
+                self.logger.info("Control mode switched: Use " +\
+                                 "lstick and rstick to control robot")
+            else:
+                self.wheels_single_stick = True
+                self.logger.info("Control mode switched: Use " +\
+                                 "lstick to control robot")
+            self._sticks_timestamp = current_time
+            
+    def _engage_reverse_mode(self):
+        """Toggle the control mode between forward and reverse.
+        
+        In reverse mode, the regular inputs will cause the robot to move
+        in reverse as if it were moving forward.
+
+        Ignores the toggle directive if the mode has been switched within the
+        last second.
+        """
+        current_time = time.time()
+
+        if current_time - self._reverse_timestamp >= 1:
+            if self.reverse_mode:
+                self.reverse_mode = False
+                self.logger.info("Reverse mode disabled!")
+            else:
+                self.reverse_mode = True
+                self.logger.info("Reverse mode enabled!")
+            self._reverse_timestamp = current_time
 
 
 class Server(TCPServerBase):
