@@ -14,7 +14,7 @@ def main():
     except OSError:
         ip_address = get_ip_address("enp2s0")
 
-# Connect to correct server based on local IP address.
+    # Connect to correct server based on local IP address.
     if ip_address.startswith("192.168"):  # Contec
         client = Client(("192.168.54.125", 9999))
     elif ip_address.startswith("10.249"):  # Arch dev
