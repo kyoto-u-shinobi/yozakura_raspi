@@ -80,15 +80,24 @@ int main() {
   Motor motors[4] = { Motor(p21, p11, p12),    // Left wheel
                       Motor(p22, p13, p14),    // Right wheel
                       Motor(p23, p27, p28),    // Left flipper
-                      Motor(p24, p29, p30) };  // Left flipper
+                      Motor(p24, p29, p30) };  // Right flipper
 
+  AnalogIn pots[2] = {p15,   // Left flipper position
+                      p16};  // Right flipper position
+  
   union MotorPacket packet;
   int sign;
 
   while(1) {
-    packet.as_byte = rpi.getc();  // Get packet from rpi.
+    // Drive the motor
+    if(rpi.readable()) {
+      packet.as_byte = rpi.getc();  // Get packet from rpi.
+    }
     sign = packet.b.negative ? -1 : 1;
 
     motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
+    
+    // Send data to Rpi
+    rpi.printf("0x%04X 0x%04X", pots[0].read_u16(), pots[1].read_u16())
   }
 }
