@@ -167,7 +167,7 @@ class Motor(object):
         packet = Motor.MotorPacket()
         packet.motor_id = self.motor_id
         packet.negative = 1 if speed < 0 else 0
-        packet.speed = self._scale_speed(speed)
+        packet.speed = int(abs(self._scale_speed(speed)) * 31)
 
         self.connection.write(bytes([packet.as_byte]))
 
