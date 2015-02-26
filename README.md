@@ -1,4 +1,4 @@
-kaginawa
+﻿KAGINAWA
 ========
 
 新型KOHGAのソフト
