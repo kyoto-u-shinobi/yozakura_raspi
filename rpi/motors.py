@@ -170,9 +170,9 @@ class Motor(object):
         self.connection.write(bytes([packet.as_byte]))
 
     def _pwm_drive(self, speed):
-        """Drive the motor using pwm on the enable pin.
+        """Drive the motor using the PWM pin.
 
-        PWMP and PWMN are held high or low depending on the speed requested.
+        DIR is set depending on the speed requested.
 
         Args:
             speed: A value from -1 to 1 indicating the requested speed of the
