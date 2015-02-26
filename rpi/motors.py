@@ -8,11 +8,26 @@ from RPi import GPIO as gpio
 from ..common.exceptions import DriverError
 
 
+class MotorPacketBits(ctypes.BigEndianStructure):
+    """The bits for the packet sent to the motors."""
+    _fields_ = [("motor_id", ctypes.c_uint8, 2),
+                ("negative", ctypes.c_uint8, 1),
+                ("speed", ctypes.c_uint8, 5)]
+
+
+class MotorPacket(ctypes.Union):
+    """The packet sent to the motors"""
+    _fields_ = [("b", MotorPacketBits),
+                ("as_byte", ctypes.c_uint8)]
+
+    _anonymous_ = ("b")
+
+
 class Motor(object):
     """Class for encapsulating motors. Up to 4 motors can be registered.
 
     Datasheet: https://www.pololu.com/product/755
-    
+
     Attributes:
         name: The name of the motor.
         motor_id: The motor ID. It is generated automatically.
@@ -27,19 +42,6 @@ class Motor(object):
         max_speed: The maximum speed to use with the motor.
         motors: A class variable containing all registered motors.
     """
-    class MotorPacketBits(ctypes.BigEndianStructure):
-        """The bits for the packet sent to the motors."""
-        _fields_ = [("motor_id", ctypes.c_uint8, 2),
-                    ("negative", ctypes.c_uint8, 1),
-                    ("speed", ctypes.c_uint8, 5)]
-    
-    class MotorPacket(ctypes.Union):
-        """The packet sent to the motors"""
-        _fields_ = [("b", MotorPacketBits),
-                    ("as_byte", ctypes.c_uint8)]
-        
-        _anonymous_ = ("b")
-    
     gpio.setmode(gpio.BOARD)
     motors = []
 

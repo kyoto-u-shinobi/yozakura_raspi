@@ -2,7 +2,6 @@
 # Released under the GNU General Public License, version 3
 import pickle
 import socket
-import time
 
 from ..common.networking import TCPClientBase
 
@@ -55,14 +54,14 @@ class Client(TCPClientBase):
                     timed_out = False
 
                 # Get flipper positions
-                positions = serials["mbed_flipper"].readline()
+                positions = self.serials["mbed_flipper"].readline()
                 lpos, rpos = [int(i, 0) / 0xFFFF for i in positions.split()]
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
                 self.motors["right_motor"].drive(rmotor)
-                
-                # TODO: Hold position if input is 0.
+
+                # TODO(masasin): Hold position if input is 0.
                 self.motors["left_flipper"].drive(lflipper)
                 self.motors["right_flipper"].drive(rflipper)
 
@@ -71,14 +70,14 @@ class Client(TCPClientBase):
 
     def add_serial_device(self, name, device):
         """Register a serial device for ADC communication.
-        
+
         Args:
             name: The name of the device.
-            ser: The serial connection to the microcontroller.
+            device: The serial connection to the microcontroller.
         """
         self.logger.debug("Registering {}".format(name))
-        self.serials[name] = ser
-        
+        self.serials[name] = device
+
     def add_motor(self, motor, ser=None, pwm_pins=None):
         """Set up and register a motor.
 

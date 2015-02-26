@@ -1,7 +1,9 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+# TODO(masasin): Rearrange and hide bitfields
 import ctypes
 from collections import OrderedDict
+import logging
 import subprocess
 
 from RPi import GPIO as gpio
@@ -181,7 +183,7 @@ class ThermalSensor(Device):
                   for i in range(2, 34, 2)]
 
         return temp_ref, matrix
-    
+
     @staticmethod
     def _crc8_check(byte):
         """Perform a cyclic redundancy check calculation for CRC-8.
@@ -199,8 +201,7 @@ class ThermalSensor(Device):
             byte ^= 0x07
         return byte
 
-    @staticmethod
-    def _error_check(data):
+    def _error_check(self, data):
         """Check for data integrity using CRC-8.
 
         Args:
@@ -215,6 +216,44 @@ class ThermalSensor(Device):
 
         if crc != data[-1]:
             raise CRCError("A cyclic redundancy check failed.")
+
+
+class CurrentConfigurationBits(ctypes.Structure):
+    _fields_ = [("reset", ctypes.c_uint16, 1),
+                ("upper", ctypes.c_uint16, 3),
+                ("avg", ctypes.c_uint16, 3),
+                ("bus_ct", ctypes.c_uint16, 3),
+                ("shunt_ct", ctypes.c_uint16, 3),
+                ("mode", ctypes.c_uint16, 3)]
+
+
+class CurrentConfiguration(ctypes.Union):
+    _fields_ = [("bits", CurrentConfigurationBits),
+                ("as_byte", ctypes.c_uint16)]
+
+    _anonymous_ = ("bits")
+
+
+class CurrentAlertsBits(ctypes.Structure):
+    _fields_ = [("shunt_ol", ctypes.c_uint16, 1),
+                ("shunt_ul", ctypes.c_uint16, 1),
+                ("bus_ol", ctypes.c_uint16, 1),
+                ("bus_ul", ctypes.c_uint16, 1),
+                ("power_ol", ctypes.c_uint16, 1),
+                ("conv_watch", ctypes.c_uint16, 1),
+                ("empty", ctypes.c_uint16, 5),
+                ("alert_func", ctypes.c_uint16, 1),
+                ("conv_flag", ctypes.c_uint16, 1),
+                ("overflow", ctypes.c_uint16, 1),
+                ("polarity", ctypes.c_uint16, 1),
+                ("latch", ctypes.c_uint16, 1)]
+
+
+class CurrentAlerts(ctypes.Union):
+    _fields_ = [("bits", CurrentAlertsBits),
+                ("as_byte", ctypes.c_uint16)]
+
+    _anonymous_ = ("bits")
 
 
 class CurrentSensor(Device):
@@ -247,40 +286,6 @@ class CurrentSensor(Device):
             "v_bus": 1.25e-3,  # Volts
             "power": None,  # Watts
             "current": None}  # Amperes
-
-    class ConfigurationBits(ctypes.Structure):
-        _fields_ = [("reset", ctypes.c_uint16, 1),
-                    ("upper", ctypes.c_uint16, 3),
-                    ("avg", ctypes.c_uint16, 3),
-                    ("bus_ct", ctypes.c_uint16, 3),
-                    ("shunt_ct", ctypes.c_uint16, 3),
-                    ("mode", ctypes.c_uint16, 3)]
-
-    class Configuration(ctypes.Union):
-        _fields_ = [("bits", CurrentSensor.ConfigurationBits),
-                    ("as_byte", ctypes.c_uint16)]
-
-        _anonymous_ = ("bits")
-
-    class AlertsBits(ctypes.Structure):
-        _fields_ = [("shunt_ol", ctypes.c_uint16, 1),
-                    ("shunt_ul", ctypes.c_uint16, 1),
-                    ("bus_ol", ctypes.c_uint16, 1),
-                    ("bus_ul", ctypes.c_uint16, 1),
-                    ("power_ol", ctypes.c_uint16, 1),
-                    ("conv_watch", ctypes.c_uint16, 1),
-                    ("empty", ctypes.c_uint16, 5),
-                    ("alert_func", ctypes.c_uint16, 1),
-                    ("conv_flag", ctypes.c_uint16, 1),
-                    ("overflow", ctypes.c_uint16, 1),
-                    ("polarity", ctypes.c_uint16, 1),
-                    ("latch", ctypes.c_uint16, 1)]
-
-    class Alerts(ctypes.Union):
-        _fields_ = [("bits", CurrentSensor.AlertsBits),
-                    ("as_byte", ctypes.c_uint16)]
-
-        _anonymous_ = ("bits")
 
     def __init__(self, address, name="Current Sensor", bus_number=i2c_bus):
         """Inits the current sensor.
@@ -339,7 +344,7 @@ class CurrentSensor(Device):
                 mode: Operating mode.
         """
         self.logger.debug("Getting configuration")
-        config = CurrentSensor.Configuration()
+        config = CurrentConfiguration()
         config.as_byte = self._read_register("config", complement=False)
         return config
 
@@ -434,7 +439,7 @@ class CurrentSensor(Device):
             pol: Power over limit
 
         Only one may be selected. c.f. page 21 in the datasheet.
-        
+
         The three flags are:
             cnvr: Conversion ready
             apol: Alert polarity
@@ -453,11 +458,11 @@ class CurrentSensor(Device):
             interrupt: (optional) Whether to enable interrupts. Default is False.
         """
         self.logger.debug("Setting alerts")
-        alerts = CurrentSensor.Alerts()
+        alerts = CurrentAlerts()
         functions = {"sol": 15, "sul": 14, "bol": 13, "bul": 12, "pol": 11}
-        
-        alert_value.as_byte = 1 << functions[alert]
-        
+
+        alerts.as_byte = 1 << functions[alert]
+
         alerts.conv_watch = ready
         alerts.polarity = invert
         alerts.latch = latch
@@ -471,19 +476,19 @@ class CurrentSensor(Device):
         else:  # alert == "pol"
             lsb = self.lsbs["power"]
         self._write_register("alert_lim", limit/lsb)
-        
+
         if pin_alert is not None:
             self.pin_alert = pin_alert
             gpio.setup(pin_alert, gpio.IN, pull_up_down=gpio.PUD_UP)  # Pull up
             if interrupt:
-                gpio.add_event_detect(pin_alert, gpio.FALLING, 
+                gpio.add_event_detect(pin_alert, gpio.FALLING,
                                       callback=self._catch_alert)
 
     def _catch_alert(self, channel):
         """Threaded callback for alert detection"""
         self.logger.debug("Alert detected")
         return self.get_alerts()
-        
+
     def get_alerts(self):
         """Check the state of the alerts.
 
@@ -496,17 +501,32 @@ class CurrentSensor(Device):
             A dictionary containing the state of the alerts.
         """
         self.logger.debug("Getting alert flags")
-        alerts = CurrentSensor.Alerts()
+        alerts = CurrentAlerts()
         alerts.as_byte = self._read_register("alert_reg", complement=False)
         flags = {"aff": alerts.alert_func,
                  "cvrf": alerts.conv_flag,
                  "ovf": alerts.overflow}
-        
+
         # Clear aff bit in the register.
         alerts.alert_func = 0
         self._write_register("alert_reg", alerts)
-        
+
         return flags
+
+
+class ADCConfigurationBits(ctypes.Structure):
+    _fields_ = [("ready", ctypes.c_uint8, 1),
+                ("channel", ctypes.c_uint8, 2),
+                ("mode", ctypes.c_uint8, 1),
+                ("rate", ctypes.c_uint8, 2),
+                ("gain", ctypes.c_uint8, 2)]
+
+
+class ADCConfiguration(ctypes.Union):
+    _fields_ = [("bits", ADCConfigurationBits),
+                ("as_byte", ctypes.c_uint8)]
+
+    _anonymous_ = ("bits")
 
 
 class ADConverter(Device):
@@ -522,19 +542,6 @@ class ADConverter(Device):
         name: The name of the device.
         bus_number: The i2c bus being used.
     """
-    class ConfigurationBits(ctypes.Structure):
-        _fields_ = [("ready", ctypes.c_uint8, 1),
-                    ("channel", ctypes.c_uint8, 2),
-                    ("mode", ctypes.c_uint8, 1),
-                    ("rate", ctypes.c_uint8, 2),
-                    ("gain", ctypes.c_uint8, 2)]
-
-    class Configuration(ctypes.Union):
-        _fields_ = [("bits", ADConverter.ConfigurationBits),
-                    ("as_byte", ctypes.c_uint8)]
-
-        _anonymous_ = ("bits")
-
     def __init__(self, address=0x68, name="ADC", bus_number=i2c_bus):
         """Inits the A/D converter.
 
@@ -554,7 +561,7 @@ class ADConverter(Device):
 
         Returns:
             The data and the configuration.
-            
+
             The configuration is a dictionary containing:
                 ready: Whether or not a conversion is ready.
                 channel: The channel selection bits (not used).
@@ -562,7 +569,7 @@ class ADConverter(Device):
                 rate: The sampling rate; the resolution is tied to this rate.
                 gain: The gain of the ADC.
         """
-        config = ADConverter.Configuration()
+        config = ADCConfiguration()
         received = self.bus.read_i2c_byte_data(self.address, 3)
         data = received >> 8
         config.as_byte = received & 0xff
@@ -588,7 +595,8 @@ class ADConverter(Device):
         n_bits = 12 + 2 * config.rate
         gain = 2**config.gain
 
-        lsb = 2 * 2.048 / (2 ** n_bits)
+        # TODO(masasin): Find out what the lsb was for.
+        # lsb = 2 * 2.048 / (2 ** n_bits)
         max_code = 2 ** (n_bits - 1) - 1
 
         # Only use n_bits bits.
@@ -660,9 +668,9 @@ def __test_current_sensor():
         print_upper = "{:5.3f} A, {:6.3f} W, {:6.3f} V".format(upper_current,
                                                                upper_power,
                                                                upper_voltage)
-        print_lower = "{:5.3f} A, {:6.3f} W, {:6.3f} V".format(upper_current,
-                                                               upper_power,
-                                                               upper_voltage)
+        print_lower = "{:5.3f} A, {:6.3f} W, {:6.3f} V".format(lower_current,
+                                                               lower_power,
+                                                               lower_voltage)
         print("{}          {}".format(print_upper, print_lower), end="\r")
 
 
