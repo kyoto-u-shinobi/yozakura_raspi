@@ -164,7 +164,7 @@ class Motor(object):
         Args:
             speed: A value from -1 to 1 indicating the requested speed.
         """
-        packet = Motor.MotorPacket()
+        packet = MotorPacket()
         packet.motor_id = self.motor_id
         packet.negative = 1 if speed < 0 else 0
         packet.speed = int(abs(self._scale_speed(speed)) * 31)
