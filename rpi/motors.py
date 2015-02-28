@@ -8,7 +8,7 @@ from RPi import GPIO as gpio
 from ..common.exceptions import DriverError
 
 
-class MotorPacketBits(ctypes.BigEndianStructure):
+class MotorPacketBits(ctypes.LittleEndianStructure):
     """The bits for the packet sent to the motors."""
     _fields_ = [("motor_id", ctypes.c_uint8, 2),
                 ("negative", ctypes.c_uint8, 1),
