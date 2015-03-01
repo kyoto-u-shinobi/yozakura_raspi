@@ -1,26 +1,11 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-import ctypes
 import logging
 
 from RPi import GPIO as gpio
 
-from ..common.exceptions import DriverError
-
-
-class MotorPacketBits(ctypes.LittleEndianStructure):
-    """The bits for the packet sent to the motors."""
-    _fields_ = [("motor_id", ctypes.c_uint8, 2),
-                ("negative", ctypes.c_uint8, 1),
-                ("speed", ctypes.c_uint8, 5)]
-
-
-class MotorPacket(ctypes.Union):
-    """The packet sent to the motors"""
-    _fields_ = [("b", MotorPacketBits),
-                ("as_byte", ctypes.c_uint8)]
-
-    _anonymous_ = ("b")
+from common.exceptions import DriverError
+from common.bitfields import MotorPacket
 
 
 class Motor(object):

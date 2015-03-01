@@ -1,7 +1,5 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-# TODO(masasin): Rearrange and hide bitfields
-import ctypes
 from collections import OrderedDict
 import logging
 import subprocess
@@ -10,6 +8,8 @@ from RPi import GPIO as gpio
 import smbus
 
 from common.exceptions import CRCError
+from common.bitfields import CurrentConfiguration, CurrentAlerts,
+from common.bitfields import ADCConfiguration
 
 
 i2c_bus = 1  # /dev/i2c-1
@@ -216,44 +216,6 @@ class ThermalSensor(Device):
 
         if crc != data[-1]:
             raise CRCError("A cyclic redundancy check failed.")
-
-
-class CurrentConfigurationBits(ctypes.Structure):
-    _fields_ = [("reset", ctypes.c_uint16, 1),
-                ("upper", ctypes.c_uint16, 3),
-                ("avg", ctypes.c_uint16, 3),
-                ("bus_ct", ctypes.c_uint16, 3),
-                ("shunt_ct", ctypes.c_uint16, 3),
-                ("mode", ctypes.c_uint16, 3)]
-
-
-class CurrentConfiguration(ctypes.Union):
-    _fields_ = [("bits", CurrentConfigurationBits),
-                ("as_byte", ctypes.c_uint16)]
-
-    _anonymous_ = ("bits")
-
-
-class CurrentAlertsBits(ctypes.Structure):
-    _fields_ = [("shunt_ol", ctypes.c_uint16, 1),
-                ("shunt_ul", ctypes.c_uint16, 1),
-                ("bus_ol", ctypes.c_uint16, 1),
-                ("bus_ul", ctypes.c_uint16, 1),
-                ("power_ol", ctypes.c_uint16, 1),
-                ("conv_watch", ctypes.c_uint16, 1),
-                ("empty", ctypes.c_uint16, 5),
-                ("alert_func", ctypes.c_uint16, 1),
-                ("conv_flag", ctypes.c_uint16, 1),
-                ("overflow", ctypes.c_uint16, 1),
-                ("polarity", ctypes.c_uint16, 1),
-                ("latch", ctypes.c_uint16, 1)]
-
-
-class CurrentAlerts(ctypes.Union):
-    _fields_ = [("bits", CurrentAlertsBits),
-                ("as_byte", ctypes.c_uint16)]
-
-    _anonymous_ = ("bits")
 
 
 class CurrentSensor(Device):
@@ -512,21 +474,6 @@ class CurrentSensor(Device):
         self._write_register("alert_reg", alerts)
 
         return flags
-
-
-class ADCConfigurationBits(ctypes.Structure):
-    _fields_ = [("ready", ctypes.c_uint8, 1),
-                ("channel", ctypes.c_uint8, 2),
-                ("mode", ctypes.c_uint8, 1),
-                ("rate", ctypes.c_uint8, 2),
-                ("gain", ctypes.c_uint8, 2)]
-
-
-class ADCConfiguration(ctypes.Union):
-    _fields_ = [("bits", ADCConfigurationBits),
-                ("as_byte", ctypes.c_uint8)]
-
-    _anonymous_ = ("bits")
 
 
 class ADConverter(Device):
