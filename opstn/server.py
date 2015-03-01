@@ -79,7 +79,7 @@ class Handler(HandlerBase):
                 self.request.sendall(reply)
 
         def _handle_input(self, state):
-            """Handle input from the joystick.
+            """Handle input from the controller.
     
             Inputs handled:
                 L1: Rotate left flipper upwards from start.

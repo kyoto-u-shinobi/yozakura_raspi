@@ -36,7 +36,7 @@ def main():
         client.add_motor(left_flipper, ser=mbed_ser)
         client.add_motor(right_flipper, ser=mbed_ser)
     except serial.SerialException:
-        logging.warning("The mbed is not connected!")
+        logging.warning("The mbed is not connected")
 
     try:
         client.run()

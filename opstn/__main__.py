@@ -21,7 +21,7 @@ def main():
         stick_body = Controller(0, name="wheels")
         server.add_controller(stick_body)
     except pygame.error:
-        logging.warning("No joystick attached")
+        logging.warning("No controller attached")
 
     try:
         logging.debug("Starting server")
