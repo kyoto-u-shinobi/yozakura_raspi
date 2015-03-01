@@ -4,7 +4,7 @@ import pickle
 import socket
 import time
 
-from ..common.networking import TCPServerBase, HandlerBase
+from common.networking import TCPServerBase, HandlerBase
 
 
 class Handler(HandlerBase):
@@ -247,3 +247,4 @@ class Server(TCPServerBase):
         """
         self.logger.debug("Removing controller {}".format(controller))
         del self.controllers[controller.name]
+

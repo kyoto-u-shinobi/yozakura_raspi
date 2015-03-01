@@ -1,5 +1,5 @@
 import unittest
-from ..rpi/devices import CurrentSensor
+from rpi.devices import CurrentSensor
 
 class TestCurrentSensor(unittest.TestCase):
     def setUp(self):

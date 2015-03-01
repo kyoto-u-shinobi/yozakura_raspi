@@ -8,7 +8,7 @@ from RPi import GPIO as gpio
 import smbus
 
 from common.exceptions import CRCError
-from common.bitfields import CurrentConfiguration, CurrentAlerts,
+from common.bitfields import CurrentConfiguration, CurrentAlerts
 from common.bitfields import ADCConfiguration
 
 
@@ -623,3 +623,4 @@ def __test_current_sensor():
 
 if __name__ == "__main__":
     __test_current_sensor()
+

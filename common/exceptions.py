@@ -9,3 +9,4 @@ class CRCError(KaginawaException):
 
 class DriverError(KaginawaException):
     """Raised when a motor has no drivers enabled."""
+

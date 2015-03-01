@@ -4,9 +4,9 @@ import logging
 
 import pygame
 
-from ..common.controller import Controller
-from ....common.networking import get_ip_address
-from .server import Server, Handler
+from common.controller import Controller
+from common.networking import get_ip_address
+from opstn.server import Server, Handler
 
 def main():
     try:
@@ -36,3 +36,4 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     main()
+

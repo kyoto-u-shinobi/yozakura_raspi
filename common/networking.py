@@ -208,3 +208,4 @@ class UDPClientBase(object):
         self.logger.debug("Shutting down client")
         self.request.close()
         self.logger.info("Client shut down")
+

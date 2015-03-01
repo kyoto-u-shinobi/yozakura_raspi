@@ -3,7 +3,7 @@
 import pickle
 import socket
 
-from ..common.networking import TCPClientBase
+from common.networking import TCPClientBase
 
 
 class Client(TCPClientBase):
@@ -113,3 +113,4 @@ class Client(TCPClientBase):
         """
         self.logger.debug("Removing motor {}".format(motor))
         del self.motors[motor.name]
+
