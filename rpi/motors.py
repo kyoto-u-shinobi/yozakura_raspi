@@ -94,7 +94,7 @@ class Motor(object):
     _count = 0
 
     def __init__(self, name, fault_1, fault_2, start_input=0, max_speed=1):
-        if self._count == 4:
+        if Motor._count == 4:
             raise TooManyMotorsError
         if not 0 <= start_input <= 1:
             raise InvalidArgError("start_input should be between 0 and 1.")
@@ -103,7 +103,7 @@ class Motor(object):
 
         self.logger = logging.getLogger(name)
         self.logger.debug("Initializing motor")
-        self.motor_id = self._count + 1
+        self.motor_id = Motor._count + 1
         self.name = name
         self.pin_fault_1 = fault_1
         self.pin_fault_2 = fault_2
@@ -119,9 +119,9 @@ class Motor(object):
         gpio.add_event_detect(fault_2, gpio.RISING, callback=self._catch_fault)
 
         self.logger.debug("Registering motor")
-        self.motors.append(self)
+        Motor.motors.append(self)
         self.logger.info("Motor initialized")
-        self._count += 1
+        Motor._count += 1
 
     def enable_pwm(self, pwm, direction, frequency=28000):
         """
@@ -276,14 +276,14 @@ class Motor(object):
         self.drive(0)
 
         self.logger.debug("Deregistering motor")
-        self.motors.remove(self)
+        Motor.motors.remove(self)
         self.logger.info("Motor shut down")
 
     @classmethod
     def shutdown_all(self):
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
-        for motor in self.motors:
+        for motor in Motor.motors:
             motor.shutdown()
         gpio.cleanup()
         logging.info("All motors shut down")
