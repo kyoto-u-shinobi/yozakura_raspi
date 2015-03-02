@@ -8,17 +8,18 @@ from common.controller import Controller
 from common.networking import get_ip_address
 from opstn.server import Server, Handler
 
+
 def main():
     try:
         ip_address = get_ip_address("eth0")
     except OSError:
-        #ip_address = get_ip_address("enp2s0")
+        # ip_address = get_ip_address("enp2s0")
         ip_address = get_ip_address("wlan0")
     server = Server((ip_address, 9999), Handler)
 
     logging.debug("Initializing controllers")
     try:
-        stick_body = Controller(0, name="wheels")
+        stick_body = Controller(0, name="main")
         server.add_controller(stick_body)
     except pygame.error:
         logging.warning("No controller attached")
@@ -36,4 +37,3 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     main()
-

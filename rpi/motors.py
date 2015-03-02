@@ -1,61 +1,109 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+"""
+Control motors.
+
+Motors expect at least one driver, which can be either a serial port for
+microcontroller communication, or software PWM. Up to four motors can be
+used at any given time.
+
+"""
 import logging
 
 from RPi import GPIO as gpio
 
-from common.exceptions import DriverError
-from common.bitfields import MotorPacket
+from common.exceptions import NoDriversError, TooManyMotorsError, \
+    InvalidArgError
+from rpi.bitfields import MotorPacket
 
 
 class Motor(object):
-    """Class for encapsulating motors. Up to 4 motors can be registered.
+    """
+    A motor class.
 
-    Datasheet: https://www.pololu.com/product/755
+    The motor driver used here is the Pololu High-Power Motor Driver 18v15.
+    [1]_
 
-    Attributes:
-        name: The name of the motor.
-        motor_id: The motor ID. It is generated automatically.
-        pin_fault_1: The GPIO pin for the motor Fault line, F1.
-        pin_fault_2: The GPIO pin for the motor Fault line, F2.
-        has_serial: A serial port is open, and hardware PWM is available.
-        has_pwm: Software PWM is available.
-        connection: The serial port to be used for communication.
-        pin_pwm: The GPIO pin for motor PWM line.
-        pin_dir: The GPIO pin for motor DIR line.
-        start_input: The input at which the motor starts responding.
-        max_speed: The maximum speed to use with the motor.
-        motors: A class variable containing all registered motors.
+    After the motor is initialized and registered, at least one driver must be
+    added. The drivers can be either a serial port connected to a
+    microcontroller for hardware PWM, or software PWM.
+
+    Up to four motors can be registered.
+
+    Parameters
+    ----------
+    name : str
+        The name of the motor.
+    fault_1 : int
+        GPIO pin for the motor Fault line, F1.
+    fault_2 : int
+        GPIO pin for the motor Fault line, F2.
+    start_input : float, optional
+        The input at which the motor starts responding. The output will be
+        scaled between that value and one. Can range between 0 and 1.
+
+        For instance, if the motors do not turn until the input is at 20%, an
+        input of 10% would be scaled up to 28%, and 50% would be scaled up to
+        60%.
+    max_speed : float, optional
+        The maximum speed to use with the motor. Can range between 0 and 1.
+
+    Raises
+    ------
+    TooManyMotorsError
+        Raised when a motor is added after all four motors have already been
+        registered.
+    InvalidArgError
+        Raised when bad inputs are made.
+
+    Attributes
+    ----------
+    name : str
+        The name of the motor.
+    motor_id : int
+        The motor ID. It is generated automatically.
+    pin_fault_1 : int
+        The GPIO pin for the motor Fault line, F1.
+    pin_fault_2 : int
+        The GPIO pin for the motor Fault line, F2.
+    has_serial : bool
+        Whether a serial port is open, and hardware PWM is available.
+    has_pwm : bool
+        Whether software PWM is available.
+    connection : Serial
+        The serial port to be used for communication.
+    pin_pwm : int
+        The GPIO pin for motor PWM line.
+    pin_dir : int
+        The GPIO pin for motor DIR line.
+    start_input : float
+        The input at which the motor starts responding.
+    max_speed : float
+        The maximum speed at which to run the motor.
+    motors : list
+        Contains all registered motors.
+
+    References
+    ----------
+    .. [1] Pololu, High-Power Motor Driver 18v15 datasheet.
+           https://www.pololu.com/product/755
+
     """
     gpio.setmode(gpio.BOARD)
     motors = []
+    _count = 0
 
     def __init__(self, name, fault_1, fault_2, start_input=0, max_speed=1):
-        """Inits and registers the motor.
-
-        Args:
-            name: The name of the motor.
-            fault_1: GPIO pin for the motor Fault line, F1.
-            fault_2: GPIO pin for the motor Fault line, F2.
-            start_input: (optional) The input at which the motor starts
-                responding. Can range between 0 and 1. Default is 0.
-            max_speed: (optional) The maximum speed to use with the motor.
-                Can range between 0 and 1. Default is 1.
-
-        Raises:
-            IndexError: All four motors have been registered.
-            ValueError: Bad inputs.
-        """
-        if Motor.motors[-1].motor_id == 3:
-            raise IndexError("4 motors have already been registered.")
+        if self._count == 4:
+            raise TooManyMotorsError
         if not 0 <= start_input <= 1:
-            raise ValueError("start_input can only range between 0 and 1.")
+            raise InvalidArgError("start_input should be between 0 and 1.")
         if not 0 <= max_speed <= 1:
-            raise ValueError("max_speed can only range between 0 and 1.")
+            raise InvalidArgError("max_speed should be between 0 and 1.")
 
         self.logger = logging.getLogger(name)
         self.logger.debug("Initializing motor")
-        self.motor_id = len(Motor.motors)
+        self.motor_id = self._count + 1
         self.name = name
         self.pin_fault_1 = fault_1
         self.pin_fault_2 = fault_2
@@ -71,19 +119,27 @@ class Motor(object):
         gpio.add_event_detect(fault_2, gpio.RISING, callback=self._catch_fault)
 
         self.logger.debug("Registering motor")
-        Motor.motors.append(self)
+        self.motors.append(self)
         self.logger.info("Motor initialized")
+        self._count += 1
 
     def enable_pwm(self, pwm, direction, frequency=28000):
-        """Allow soft pwm to control the motor.
+        """
+        Allow software PWM to control the motor.
 
-        The motor in this case needs to be attached directly to the rpi.
+        The motor in this case needs to be attached directly to the rpi. If
+        serial is also enabled, serial takes priority and software PWM is not
+        used.
 
-        Args:
-            pwm: The GPIO pin for the motor driver PWM line.
-            direction: The GPIO pin for the motor driver DIR line.
-            frequency: (optional) The frequency of the software pwm. Default is
-                28000.
+        Parameters
+        ----------
+        pwm : int
+            The GPIO pin for the motor driver's PWM line.
+        direction : int
+            The GPIO pin for the motor driver's DIR line.
+        frequency : float, optional
+            The frequency of the software PWM.
+
         """
         self.pin_pwm = pwm
         self.pin_dir = direction
@@ -99,16 +155,20 @@ class Motor(object):
 
         self.has_pwm = True
 
-    def enable_serial(self, connection):
-        """Allow the use of a USB serial connection.
-
-        This is needed if you want to use hardware PWM with an external
-        microcontroller, such as the mbed.
-
-        Args:
-            connection: The Serial object used to communicate.
+    def enable_serial(self, ser):
         """
-        self.connection = connection
+        Allow the use of a USB serial connection.
+
+        If it is enabled, speed commands will be sent to an external
+        microcontroller, such as an mbed, which will output the PWM signal.
+
+        Parameters
+        ----------
+        ser : Serial
+            Communicates with the external hardware.
+
+        """
+        self.connection = ser
         self.has_serial = True
 
     def _catch_fault(self, channel):
@@ -116,13 +176,19 @@ class Motor(object):
         self.logger.warning("Fault detected")
 
     def _scale_speed(self, speed):
-        """Get the scaled speed according to input parameters.
+        """
+        Get the scaled speed according to input parameters.
 
-        Args:
-            speed: A value from -1 to 1 indicating the requested speed.
+        Parameters
+        ----------
+        speed : float
+            A value from -1 to 1 indicating the requested speed.
 
-        Returns:
-            The scaled speed
+        Returns
+        -------
+        float
+            The scaled speed.
+
         """
         # Map [start_input:1] to [0:1]
         if speed > 0:
@@ -136,7 +202,8 @@ class Motor(object):
         return speed
 
     def _transmit(self, speed):
-        """Send a byte through a serial connection.
+        """
+        Send a byte through a serial connection.
 
         When connected to the mbed, motor control information is encoded as a
         single byte, with the first two bits encoding the motor's ID, and the
@@ -146,8 +213,11 @@ class Motor(object):
         This allows only the relevant information to be transmitted, and also
         lets the mbed perform asynchronously.
 
-        Args:
-            speed: A value from -1 to 1 indicating the requested speed.
+        Parameters
+        ----------
+        speed : float
+            A value from -1 to 1 indicating the requested speed.
+
         """
         packet = MotorPacket()
         packet.motor_id = self.motor_id
@@ -157,13 +227,17 @@ class Motor(object):
         self.connection.write(bytes([packet.as_byte]))
 
     def _pwm_drive(self, speed):
-        """Drive the motor using the PWM pin.
+        """
+        Drive the motor using software PWM.
 
-        DIR is set depending on the speed requested.
+        The PWM signal goes to the motor driver's PWM pin. DIR is set depending
+        on the speed requested.
 
-        Args:
-            speed: A value from -1 to 1 indicating the requested speed of the
-                motor. The speed is changed by changing the PWM duty cycle.
+        Parameters
+        ----------
+        speed : float
+            A value from -1 to 1 indicating the requested speed of the motor.
+            The speed is changed by changing the PWM duty cycle.
         """
         speed = self._scale_speed(speed)
 
@@ -171,16 +245,21 @@ class Motor(object):
         self._pwm.ChangeDutyCycle(abs(speed) * 100)
 
     def drive(self, speed):
-        """Drive the motor at a given speed.
+        """
+        Drive the motor at a given speed.
 
-        The priority goes to the mbed if serial is enabled. Software PWM is
-        used as a backup, if it is enabled.
+        The priority goes to the microcontroller if serial is enabled. Software
+        PWM is used if serial is not enabled.
 
-        Args:
-            speed: A value from -1 to 1 indicating the requested speed.
+        Parameters
+        ----------
+        speed : float
+            A value from -1 to 1 indicating the requested speed.
 
-        Raises:
-            DriverError: Neither serial nor PWM are enabled.
+        Raises
+        ------
+        NoDriversError
+            Neither serial nor PWM are enabled.
         """
         if self.has_serial:
             self._transmit(speed)
@@ -188,7 +267,7 @@ class Motor(object):
             self._pwm_drive(speed)
         else:
             self.logger.error("Cannot drive motor! No serial or PWM enabled.")
-            raise DriverError("{} has no drivers enabled.".format(self.name))
+            raise NoDriversError(self)
 
     def shutdown(self):
         """Shut down and deregister the motor."""
@@ -197,14 +276,14 @@ class Motor(object):
         self.drive(0)
 
         self.logger.debug("Deregistering motor")
-        Motor.motors.remove(self)
+        self.motors.remove(self)
         self.logger.info("Motor shut down")
 
     @classmethod
     def shutdown_all(self):
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
-        for motor in Motor.motors:
+        for motor in self.motors:
             motor.shutdown()
         gpio.cleanup()
         logging.info("All motors shut down")
@@ -214,4 +293,3 @@ class Motor(object):
 
     def __str__(self):
         return self.name
-

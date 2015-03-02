@@ -7,6 +7,7 @@ from common.networking import get_ip_address
 from rpi.client import Client
 from rpi.motor import Motor
 
+
 def main():
     logging.debug("Connecting to server")
     try:
@@ -55,4 +56,3 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     main()
-
