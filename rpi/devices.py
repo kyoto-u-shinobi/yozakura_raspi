@@ -53,7 +53,7 @@ def get_used_i2c_slots(bus_number=i2c_bus):
     return slots
 
 
-def concatenate(byte_array, endianness="big", size=8):
+def concatenate(byte_array, big_endian=True, size=8):
     """
     Concatenate multiple bytes to form a single number.
 
@@ -61,8 +61,8 @@ def concatenate(byte_array, endianness="big", size=8):
     ----------
     byte_array : byte_array
         The array of bytes to be concatenated.
-    endianness : str, optional
-        Endianness of the data. Can be big or little.
+    big_endian : bool, optional
+        Whether the byte array is big endian.
     size : int, optional
         Number of bits per byte.
 
@@ -78,17 +78,12 @@ def concatenate(byte_array, endianness="big", size=8):
 
     """
     total = 0
-    if endianness == "big":
+    if big_endian:
         for byte in byte_array:
             total = (total << size) + byte
-
-    elif endianness == "little":
+    else:
         for byte in reversed(byte_array):
             total = (total << size) + byte
-
-    else:
-        raise InvalidArgError("{} is not valid for".format(endianness) +
-                              'endianness. Please use "big" or "little".')
     return total
 
 
@@ -114,7 +109,7 @@ class Device(object):
     Attributes
     ----------
     address : byte
-        The address of the I2C device
+        The address of the I2C device.
     name : str
         The name of the device.
     bus_number : int
@@ -170,10 +165,8 @@ class ThermalSensor(Device):
 
     Parameters
     ----------
-    write_address : byte, optional
-        The write address of the device. Defined as 0x14.
-    read_address : byte, optional
-        The read address of the device. Defined as 0x15.
+    address : byte, optional
+        The address of the device.
     name : str, optional
         The name of the device.
     bus_number : int, optional
@@ -181,12 +174,8 @@ class ThermalSensor(Device):
 
     Attributes
     ----------
-    write_address : byte
-        The write address of the device.
-    read_address : byte
-        The read address of the device.
-    address : 2-tuple of ints
-        Contains the write and read addresses.
+    address : byte
+        The address of the device.
     name : str
         The name of the device.
     bus_number : int
@@ -202,17 +191,15 @@ class ThermalSensor(Device):
     """
     start_read = 0x4C  # Defined in the application note.
 
-    def __init__(self, write_address=0x14, read_address=0x15,
-                 name="Thermal Sensor", bus_number=i2c_bus):
+    def __init__(self, address=0xa, name="Thermal Sensor", bus_number=i2c_bus):
         super().__init__((write_address, read_address), name, bus_number)
-        self.write_address = write_address
-        self.read_address = read_address
 
     def get_temperature_matrix(self):
         """
         Return the temperature matrix.
 
-        0x4C is first written to the write address, then 35 bytes are read.
+        0x4C is first written to the device, then 35 bytes are read.
+        
         Error detection is provided using CRC-8. Temperature data consists of
         16-bit signed ints, 10x Celsius value.
 
@@ -227,45 +214,50 @@ class ThermalSensor(Device):
             The reference temperature, in Celsius.
         matrix : list of float
             The temperature matrix, containing 16 temperatures in Celsius.
+        good_data : bool
+            Whether the data is good.
 
         """
         self.logger.debug("Getting temperature")
         self.logger.debug("Writing to start read")
-        self.bus.write_byte(self.write_address, ThermalSensor.start_read)
+        self.bus.write_byte(self.address, ThermalSensor.start_read)
         self.logger.debug("Reading")
-        readout = self.bus.read_i2c_block_data(self.read_address, 35)
+        readout = self.bus.read_i2c_block_data(self.address, 35)
+        
         self.logger.debug("Checking error")
-        self._error_check(readout)  # Data integrity check
-
+        good_data = self._error_check(readout)  # Data integrity check
+        if not good_data:
+            self.logger.warning("CRC check fialed.")
+            
         self.logger.debug("Concatenating data")
-        temp_ref = concatenate(readout[:2], endianness="little") / 10
-        matrix = [concatenate(readout[i:i+2], endianness="little") / 10
+        temp_ref = concatenate(readout[:2], big_endian=False) / 10
+        matrix = [concatenate(readout[i:i+2], big_endian=False) / 10
                   for i in range(2, 34, 2)]
 
-        return temp_ref, matrix
+        return temp_ref, matrix, good_data
 
     @staticmethod
-    def _crc8_check(byte):
+    def _crc8_check(data):
         """
         Perform a cyclic redundancy check calculation for CRC-8.
 
         Args
         ----
-        byte : byte
+        data : byte
             The byte to perform the calculation on.
 
         Returns
         -------
-        byte : byte
+        data : byte
             The result of the calculation.
 
         """
         for i in range(8):
-            temp = byte
-            byte <<= 1
+            temp = data
+            data <<= 1
         if temp & 0x80:
-            byte ^= 0x07
-        return byte
+            data ^= 0x07
+        return data
 
     def _error_check(self, data):
         """
@@ -276,14 +268,18 @@ class ThermalSensor(Device):
         data : byte_array
             The buffer to be checked. Must have the error byte as the last
             byte.
+        
+        Returns
+        -------
+        bool
+            Whether the data is good.
 
         """
         crc = self._crc8_check(0x15)
-        for datum in data:
+        for datum in data[:-1]:
             crc = self._crc8_check(datum ^ crc)
 
-        if crc != data[-1]:
-            self.logger.warning("A cyclic redundancy check failed.")
+        return crc == data[-1]
 
 
 class CurrentSensor(Device):
