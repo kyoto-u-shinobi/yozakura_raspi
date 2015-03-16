@@ -79,8 +79,8 @@ class Client(TCPClientBase):
         while True:
             try:
                 try:
-                    self.send("speeds")      # Request speed data
-                    result = self.receive()  # Receive speed data
+                    self.send("speeds")      # Request speed data.
+                    result = self.receive()  # Receive speed data.
                 except socket.timeout:
                     if not timed_out:
                         self.logger.warning("No connection to base station.")
@@ -90,12 +90,12 @@ class Client(TCPClientBase):
                         timed_out = True
                     continue
 
-                if timed_out:  # Connection returned
+                if timed_out:  # Connection returned.
                     timed_out = False
 
-                # Get flipper positions
-                positions = self.serials["mbed_flipper"].readline()
-                lpos, rpos = [int(i, 0) / 0xFFFF for i in positions.split()]
+                # Get flipper positions from last two items of mbed reply.
+                positions = self.serials["mbed_flipper"].readline().split()
+                *_, lpos, rpos = [int(i, 0) / 0xFFFF for i in positions]
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
