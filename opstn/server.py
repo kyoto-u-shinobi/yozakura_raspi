@@ -83,7 +83,7 @@ class Handler(HandlerBase):
 
             elif data == "speeds":
                 state = self.server.controllers["main"].get_state()
-                reply = pickle.dumps(self._handle_inputs(state))
+                reply = pickle.dumps(self._get_needed_speeds(state))
 
             elif data.split()[0] == "echo":
                 reply = " ".join(data.split()[1:])
@@ -101,9 +101,9 @@ class Handler(HandlerBase):
             except TypeError:  # Already bytecode
                 self.request.sendall(reply)
 
-        def _handle_input(self, state):
+        def _get_needed_speeds(self, state):
             """
-            Handle input from the controller.
+            Get required speeds based on controller state and system state.
 
             Inputs handled:
                 - L1, L2 : Rotate left flipper.
@@ -135,9 +135,9 @@ class Handler(HandlerBase):
             # TODO(masasin): Handle start : Move flippers to forward position.
             dpad, lstick, rstick, buttons = state.data
 
-            if buttons.buttons[10]:  # The L3 button was pressed
+            if buttons.is_pressed("L3"):
                 self._switch_control_mode()
-            if buttons.buttons[11]:  # The R3 button was pressed
+            if buttons.is_pressed("R3"):
                 self._engage_reverse_mode()
 
             if self.reverse_mode:
@@ -160,16 +160,16 @@ class Handler(HandlerBase):
                     rmotor = lstick.y
 
                 # Flippers
-                if buttons.buttons[4]:  # L1
+                if buttons.is_pressed("L1"):
                     rflipper = 1
-                elif buttons.buttons[6]:  # L2
+                elif buttons.is_pressed("L2"):
                     rflipper = -1
                 else:
                     rflipper = 0
 
-                if buttons.buttons[5]:  # R1
+                if buttons.is_pressed("R1"):
                     lflipper = 1
-                elif buttons.buttons[7]:  # R2
+                elif buttons.is_pressed("R2"):
                     lflipper = -1
                 else:
                     lflipper = 0
@@ -194,16 +194,16 @@ class Handler(HandlerBase):
                     rmotor = -rstick.y
 
                 # Flippers
-                if buttons.buttons[4]:  # L1
+                if buttons.is_pressed("L1"):
                     lflipper = 1
-                elif buttons.buttons[6]:  # L2
+                elif buttons.is_pressed("L2"):
                     lflipper = -1
                 else:
                     lflipper = 0
 
-                if buttons.buttons[5]:  # R1
+                if buttons.is_pressed("R1"):
                     rflipper = 1
-                elif buttons.buttons[7]:  # R2
+                elif buttons.is_pressed("R2"):
                     rflipper = -1
                 else:
                     rflipper = 0

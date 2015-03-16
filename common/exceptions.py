@@ -40,6 +40,27 @@ class InvalidArgError(KaginawaException):
     """
 
 
+class NoControllerMappingError(KaginawaException):
+    """
+    Raised when the mapping of the controller buttons is unknown.
+
+    Controller button mappings have to be registered in advance in the
+    ``Buttons`` class.
+
+    Parameters
+    ----------
+    make : str, optional
+        The make of the controller. If it is provided, the error message will
+        specify the controller.
+
+    """
+    def __init__(self, make=None):
+        message = "{} has an unknown mapping!"
+        if not make:
+            make = "This controller"
+        super().__init__(message.format(make))
+
+
 class NoDriversError(KaginawaException):
     """
     Raised when a motor has no drivers enabled.

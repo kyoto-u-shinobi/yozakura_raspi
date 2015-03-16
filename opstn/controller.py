@@ -12,6 +12,8 @@ import logging
 
 import pygame
 
+from common.exceptions import NoControllerMappingError
+
 
 class Position(object):
     """
@@ -103,42 +105,84 @@ class Buttons(object):
 
     Parameters
     ----------
-    buttons : array_like
+    buttons : iterable
         A list containing the state of each button. 1 if pressed, 0 otherwise.
 
     Attributes
     ----------
-    buttons : array_like
+    buttons : list of int
         A list containing the state of each button.
+    pressed_buttons: list of str
+        A list containing the names of each button that is pressed.
+    known_makes : list of str
+        A list containing the known controller mappings.
+
+    Raises
+    ------
+    NoControllerMappingError
+        Raised when the mapping of the controller buttons is unknown.
 
     """
-    _button_list = ("□", "×", "○", "△",   # 0-3
+    _button_list = ("□", "✕", "○", "△",   # 0-3
                     "L1", "R1", "L2", "R2",  # 4-7
                     "select", "start",       # 8-9
                     "L3", "R3", "PS")        # 10-12
 
-    def __init__(self, buttons):
-        self.buttons = buttons
+    _mappings = {"Logitech RumblePad 2": {},
+                 "Elecom Wireless": {1: 3, 2: 1, 3: 2}}
 
-    def human(self):
+    for make in _mappings:
+        for i in range(13):
+            _mappings[make].setdefault(i, i)  # Fill the mappings.
+
+    known_makes = list(_mappings.keys())
+
+    def __init__(self, make, buttons):
+        if self._make not in Buttons.known_makes:
+            raise NoControllerMappingError
+
+        self._make = make
+        self.buttons = buttons
+        self.pressed = [Buttons._button_list[Buttons._mappings[self._make][i]]
+                        for i, button in enumerate(self.buttons) if button]
+
+    def is_pressed(self, button):
         """
-        Return a list of buttons which are pressed, in human-readable form.
+        Whether a given button is pressed.
+
+        Parameters
+        ----------
+        button : str
+            The name of the button to be checked.
 
         Returns
         -------
-        str
-            A string showing only the buttons that are currently pressed,
-            formatted as a list.
-
+        bool
+            Whether the button is pressed.
         """
-        return str([self._button_list[i] for i, button
-                    in enumerate(self.buttons) if button])
+        return button in self.pressed
+
+    def all_pressed(self, *buttons):
+        """
+        Whether all given buttons are pressed.
+
+        Parameters
+        ----------
+        buttons : one or more str
+            The name(s) of the buttons to be checked.
+
+        Returns
+        -------
+        bool
+            True if all the buttons are pressed.
+        """
+        return all([self.is_pressed(button) for button in buttons])
 
     def __repr__(self):
         return str(self.buttons)
 
     def __str__(self):
-        return str(self.buttons)
+        return str(self.pressed)
 
 
 class State(object):
@@ -174,38 +218,6 @@ class State(object):
         self.rstick = rstick
         self.buttons = buttons
 
-    def human(self):
-        """A human-readable representation of the state.
-
-        To print on a single line, ensure that the terminal is at least 144
-        characters wide, and end your `print` function with a carriage return
-        character to go back to the start of the line.
-
-        Returns
-        -------
-        str
-            A string with a maximum length of 144 characters, showing the
-            positions of the dpad, and left and right analog sticks; as well
-            as a list showing all the buttons that are currently pressed.
-
-        Examples
-        --------
-        >>> stick = Controller(0, "body")
-        >>> while True:
-        ...     try:  # Below, end="backslash r"
-        ...         print(stick_body.get_state().human(), end="\r")
-        ...     except KeyboardInterrupt:  # Exit safely.
-        ...         Controller.shutdown_all()
-        ...         break
-        dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
-
-        """
-        out_1 = "dpad: {:4}".format(self.dpad.direction)
-        out_2 = "lstick: {}".format(self.lstick)
-        out_3 = "rstick: {}".format(self.rstick)
-        out_4 = "buttons: {:75}".format(self.buttons.human())
-        return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
-
     @property
     def data(self):
         """
@@ -225,10 +237,36 @@ class State(object):
         return str(self.data)
 
     def __str__(self):
+        """
+        A human-readable representation of the state.
+
+        To print on a single line, ensure that the terminal is at least 144
+        characters wide, and end your `print` function with a carriage return
+        character to go back to the start of the line.
+
+        Returns
+        -------
+        str
+            A string with a maximum length of 144 characters, showing the
+            positions of the dpad, and left and right analog sticks; as well
+            as a list showing all the buttons that are currently pressed.
+
+        Examples
+        --------
+        >>> stick = Controller(0, "body")
+        >>> while True:
+        ...     try:  # Below, end="backslash r"
+        ...         print(stick_body.get_state(), end="\r")
+        ...     except KeyboardInterrupt:  # Exit safely.
+        ...         Controller.shutdown_all()
+        ...         break
+        dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
+
+        """
         out_1 = "dpad: {:4}".format(self.dpad.direction)
         out_2 = "lstick: {}".format(self.lstick)
         out_3 = "rstick: {}".format(self.rstick)
-        out_4 = "buttons: {:38}".format(str(self.buttons))
+        out_4 = "buttons: {:75}".format(self.buttons)
         return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
 
 
@@ -251,6 +289,8 @@ class Controller(object):
         The controller itself.
     stick_id : int
         The ID of the controller.
+    make : str
+        The make of the controller.
     name : str
         The name of the controller.
     controllers : dict
@@ -268,11 +308,16 @@ class Controller(object):
         self.logger.debug("Initializing controller")
         self.controller = pygame.joystick.Joystick(stick_id)
         self.stick_id = stick_id
+        self.make = self.controller.get_name()
 
         if name is not None:
             self.name = name
         else:
-            self.name = self.controller.get_name()
+            self.name = self.make
+
+        if self.make not in Buttons.known_makes:
+            self.logger.warning("{} has no registered ".format(self.make) +
+                                "button mapping. Results may be wrong.")
 
         self.controller.init()
 
@@ -304,7 +349,8 @@ class Controller(object):
         dpad = Position(*stick.get_hat(0))
         lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
         rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
-        buttons = Buttons([stick.get_button(i) for i in range(n_buttons)])
+        buttons = Buttons(self.make,
+                          [stick.get_button(i) for i in range(n_buttons)])
 
         return State(dpad, lstick, rstick, buttons)
 
@@ -336,7 +382,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            print(stick_body.get_state().human(), end="\r")
+            print(stick_body.get_state(), end="\r")
         except KeyboardInterrupt:  # Exit safely.
             logging.info("")
             logging.info("Exiting")
