@@ -113,8 +113,8 @@ class Motor(object):
         self.has_pwm = False
 
         self.logger.debug("Setting up fault interrupt")
-        gpio.setup(fault_1, gpio.IN, pull_up_down=gpio.PUD_DOWN)  # Pull up
-        gpio.setup(fault_2, gpio.IN, pull_up_down=gpio.PUD_DOWN)  # Pull up
+        gpio.setup(fault_1, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+        gpio.setup(fault_2, gpio.IN, pull_up_down=gpio.PUD_DOWN)
         gpio.add_event_detect(fault_1, gpio.RISING, callback=self._catch_fault)
         gpio.add_event_detect(fault_2, gpio.RISING, callback=self._catch_fault)
 
