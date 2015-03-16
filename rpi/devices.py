@@ -192,14 +192,14 @@ class ThermalSensor(Device):
     start_read = 0x4C  # Defined in the application note.
 
     def __init__(self, address=0xa, name="Thermal Sensor", bus_number=i2c_bus):
-        super().__init__((write_address, read_address), name, bus_number)
+        super().__init__(address, name, bus_number)
 
     def get_temperature_matrix(self):
         """
         Return the temperature matrix.
 
         0x4C is first written to the device, then 35 bytes are read.
-        
+
         Error detection is provided using CRC-8. Temperature data consists of
         16-bit signed ints, 10x Celsius value.
 
@@ -223,12 +223,12 @@ class ThermalSensor(Device):
         self.bus.write_byte(self.address, ThermalSensor.start_read)
         self.logger.debug("Reading")
         readout = self.bus.read_i2c_block_data(self.address, 35)
-        
+
         self.logger.debug("Checking error")
         good_data = self._error_check(readout)  # Data integrity check
         if not good_data:
             self.logger.warning("CRC check fialed.")
-            
+
         self.logger.debug("Concatenating data")
         temp_ref = concatenate(readout[:2], big_endian=False) / 10
         matrix = [concatenate(readout[i:i+2], big_endian=False) / 10
@@ -268,7 +268,7 @@ class ThermalSensor(Device):
         data : byte_array
             The buffer to be checked. Must have the error byte as the last
             byte.
-        
+
         Returns
         -------
         bool
@@ -373,7 +373,7 @@ class CurrentSensor(Device):
         self.pin_alert = None
         self.calibrate(15)  # 15 A max current.
 
-    def _read_register(self, register, complement=True):
+    def _read_register(self, register, signed=True):
         """
         Read a register on the device.
 
@@ -381,7 +381,7 @@ class CurrentSensor(Device):
         ----------
         register : str
             The name of the register to be read.
-        complement : bool, optional
+        signed : bool, optional
             Whether the result is a signed integer.
 
         Returns
@@ -395,9 +395,9 @@ class CurrentSensor(Device):
         data = self.bus.read_word_data(self.address, self.registers[register])
         data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
 
-        if complement:
-            if data > 2**16 / 2 - 1:
-                return 2**16 - data
+        if signed:
+            if data > 2**15 - 1:
+                return data - 2**16
         return data
 
     def _write_register(self, register, data):
@@ -455,7 +455,7 @@ class CurrentSensor(Device):
         """
         self.logger.debug("Getting configuration")
         config = CurrentConfiguration()
-        config.as_byte = self._read_register("config", complement=False)
+        config.as_byte = self._read_register("config", signed=False)
         return config
 
     def set_configuration(self, reset=None, avg=None,
@@ -683,7 +683,7 @@ class CurrentSensor(Device):
         """
         self.logger.debug("Getting alert flags")
         alerts = CurrentAlerts()
-        alerts.as_byte = self._read_register("alert_reg", complement=False)
+        alerts.as_byte = self._read_register("alert_reg", signed=False)
         flags = {"aff": alerts.alert_func,
                  "cvrf": alerts.conv_flag,
                  "ovf": alerts.overflow}
