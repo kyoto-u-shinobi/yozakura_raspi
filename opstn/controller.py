@@ -141,7 +141,7 @@ class Buttons(object):
     known_makes = list(_mappings.keys())
 
     def __init__(self, make, buttons):
-        if self._make not in Buttons.known_makes:
+        if make not in Buttons.known_makes:
             raise NoControllerMappingError
 
         self._make = make
@@ -269,7 +269,7 @@ class State(object):
         out_1 = "dpad: {:4}".format(self.dpad.direction)
         out_2 = "lstick: {}".format(self.lstick)
         out_3 = "rstick: {}".format(self.rstick)
-        out_4 = "buttons: {:75}".format(self.buttons)
+        out_4 = "buttons: {:75}".format(str(self.buttons))
         return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
 
 
@@ -369,7 +369,7 @@ class Controller(object):
     def shutdown_all(self):
         """A class method to safely quit all controllers."""
         logging.info("Closing all controller handlers")
-        for controller in list(Controller.controllers.keys()):
+        for controller in list(Controller.controllers.values()):
             controller.shutdown()
 
     def __repr__(self):
