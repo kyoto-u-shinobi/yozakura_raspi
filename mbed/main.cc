@@ -88,7 +88,10 @@ int main() {
   union MotorPacket packet;
   int sign;
   int n_adc = 3; // Number of ADC Channels in use. Max is 6.
-  uint16_t adc_results[n_adc] = {0};  // Zero the results.
+  uint16_t adc_results[n_adc];  
+  for (int i = 0; i < n_adc; i++) {
+    adc_results[i] = 0;  // Zero the results.
+  }
 
   while(1) {
     // Drive the motor
@@ -108,8 +111,8 @@ int main() {
     }
 
     // Update flipper positions.
-    adc_results[n_adc - 2] = pots[4].read_u16()  // Left flipper position
-    adc_results[n_adc - 1] = pots[5].read_u16()  // Right flipper position
+    adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
+    adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
 
     // Send data to Rpi.
     for(int i = 0; i < n_adc; i++) {
