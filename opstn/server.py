@@ -160,14 +160,18 @@ class Handler(HandlerBase):
                     rmotor = lstick.y
 
                 # Flippers
-                if buttons.is_pressed("L1"):
+                if buttons.all_pressed("L1", "L2"):
+                    rflipper = 0
+                elif buttons.is_pressed("L1"):
                     rflipper = 1
                 elif buttons.is_pressed("L2"):
                     rflipper = -1
                 else:
                     rflipper = 0
 
-                if buttons.is_pressed("R1"):
+                if buttons.all_pressed("R1", "R2"):
+                    lflipper = 0
+                elif buttons.is_pressed("R1"):
                     lflipper = 1
                 elif buttons.is_pressed("R2"):
                     lflipper = -1
@@ -194,14 +198,18 @@ class Handler(HandlerBase):
                     rmotor = -rstick.y
 
                 # Flippers
-                if buttons.is_pressed("L1"):
+                if buttons.all_pressed("L1", "L2"):
+                    lflipper = 0
+                elif buttons.is_pressed("L1"):
                     lflipper = 1
                 elif buttons.is_pressed("L2"):
                     lflipper = -1
                 else:
                     lflipper = 0
 
-                if buttons.is_pressed("R1"):
+                if buttons.all_pressed("R1", "R2"):
+                    rflipper = 0
+                elif buttons.is_pressed("R1"):
                     rflipper = 1
                 elif buttons.is_pressed("R2"):
                     rflipper = -1
