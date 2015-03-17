@@ -102,6 +102,9 @@ class Buttons(object):
 
     Note that this is only tested with the Logitech RumblePad 2. Other input
     devices may have different configurations.
+    
+    When registering the mapping for a new controller, please run the
+    ``get_name()`` function to obtain the name to use.
 
     Parameters
     ----------
@@ -128,8 +131,8 @@ class Buttons(object):
                     "select", "start",       # 8-9
                     "L3", "R3", "PS")        # 10-12
 
-    _mappings = {"Logitech RumblePad 2": {},
-                 "Elecom Wireless": {1: 3, 2: 1, 3: 2}}
+    _mappings = {"Logitech Logitech RumblePad 2 USB": {},
+                 "Elecom Wireless Gamepad": {1: 3, 2: 1, 3: 2}}
 
     for make in _mappings:
         for i in range(13):
