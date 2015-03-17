@@ -78,12 +78,8 @@ def concatenate(byte_array, big_endian=True, size=8):
 
     """
     total = 0
-    if big_endian:
-        for byte in byte_array:
-            total = (total << size) + byte
-    else:
-        for byte in reversed(byte_array):
-            total = (total << size) + byte
+    for byte in (byte_array if big_endian else reversed(byte_array)):
+        total = (total << size) + byte
     return total
 
 
