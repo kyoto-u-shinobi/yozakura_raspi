@@ -11,17 +11,27 @@ import socket
 
 from common.networking import UDPServerBase, UDPHandlerBase
 
-class MyUDPHandler(socketserver.BaseRequestHandler):
+
+class Handler(UDPHandlerBase):
     """
     Handler
     
     """
     def handle(self):
         self.logger.info("Connected to client")
-        socket = self.request[1]
         while True:
-            mytime = time.time()
-            self.server.time = mytime
-            self.server.test.time = mytime
-            socket.sendto(str.encode(str(mytime)), self.client_address)
-            time.sleep(1)
+            sensor_data = self.server.ser.readline().split()
+            reply = pickle.dumps(sensor_data)
+            self.send(reply, self.client_address)
+            time.sleep(self.server.refresh_period)
+
+
+class Server(UDPServerBase):
+    """
+    Server
+    
+    """
+    def __init__(self, server_address, handler_class, ser, refresh_period=1):
+        super().__init__(server_address, handler_class)
+        self.ser = ser
+        self.refresh_period = refresh_period  # s
