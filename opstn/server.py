@@ -12,10 +12,10 @@ import pickle
 import socket
 import time
 
-from common.networking import TCPServerBase, HandlerBase
+from common.networking import TCPServerBase, TCPHandlerBase
 
 
-class Handler(HandlerBase):
+class Handler(TCPHandlerBase):
     """A handler for connection requests.
 
     Attributes
@@ -58,7 +58,7 @@ class Handler(HandlerBase):
 
         while True:
             try:
-                data = self.request.recv(1024).decode().strip()
+                data = self.receive(64).decode().strip()
             except socket.timeout:
                 self.logger.warning("Lost connection to robot")
                 self.logger.info("Robot will shut down motors")
@@ -96,10 +96,7 @@ class Handler(HandlerBase):
                 reply = 'Unable to parse command: "{}"'.format(data)
                 self.logger.debug(reply)
 
-            try:
-                self.request.sendall(str.encode(reply))
-            except TypeError:  # Already bytecode
-                self.request.sendall(reply)
+            self.send(reply)
 
         def _get_needed_speeds(self, state):
             """
