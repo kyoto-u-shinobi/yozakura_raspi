@@ -29,8 +29,6 @@ class Client(TCPClientBase):
     ----------
     request : socket
         Handles communication with the server.
-    server : UDPServerBase
-        Transmits data to the base station via UDP.
     motors : dict
         Contains all registered motors.
 
@@ -96,8 +94,8 @@ class Client(TCPClientBase):
                     timed_out = False
 
                 # Get flipper positions from last two items of mbed reply.
-                positions = self.serials["mbed_flipper"].readline().split()
-                *_, lpos, rpos = [int(i, 0) / 0xFFFF for i in positions]
+                # positions = self.serials["mbed_flipper"].readline().split()
+                # *_, lpos, rpos = [int(i, 0) / 0xFFFF for i in positions]
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
@@ -161,10 +159,6 @@ class Client(TCPClientBase):
             motor.enable_serial(ser)
 
         self.motors[motor.name] = motor
-    
-    def add_server(self, server, ser):
-        self.server = server
-        self.server.ser = ser
 
     def remove_serial_device(self, name):
         """
