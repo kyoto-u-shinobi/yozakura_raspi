@@ -140,9 +140,9 @@ class UDPHandlerBase(HandlerBase, UDPCommunication):
     pass
 
 
-class LoggingForkingMixinServer(socketserver.ForkingMixIn):
+class LoggingServer(object):
     """
-    A logging, forking server.
+    A logging.
 
     Parameters
     ----------
@@ -172,11 +172,15 @@ class LoggingForkingMixinServer(socketserver.ForkingMixIn):
         super().serve_forever(*args, **kwargs)
 
 
-class TCPServerBase(LoggingForkingMixinServer, socketserver.TCPServer):
+class TCPServerBase(LoggingServer,
+                    socketserver.ForkingMixIn,
+                    socketserver.TCPServer):
     pass
 
 
-class UDPServerBase(LoggingForkingMixinServer, socketserver.UDPServer):
+class UDPServerBase(LoggingServer,
+                    socketserver.ThreadingMixIn,
+                    socketserver.UDPServer):
     pass
 
 
