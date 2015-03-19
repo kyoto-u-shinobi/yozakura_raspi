@@ -248,7 +248,6 @@ class TCPClientBase(ClientBase, TCPCommunication):
                                                      server_address[1]))
 
 
-
 class UDPClientBase(ClientBase, UDPCommunication):
     """
     A UDP client base.
