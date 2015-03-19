@@ -9,7 +9,7 @@ simultaneously.
 
 """
 import pickle
-import socket
+from socket import timeout
 import time
 
 from common.networking import TCPServerBase, TCPHandlerBase
@@ -59,7 +59,7 @@ class Handler(TCPHandlerBase):
         while True:
             try:
                 data = self.receive(64).decode().strip()
-            except socket.timeout:
+            except timeout:
                 self.logger.warning("Lost connection to robot")
                 self.logger.info("Robot will shut down motors")
                 continue
