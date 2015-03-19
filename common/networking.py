@@ -100,7 +100,7 @@ class TCPCommunication(Communication):
 
 
 class UDPCommunication(Communication):
-    def send(self, message):
+    def send(self, message, address):
         """
         Send a message to the server.
 
@@ -108,12 +108,14 @@ class UDPCommunication(Communication):
         ----------
         message : str
             The message to send to the server.
+        address : 2-tuple of (str, int)
+            The address to which to send the message
 
         """
         try:
-            self.request.sendto(str.encode(message), self.server_address)
+            self.request.sendto(str.encode(message), address)
         except TypeError:  # Already bytecode
-            self.request.sendto(message, self.server_address)
+            self.request.sendto(message, address)
 
 
 class HandlerBase(socketserver.BaseRequestHandler):
