@@ -21,7 +21,7 @@ class Handler(UDPHandlerBase):
             sensor_data = self.server.ser.readline().split()
             reply = pickle.dumps(sensor_data)
             self.send(reply, self.client_address)
-            time.sleep(self.server.refresh_period)
+            time.sleep(self.server.period)
 
 
 class Server(UDPServerBase):
@@ -29,7 +29,7 @@ class Server(UDPServerBase):
     Server
     
     """
-    def __init__(self, server_address, handler_class, ser, refresh_period=1):
+    def __init__(self, server_address, handler_class, ser, period=1):
         super().__init__(server_address, handler_class)
         self.ser = ser
-        self.refresh_period = refresh_period  # s
+        self.period = period  # s
