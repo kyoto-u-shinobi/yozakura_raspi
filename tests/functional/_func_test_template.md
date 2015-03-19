@@ -10,11 +10,11 @@
 
 ### Objectives
 
-This is where driving requirement (if available) is referenced as the reason for this test, and also where you describe what the dester should expect to see during and after the completion of the test. It does not define the pass/fail criteria.
+This is where driving requirement (if available) is referenced as the reason for this test, and also where you describe what the tester should expect to see during and after the completion of the test. It does not define the pass/fail criteria.
 
 ### Pretest Setup
 
-Define the required preteest actions here. These are the steps necessary in order to perform the test actions listed in the next section.
+Define the required pretest actions here. These are the steps necessary in order to perform the test actions listed in the next section.
 
 1. Procedure
 2. Procedure
