@@ -5,6 +5,7 @@ Provide networking functions for the base station and the Raspberry Pi.
 
 This module provides primitives for TCP and UDP clients and servers, and also
 provides a function to determine the IP address of an interface.
+
 """
 import abc
 import fcntl
@@ -62,6 +63,59 @@ def get_ip_address(interface):
                                         packed)[20:24])
 
 
+class Communication(object):
+    def receive(self, *args, **kwargs):
+        """
+        Receive a message from the server.
+        
+        Parameters
+        ----------
+        size : int
+            The number of bytes to receive.
+
+        Returns
+        -------
+        bytecode
+            The data received.
+
+        """
+        return self.request.recv(*args, **kwargs)
+
+
+class TCPCommunication(Communication):
+    def send(self, message):
+        """
+        Send a message to the server.
+
+        Parameters
+        ----------
+        message : str
+            The message to send to the server.
+
+        """
+        try:
+            self.request.sendall(str.encode(message))
+        except TypeError:  # Already bytecode
+            self.request.sendall(message)
+
+
+class UDPCommunication(Communication):
+    def send(self, message):
+        """
+        Send a message to the server.
+
+        Parameters
+        ----------
+        message : str
+            The message to send to the server.
+
+        """
+        try:
+            self.request.sendto(str.encode(message), self.server_address)
+        except TypeError:  # Already bytecode
+            self.request.sendto(message, self.server_address)
+
+
 class HandlerBase(socketserver.BaseRequestHandler):
     """A logging base request handler."""
     def __init__(self, request, client_address, server):
@@ -76,9 +130,17 @@ class HandlerBase(socketserver.BaseRequestHandler):
         super().__init__(request, client_address, server)
 
 
-class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
+class TCPHandlerBase(HandlerBase, TCPCommunication):
+    pass
+
+
+class UDPHandlerBase(HandlerBase, UDPCommunication):
+    pass
+
+
+class LoggingForkingMixinServer(socketserver.ForkingMixIn):
     """
-    A logging, forking TCP server.
+    A logging, forking server.
 
     Parameters
     ----------
@@ -88,11 +150,11 @@ class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
     handler_class : Handler
         The request handler. Each new request generates a separate process
         running that handler.
-
+    
     Examples
     --------
     >>> server = TCPServerBase(("192.168.11.1", 22), Handler)
-
+    
     """
     allow_reuse_address = True  # Can resume immediately after shutdown
 
@@ -107,41 +169,59 @@ class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
         self.logger.info("Server started")
         super().serve_forever(*args, **kwargs)
 
+class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
+    pass
+
 
 class UDPServerBase(socketserver.ForkingMixIn, socketserver.UDPServer):
-    """
-    A logging, forking UDP server.
+    pass
 
+
+class ClientBase(Object):
+    """
+    A Client base.
+    
     Parameters
     ----------
     server_address : 2-tuple of (str, int)
         The address at which the server is listening. The elements are the
         server address and the port number respectively.
-    handler_class : Handler
-        The request handler. Each new request generates a separate process
-        running that handler.
 
-    Examples
-    --------
-    >>> server = UDPServerBase(("192.168.11.1", 22), Handler)
+    Attributes
+    ----------
+    request : socket
+        Handles communication with the server.
 
     """
-    allow_reuse_address = True  # Can resume immediately after shutdown
+    def __init__(self, server_address):
+        # Get local IP address.
+        try:
+            ip_address = get_ip_address("eth0")
+        except OSError:
+            ip_address = get_ip_address("enp2s0")
 
-    def __init__(self, server_address, handler_class):
-        self.logger = logging.getLogger("{}_server".format(server_address[0]))
-        self.logger.debug("Creating server")
-        super().__init__(server_address, handler_class)
-        self.logger.info("Listening to port {}".format(server_address[1]))
+        self.logger = logging.getLogger("{}_client".format(ip_address))
+        self.logger.debug("Creating client")
+    
+    @abc.abstractmethod
+    def run(self):
+        """
+        Keep sending requests until a ``KeyboardInterrupt`` is received.
 
-    def serve_forever(self, *args, **kwargs):
-        """Handle requests until an explicit ``shutdown()`` request."""
-        self.logger.info("Server started")
-        super().serve_forever(*args, **kwargs)
+        Subclasses must implement this method.
+        """
+        pass
 
+    def shutdown(self):
+        """Shut down the client."""
+        self.logger.debug("Shutting down client")
+        self.request.close()
+        self.logger.info("Client shut down")
+        
 
-class TCPClientBase(object):
-    """A TCPclient base.
+class TCPClientBase(ClientBase, TCPCommunication):
+    """
+    A TCPClient base.
 
     Parameters
     ----------
@@ -160,69 +240,15 @@ class TCPClientBase(object):
 
     """
     def __init__(self, server_address):
-        # Get local IP address.
-        try:
-            ip_address = get_ip_address("eth0")
-        except OSError:
-            ip_address = get_ip_address("enp2s0")
-
-        self.logger = logging.getLogger("{}_client".format(ip_address))
-        self.logger.debug("Creating client")
+        super().__init__(server_address)
         self.request = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.request.connect(server_address)
         self.logger.info("Connected to {}:{}".format(server_address[0],
                                                      server_address[1]))
 
-    def send(self, message):
-        """
-        Send a message to the server.
-
-        Parameters
-        ----------
-        message : str
-            The message to send to the server.
-
-        """
-        try:
-            self.request.sendall(str.encode(message))
-        except TypeError:  # Already bytecode
-            self.request.sendall(message)
-
-    def receive(self, *args, **kwargs):
-        """
-        Receive a message from the server.
-        
-        Parameters
-        ----------
-        size : int
-            The number of bytes to receive.
-
-        Returns
-        -------
-        bytecode
-            The data received.
-
-        """
-        return self.request.recv(*args, **kwargs)
-
-    @abc.abstractmethod
-    def run(self):
-        """
-        Keep sending requests until a ``KeyboardInterrupt`` is received.
-
-        Subclasses must implement this method.
-
-        """
-        pass
-
-    def shutdown(self):
-        """Shut down the client."""
-        self.logger.debug("Shutting down client")
-        self.request.close()
-        self.logger.info("Client shut down")
 
 
-class UDPClientBase(object):
+class UDPClientBase(ClientBase, UDPCommunication):
     """
     A UDP client base.
 
@@ -243,57 +269,8 @@ class UDPClientBase(object):
 
     """
     def __init__(self, server_address):
-        # Get local IP address.
-        try:
-            ip_address = get_ip_address("eth0")
-        except OSError:
-            ip_address = get_ip_address("enp2s0")
-
-        self.logger = logging.getLogger("{}_client".format(ip_address))
-        self.logger.debug("Creating client")
+        super().__init__(server_address)
         self.server_address = server_address
         self.request = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.logger.info("Listening to {}:{}".format(server_address[0],
                                                      server_address[1]))
-
-    def send(self, message):
-        """
-        Send a message to the server.
-
-        Parameters
-        ----------
-        message : str
-            The message to send to the server.
-
-        """
-        try:
-            self.request.sendto(str.encode(message), self.server_address)
-        except TypeError:  # Already bytecode
-            self.request.sendto(message, self.server_address)
-
-    def receive(self, *args, **kwargs):
-        """
-        Receive a message from the server.
-
-        Returns
-        -------
-        bytecode
-            The data received.
-
-        """
-        return self.request.recv(*args, **kwargs)
-
-    @abc.abstractmethod
-    def run(self):
-        """
-        Keep sending requests until a ``KeyboardInterrupt`` is received.
-
-        Subclasses must implement this method.
-        """
-        pass
-
-    def shutdown(self):
-        """Shut down the client."""
-        self.logger.debug("Shutting down client")
-        self.request.close()
-        self.logger.info("Client shut down")
