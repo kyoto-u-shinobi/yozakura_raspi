@@ -169,11 +169,11 @@ class LoggingForkingMixinServer(socketserver.ForkingMixIn):
         self.logger.info("Server started")
         super().serve_forever(*args, **kwargs)
 
-class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
+class TCPServerBase(LoggingForkingMixinServer, socketserver.TCPServer):
     pass
 
 
-class UDPServerBase(socketserver.ForkingMixIn, socketserver.UDPServer):
+class UDPServerBase(LoggingForkingMixinServer, socketserver.UDPServer):
     pass
 
 
