@@ -2,11 +2,11 @@
 
 ## Summary
 
-* Test Type:            Is the test manual, scripted, or externally driven?
-* Valid with Simulator: Is the test valid with the software running in simulation mode?
-* Valid with Hardware:  Is the test valid with the software running on the actual hardware?
-* Script Utilized:      If the test is automatic, what script is used?
-* External C&C Source:  If the test utilizes an external command/control source, what is it?
+* **Test Type:**            Is the test manual, scripted, or externally driven?
+* **Valid with Simulator:** Is the test valid with the software running in simulation mode?
+* **Valid with Hardware:**  Is the test valid with the software running on the actual hardware?
+* **Script Utilized:**      If the test is automatic, what script is used?
+* **External C&C Source:**  If the test utilizes an external command/control source, what is it?
 
 ## Objectives
 
