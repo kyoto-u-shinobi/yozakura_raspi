@@ -9,10 +9,12 @@ simultaneously.
 
 """
 import pickle
+import multiprocessing as mp
 from socket import timeout
 import time
 
 from common.networking import TCPServerBase, TCPHandlerBase
+from opstn.client import Client
 
 
 class Handler(TCPHandlerBase):
@@ -53,50 +55,56 @@ class Handler(TCPHandlerBase):
         self.request.settimeout(0.5)  # seconds
         self.wheels_single_stick = False
         self.reverse_mode = False
-
         self._sticks_timestamp = self._reverse_timestamp = time.time()
-
-        while True:
-            try:
-                data = self.receive(64).decode().strip()
-            except timeout:
-                self.logger.warning("Lost connection to robot")
-                self.logger.info("Robot will shut down motors")
-                continue
-            self.logger.debug('Received: "{}"'.format(data))
-
-            if data == "":  # Client exited safely.
-                self.logger.info("Terminating client session")
-                break
-
-            if data == "state":
-                state = self.server.controllers["main"].get_state()
-                reply = pickle.dumps(state)
-
-            elif data == "inputs":
-                state = self.server.controllers["main"].get_state()
-                dpad, lstick, rstick, buttons = state.data
-                reply = pickle.dumps(((dpad.x, dpad.y),
-                                      (lstick.x, lstick.y),
-                                      (rstick.x, rstick.y),
-                                      buttons.buttons))
-
-            elif data == "speeds":
-                state = self.server.controllers["main"].get_state()
-                reply = pickle.dumps(self._get_needed_speeds(state))
-
-            elif data.split()[0] == "echo":
-                reply = " ".join(data.split()[1:])
-
-            elif data.split()[0] == "print":
-                reply = " ".join(data.split()[1:])
-                self.logger.info('Client says: "{}"'.format(reply))
-
-            else:
-                reply = 'Unable to parse command: "{}"'.format(data)
-                self.logger.debug(reply)
-
-            self.send(reply)
+        
+        client = Client(self.client_address)
+        client_process = mp.Process(target=client.run)
+        client_process.start()
+        
+        try:
+            while True:
+                try:
+                    data = self.receive(64).decode().strip()
+                except timeout:
+                    self.logger.warning("Lost connection to robot")
+                    self.logger.info("Robot will shut down motors")
+                    continue
+                self.logger.debug('Received: "{}"'.format(data))
+    
+                if data == "":  # Client exited safely.
+                    self.logger.info("Terminating client session")
+                    break
+    
+                if data == "state":
+                    state = self.server.controllers["main"].get_state()
+                    reply = pickle.dumps(state)
+    
+                elif data == "inputs":
+                    state = self.server.controllers["main"].get_state()
+                    dpad, lstick, rstick, buttons = state.data
+                    reply = pickle.dumps(((dpad.x, dpad.y),
+                                          (lstick.x, lstick.y),
+                                          (rstick.x, rstick.y),
+                                          buttons.buttons))
+    
+                elif data == "speeds":
+                    state = self.server.controllers["main"].get_state()
+                    reply = pickle.dumps(self._get_needed_speeds(state))
+    
+                elif data.split()[0] == "echo":
+                    reply = " ".join(data.split()[1:])
+    
+                elif data.split()[0] == "print":
+                    reply = " ".join(data.split()[1:])
+                    self.logger.info('Client says: "{}"'.format(reply))
+    
+                else:
+                    reply = 'Unable to parse command: "{}"'.format(data)
+                    self.logger.debug(reply)
+    
+                self.send(reply)
+        finally:
+            client_process.terminate()
 
         def _get_needed_speeds(self, state):
             """
