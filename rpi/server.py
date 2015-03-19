@@ -5,9 +5,7 @@ UDP server for sensor data.
 
 """
 import logging
-import serial
 import pickle
-import socket
 
 from common.networking import UDPServerBase, UDPHandlerBase
 
