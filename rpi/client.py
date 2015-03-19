@@ -80,7 +80,7 @@ class Client(TCPClientBase):
             try:
                 try:
                     self.send("speeds")      # Request speed data.
-                    result = self.receive()  # Receive speed data.
+                    result = self.receive(64)  # Receive speed data.
                 except socket.timeout:
                     if not timed_out:
                         self.logger.warning("No connection to base station.")
