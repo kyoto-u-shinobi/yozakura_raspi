@@ -138,7 +138,7 @@ class UDPHandlerBase(HandlerBase, UDPCommunication):
     pass
 
 
-class LoggingServer(object):
+class LoggingForkingServer(socketserver.ForkingMixIn):
     """
     A logging.
 
@@ -170,15 +170,11 @@ class LoggingServer(object):
         super().serve_forever(*args, **kwargs)
 
 
-class TCPServerBase(LoggingServer,
-                    socketserver.ForkingMixIn,
-                    socketserver.TCPServer):
+class TCPServerBase(LoggingForkingServer, socketserver.TCPServer):
     pass
 
 
-class UDPServerBase(LoggingServer,
-                    socketserver.ThreadingMixIn,
-                    socketserver.UDPServer):
+class UDPServerBase(LoggingForkingServer, socketserver.UDPServer):
     pass
 
 
