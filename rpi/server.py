@@ -10,3 +10,18 @@ import pickle
 import socket
 
 from common.networking import UDPServerBase, UDPHandlerBase
+
+class MyUDPHandler(socketserver.BaseRequestHandler):
+    """
+    Handler
+    
+    """
+    def handle(self):
+        self.logger.info("Connected to client")
+        socket = self.request[1]
+        while True:
+            mytime = time.time()
+            self.server.time = mytime
+            self.server.test.time = mytime
+            socket.sendto(str.encode(str(mytime)), self.client_address)
+            time.sleep(1)
