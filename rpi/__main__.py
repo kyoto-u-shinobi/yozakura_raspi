@@ -6,6 +6,7 @@ import serial
 from common.networking import get_ip_address
 from rpi.client import Client
 from rpi.motor import Motor
+from rpi.server import Server, Handler
 
 
 def main():
@@ -17,9 +18,11 @@ def main():
 
     # Connect to correct server based on local IP address.
     if ip_address.startswith("192.168"):  # Contec
-        client = Client(("192.168.54.125", 9999))
+        opstn_address = "192.168.54.125"
     elif ip_address.startswith("10.249"):  # Arch dev
-        client = Client(("10.249.255.151", 9999))
+        opstn_address = "10.249.255.151"
+
+    client = Client((opstn_address, 9999))
 
     logging.debug("Initializing motors")
     left_motor = Motor("left_motor", 11, 12, max_speed=0.6)
@@ -38,7 +41,10 @@ def main():
         client.add_motor(right_flipper, ser=mbed_ser)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
-
+    
+    server = Server((ip_address, 9999), Handler)
+    client.add_server(server, ser=mbed_ser)
+    
     try:
         client.run()
     finally:
