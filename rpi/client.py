@@ -29,6 +29,8 @@ class Client(TCPClientBase):
     ----------
     request : socket
         Handles communication with the server.
+    server : UDPServerBase
+        Transmits data to the base station via UDP.
     motors : dict
         Contains all registered motors.
 
@@ -159,6 +161,10 @@ class Client(TCPClientBase):
             motor.enable_serial(ser)
 
         self.motors[motor.name] = motor
+    
+    def add_server(self, server, ser):
+        self.server = server
+        self.server.ser = ser
 
     def remove_serial_device(self, name):
         """
