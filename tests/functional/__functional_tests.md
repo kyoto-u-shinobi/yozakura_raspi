@@ -29,18 +29,22 @@ Before beginning the test, follow this procedure:
 7. Connect the motor driver's RST pin to the pi's pin 13, 18, 33, or 37.
 8. Connect the batteries to the motor driver's V+ and GND pins.
 9. Connect the mbed to the Raspberry Pi via an A-to-MiniB USB cable.
-10. In the test script, define `motor` as one of the four motors that have been predefined, depending on the pins the motor has been connected to.
+10. In the test script, set the maximum speeds for the motors depending on which motor is connected, and the load on the motor.
+11. In the test script, define `motor` as one of the four motors that have been predefined, depending on the pins the motor has been connected to.
+12. Start the script by running it from the root folder using `sudo python3 -m tests.functional.ft-000_test_mbed_rpi`
 
 ### Test procedure
 
-This is where the actual test procedure is defined. A procedure may consist of multiple steps. Each step should be a verifiable action (e.g. "Press R3 on the controller and verify that the server indicates that Reverse mode was toggled" or "Start the test script and verify that no error messages appear during script startup").
-
-1. Step description
-2. Step description
-3. Step description
-4. Step description
-5. *(additional items as necessary)*
+1. Press "a" several times and verify that the motor turns in the positive direction. Ensure that the speed never goes above the defined maximum speed.
+  * If the motor does not turn, it might mean that a short-circuit fault had occurred during startup. Press "r" or "R" to reset the motor driver and clear the fault.
+2. Press "z" several times and verify that the motor slows down before starting to turn in the negative direction. Ensure that the speed never goes above the defined maximum speed.
+3. Press "a" several times and verify that the motor slows down.
+4. Press "q" or "Q" and verify that the motor stops.
+5. Press "A" and verify that the motor turns at the defined maximum speed in the positive direction.
+6. Press "q" or "Q" and verify that the motor stops.
+7. Press "Z" and verify that the motor turns at the defined maximum speed in the negative direction.
+8. Press "q" or "Q" and verify that the motor stops.
 
 ### Pass/Fail
 
-This section defines the pass/fail criteria for this test. A test that passes would exhibit the behaviour defined by the driving requirement (if available) without exceeding nominal ranges or limits, or generating any erros during the execution of the test. A test failure might be a value that is too high or too low, or a function taking too long to execute. Any error that occured during the test that resulted in an error message is an obvious failure.
+A pass occurs when all the steps of the test procedure produce the expeted results. A failure occurs when an unexpected behaviour is seen, or if a short-circuit fault is triggered.
