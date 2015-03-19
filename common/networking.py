@@ -191,6 +191,11 @@ class TCPClientBase(object):
     def receive(self, *args, **kwargs):
         """
         Receive a message from the server.
+        
+        Parameters
+        ----------
+        size : int
+            The number of bytes to receive.
 
         Returns
         -------
