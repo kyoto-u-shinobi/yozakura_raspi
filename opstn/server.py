@@ -106,122 +106,122 @@ class Handler(TCPHandlerBase):
         finally:
             client_process.terminate()
 
-        def _get_needed_speeds(self, state):
-            """
-            Get required speeds based on controller state and system state.
+    def _get_needed_speeds(self, state):
+        """
+        Get required speeds based on controller state and system state.
 
-            Inputs handled:
-                - L1, L2 : Rotate left flipper.
-                - R1, R2 : Rotate right flipper.
-                - lstick : x- and y-axes control wheels in single-stick mode;
-                  y-axis controls left-side wheels in dual-stick mode.
-                - rstick : y-axis controls right-side wheels in dual-stick
-                  mode.
-                - L3 : Toggle the control mode between single and dual sticks.
-                - R3 : Toggle reverse mode
+        Inputs handled:
+            - L1, L2 : Rotate left flipper.
+            - R1, R2 : Rotate right flipper.
+            - lstick : x- and y-axes control wheels in single-stick mode;
+              y-axis controls left-side wheels in dual-stick mode.
+            - rstick : y-axis controls right-side wheels in dual-stick
+              mode.
+            - L3 : Toggle the control mode between single and dual sticks.
+            - R3 : Toggle reverse mode
 
-            Parameters
-            ----------
-            state : State
-                Represents the controller states.
+        Parameters
+        ----------
+        state : State
+            Represents the controller states.
 
-            Returns
-            -------
-            float
-                The speed inputs for each of the four motors, with values
-                between -1 and 1. The four motors are:
-                    - Left motor
-                    - Right motor
-                    - Left flipper
-                    - Right flipper
+        Returns
+        -------
+        float
+            The speed inputs for each of the four motors, with values
+            between -1 and 1. The four motors are:
+                - Left motor
+                - Right motor
+                - Left flipper
+                - Right flipper
 
-            """
-            # TODO(masasin): Handle select : Synchronize flipper positions.
-            # TODO(masasin): Handle start : Move flippers to forward position.
-            dpad, lstick, rstick, buttons = state.data
+        """
+        # TODO(masasin): Handle select : Synchronize flipper positions.
+        # TODO(masasin): Handle start : Move flippers to forward position.
+        dpad, lstick, rstick, buttons = state.data
 
-            if buttons.is_pressed("L3"):
-                self._switch_control_mode()
-            if buttons.is_pressed("R3"):
-                self._engage_reverse_mode()
+        if buttons.is_pressed("L3"):
+            self._switch_control_mode()
+        if buttons.is_pressed("R3"):
+            self._engage_reverse_mode()
 
-            if self.reverse_mode:
-                # Wheels
-                if self.wheels_single_stick:
-                    self.logger.debug("lx: {:9.7}  ".fromat(lstick.x) +
-                                      "ly: {:9.7}".format(lstick.y))
-                    if abs(lstick.y) < 0.1:  # Rotate in place
-                        lmotor = -lstick.x
-                        rmotor = lstick.x
-                    else:
-                        l_mult = (1 - lstick.x) / (1 + abs(lstick.x))
-                        r_mult = (1 + lstick.x) / (1 + abs(lstick.x))
-                        lmotor = lstick.y * l_mult
-                        rmotor = lstick.y * r_mult
+        if self.reverse_mode:
+            # Wheels
+            if self.wheels_single_stick:
+                self.logger.debug("lx: {:9.7}  ".fromat(lstick.x) +
+                                  "ly: {:9.7}".format(lstick.y))
+                if abs(lstick.y) < 0.1:  # Rotate in place
+                    lmotor = -lstick.x
+                    rmotor = lstick.x
                 else:
-                    self.logger.debug("ly: {:9.7}  ".fromat(lstick.y) +
-                                      "ry: {:9.7}".format(rstick.y))
-                    lmotor = rstick.y
-                    rmotor = lstick.y
+                    l_mult = (1 - lstick.x) / (1 + abs(lstick.x))
+                    r_mult = (1 + lstick.x) / (1 + abs(lstick.x))
+                    lmotor = lstick.y * l_mult
+                    rmotor = lstick.y * r_mult
+            else:
+                self.logger.debug("ly: {:9.7}  ".fromat(lstick.y) +
+                                  "ry: {:9.7}".format(rstick.y))
+                lmotor = rstick.y
+                rmotor = lstick.y
 
-                # Flippers
-                if buttons.all_pressed("L1", "L2"):
-                    rflipper = 0
-                elif buttons.is_pressed("L1"):
-                    rflipper = 1
-                elif buttons.is_pressed("L2"):
-                    rflipper = -1
+            # Flippers
+            if buttons.all_pressed("L1", "L2"):
+                rflipper = 0
+            elif buttons.is_pressed("L1"):
+                rflipper = 1
+            elif buttons.is_pressed("L2"):
+                rflipper = -1
+            else:
+                rflipper = 0
+
+            if buttons.all_pressed("R1", "R2"):
+                lflipper = 0
+            elif buttons.is_pressed("R1"):
+                lflipper = 1
+            elif buttons.is_pressed("R2"):
+                lflipper = -1
+            else:
+                lflipper = 0
+
+        else:  # Forward mode
+            # Wheels
+            if self.wheels_single_stick:
+                self.logger.debug("lx: {:9.7}  ".format(lstick.x) +
+                                  "ly: {:9.7}".format(lstick.y))
+                if abs(lstick.y) < 0.1:  # Rotate in place
+                    lmotor = lstick.x
+                    rmotor = -lstick.x
                 else:
-                    rflipper = 0
+                    l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
+                    r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
+                    lmotor = -lstick.y * l_mult
+                    rmotor = -lstick.y * r_mult
+            else:
+                self.logger.debug("ly: {:9.7}  ".format(lstick.y) +
+                                  "ry: {:9.7}".format(rstick.y))
+                lmotor = -lstick.y
+                rmotor = -rstick.y
 
-                if buttons.all_pressed("R1", "R2"):
-                    lflipper = 0
-                elif buttons.is_pressed("R1"):
-                    lflipper = 1
-                elif buttons.is_pressed("R2"):
-                    lflipper = -1
-                else:
-                    lflipper = 0
+            # Flippers
+            if buttons.all_pressed("L1", "L2"):
+                lflipper = 0
+            elif buttons.is_pressed("L1"):
+                lflipper = 1
+            elif buttons.is_pressed("L2"):
+                lflipper = -1
+            else:
+                lflipper = 0
 
-            else:  # Forward mode
-                # Wheels
-                if self.wheels_single_stick:
-                    self.logger.debug("lx: {:9.7}  ".format(lstick.x) +
-                                      "ly: {:9.7}".format(lstick.y))
-                    if abs(lstick.y) < 0.1:  # Rotate in place
-                        lmotor = lstick.x
-                        rmotor = -lstick.x
-                    else:
-                        l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
-                        r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
-                        lmotor = -lstick.y * l_mult
-                        rmotor = -lstick.y * r_mult
-                else:
-                    self.logger.debug("ly: {:9.7}  ".format(lstick.y) +
-                                      "ry: {:9.7}".format(rstick.y))
-                    lmotor = -lstick.y
-                    rmotor = -rstick.y
+            if buttons.all_pressed("R1", "R2"):
+                rflipper = 0
+            elif buttons.is_pressed("R1"):
+                rflipper = 1
+            elif buttons.is_pressed("R2"):
+                rflipper = -1
+            else:
+                rflipper = 0
 
-                # Flippers
-                if buttons.all_pressed("L1", "L2"):
-                    lflipper = 0
-                elif buttons.is_pressed("L1"):
-                    lflipper = 1
-                elif buttons.is_pressed("L2"):
-                    lflipper = -1
-                else:
-                    lflipper = 0
-
-                if buttons.all_pressed("R1", "R2"):
-                    rflipper = 0
-                elif buttons.is_pressed("R1"):
-                    rflipper = 1
-                elif buttons.is_pressed("R2"):
-                    rflipper = -1
-                else:
-                    rflipper = 0
-
-            return lmotor, rmotor, lflipper, rflipper
+        return lmotor, rmotor, lflipper, rflipper
 
     def _switch_control_mode(self):
         """
