@@ -6,7 +6,7 @@ import serial
 
 from common.networking import get_ip_address
 from rpi.client import Client
-from rpi.motor import Motor
+from rpi.motors import Motor
 from rpi.server import Server, Handler
 
 
@@ -26,23 +26,25 @@ def main():
     client = Client((opstn_address, 9999))
 
     logging.debug("Initializing motors")
-    left_motor = Motor("left_motor", 11, 12, max_speed=0.6)
-    right_motor = Motor("right_motor", 15, 16, max_speed=0.6)
-    left_flipper = Motor("left_flipper", 31, 32, max_speed=0.6)
-    right_flipper = Motor("right_flipper", 35, 36, max_speed=0.6)
+    left_motor = Motor("left_motor", 11, 12, 13)
+    right_motor = Motor("right_motor", 15, 16, 18)
+    left_flipper = Motor("left_flipper", 31, 32, 33)
+    right_flipper = Motor("right_flipper", 35, 36, 37)
 
     try:
         logging.debug("Connecting mbed")
-        mbed_ser = serial.Serial("/dev/ttyACM0", 9600)
-        client.add_serial_device("mbed_flipper", mbed_ser)
+        mbed = serial.Serial("/dev/ttyACM0", 9600)
+        client.add_serial_device("mbed", mbed)
+        
         logging.debug("Registering motors to client")
-        client.add_motor(left_motor, ser=mbed_ser)
-        client.add_motor(right_motor, ser=mbed_ser)
-        client.add_motor(left_flipper, ser=mbed_ser)
-        client.add_motor(right_flipper, ser=mbed_ser)
+        client.add_motor(left_motor, ser=mbed)
+        client.add_motor(right_motor, ser=mbed)
+        client.add_motor(left_flipper, ser=mbed)
+        client.add_motor(right_flipper, ser=mbed)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
     
+    logging.debug("Starting UDP server")
     server = Server((ip_address, 9999), Handler, mbed_ser, period=0.01)
     server_process = mp.Process(target=server.serve_forever)
     server_process.start()
