@@ -17,7 +17,7 @@ import smbus
 
 from common.exceptions import InvalidArgError, I2CSlotBusyError, \
     NotCalibratedError
-from rpi.bitfields import CurrentConfiguration, CurrentAlerts, ADCConfiguration
+from rpi.bitfields import CurrentConfiguration, CurrentAlerts
 
 
 def get_i2c_bus():
