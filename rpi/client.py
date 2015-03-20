@@ -95,7 +95,7 @@ class Client(TCPClientBase):
 
                 # Get flipper positions from last two items of mbed reply.
                 #try:
-                    #positions = self.serials["mbed_flipper"].readline().split()
+                    #positions = self.serials["mbed"].readline().split()
                     #*_, lpos, rpos = [int(i, 0) / 0xFFFF for i in positions]
                     #self.logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
                 #except ValueError:
