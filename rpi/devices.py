@@ -53,6 +53,49 @@ def get_used_i2c_slots(bus_number=i2c_bus):
     return slots
 
 
+def require_repeated_start():
+    """
+    Enable repeated start conditions for I2C register reads.
+    
+    This is the normal behaviour for I2C. However, on the Raspberry Pi,
+    there is a bug which disables repeated starts unless explicitly enabled
+    with this function.
+    
+    The bug occurs during register reads, and does not send a repeated start
+    condition as the Linux kernel smbus I2C driver functions define. As a
+    workaround, this bit in the BMC2708 driver sysfs tree can be changed to
+    enable I2C repeated starts.
+    
+    Note that the Raspberry Pi models A, B, and B+ all use the BMC2835 CPU,
+    and the Raspberry Pi 2 uses the BCM2836 CPU. [1]_ Both CPUs are
+    implementations of the BCM2708 series, [2]_ so this fix should work for
+    all models.
+    
+    See this Raspberry Pi forum thread for more details. [3]_
+    
+    This function is based on an Adafruit I2C implementation, shown to
+    @masasin by Tony DiCola, one of the authors and contributors. [4]_
+    
+    References
+    ----------
+    .. [1] Wikipedia. "Raspberry Pi."
+           https://en.wikipedia.org/wiki/Raspberry_Pi
+           
+    .. [2] Linux, Raspberry Pi, Github. "Issue #22. BCM2708 vs. BCM2835."
+           https://github.com/raspberrypi/linux/issues/22
+           
+    .. [3] Raspberry Pi Forums. "i2c repeated start transactions"
+           http://www.raspberrypi.org/forums/viewtropic.php?f=44&t=15840
+    
+    .. [4] Adafruit Python GPIO, Adafruit, Github. "I2C.py"
+           https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/I2C.py#L68
+    
+    """
+    sysfs_tree = "/sys/module/i2c_bcm2708/parameters/combined"
+    subprocess.check_call("chmod 666 {}".format(sysfs_tree), shell=True)
+    subprocess.check_call("echo -n 1 > {}".format(sysfs_tree), shell=True)
+
+
 def concatenate(byte_array, big_endian=True, size=8):
     """
     Concatenate multiple bytes to form a single number.
