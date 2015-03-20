@@ -43,11 +43,9 @@ class Motor(object):
         GPIO pin for resetting the motor driver.
     start_input : float, optional
         The input at which the motor starts responding. The output will be
-        scaled between that value and one. Can range between 0 and 1.
-
-        For instance, if the motors do not turn until the input is at 20%, an
-        input of 10% would be scaled up to 28%, and 50% would be scaled up to
-        60%.
+        scaled between that value and one. For instance, if the motors do not
+        turn until the input is at 20%, an input of 10% would be scaled up to
+        28%, and 50% would be scaled up to 60%. Can range between 0 and 1.
     max_speed : float, optional
         The maximum speed to use with the motor. Can range between 0 and 1.
 
@@ -98,7 +96,8 @@ class Motor(object):
     motors = []
     _count = 0
 
-    def __init__(self, name, fault_1, fault_2, reset, start_input=0, max_speed=1):
+    def __init__(self, name, fault_1, fault_2, reset,
+                 start_input=0, max_speed=1):
         if Motor._count == 4:
             raise TooManyMotorsError
         if not 0 <= start_input <= 1:
@@ -123,7 +122,7 @@ class Motor(object):
         gpio.setup(fault_2, gpio.IN, pull_up_down=gpio.PUD_DOWN)
         gpio.add_event_detect(fault_1, gpio.RISING, callback=self._catch_fault)
         gpio.add_event_detect(fault_2, gpio.RISING, callback=self._catch_fault)
-        
+
         self.logger.debug("Resetting motor driver")
         gpio.setup(reset, gpio.OUT)
         self.reset_driver()
@@ -284,14 +283,14 @@ class Motor(object):
         else:
             self.logger.error("Cannot drive motor! No serial or PWM enabled.")
             raise NoDriversError(self)
-    
+
     def reset_driver(self):
         """
         Reset the motor driver.
-        
+
         The motor driver is latched upon a short circuit until the reset flag
         is brought to LOW temporarily.
-        
+
         """
         gpio.output(self.pin_reset, gpio.LOW)
         sleep(0.1)

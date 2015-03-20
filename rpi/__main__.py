@@ -6,7 +6,6 @@ import serial
 from common.networking import get_ip_address
 from rpi.client import Client
 from rpi.motor import Motor
-from rpi.server import Server, Handler
 
 
 def main():
@@ -34,7 +33,7 @@ def main():
         logging.debug("Connecting mbed")
         mbed = serial.Serial("/dev/ttyACM0", 9600)
         client.add_serial_device("mbed", mbed)
-        
+
         logging.debug("Registering motors to client")
         client.add_motor(left_motor, ser=mbed)
         client.add_motor(right_motor, ser=mbed)
@@ -42,12 +41,11 @@ def main():
         client.add_motor(right_flipper, ser=mbed)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
-    
+
     try:
         client.run()
     finally:
         logging.info("Shutting down...")
-        server_process.terminate()
         Motor.shutdown_all()
         try:
             logging.debug("Shutting down connection with mbed")
@@ -56,7 +54,7 @@ def main():
             logging.debug("The mbed was not connected")
             pass
         client.shutdown()
-        
+
     logging.info("All done")
 
 if __name__ == "__main__":

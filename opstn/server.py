@@ -9,7 +9,6 @@ simultaneously.
 
 """
 import pickle
-import multiprocessing as mp
 import socket
 import time
 
@@ -55,12 +54,12 @@ class Handler(TCPHandlerBase):
         self.wheels_single_stick = False
         self.reverse_mode = False
         self._sticks_timestamp = self._reverse_timestamp = time.time()
-        
+
         # TODO(murata): Remove everything related to _sensors_client and the
         # try/finally block once you add your udp server.
         self._sensors_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sensors_client.bind(("", 9999))
-        
+
         try:
             while True:
                 try:
@@ -70,15 +69,15 @@ class Handler(TCPHandlerBase):
                     self.logger.info("Robot will shut down motors")
                     continue
                 self.logger.debug('Received: "{}"'.format(data))
-    
+
                 if data == "":  # Client exited safely.
                     self.logger.info("Terminating client session")
                     break
-    
+
                 if data == "state":
                     state = self.server.controllers["main"].get_state()
                     reply = pickle.dumps(state)
-    
+
                 elif data == "inputs":
                     state = self.server.controllers["main"].get_state()
                     dpad, lstick, rstick, buttons = state.data
@@ -86,28 +85,28 @@ class Handler(TCPHandlerBase):
                                           (lstick.x, lstick.y),
                                           (rstick.x, rstick.y),
                                           buttons.buttons))
-    
+
                 elif data == "speeds":
                     state = self.server.controllers["main"].get_state()
                     reply = pickle.dumps(self._get_needed_speeds(state))
-    
+
                 elif data.split()[0] == "echo":
                     reply = " ".join(data.split()[1:])
-    
+
                 elif data.split()[0] == "print":
                     reply = " ".join(data.split()[1:])
                     self.logger.info('Client says: "{}"'.format(reply))
-    
+
                 else:
                     reply = 'Unable to parse command: "{}"'.format(data)
                     self.logger.debug(reply)
-    
+
                 self.send(reply)
-                
+
                 # Receive sensor data
                 raw_data, address = self._sensors_client.recvfrom(64)
-                self.logger.debug("{}".format(pickle.loads(raw_data))
-                
+                self.logger.debug("{}".format(pickle.loads(raw_data)))
+
         finally:
             self._sensors_client.close()
 

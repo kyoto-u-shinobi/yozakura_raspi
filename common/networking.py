@@ -67,7 +67,7 @@ class TCPCommunication(object):
     def receive(self, *args, **kwargs):
         """
         Receive a message from the server.
-        
+
         Parameters
         ----------
         size : int
@@ -80,7 +80,7 @@ class TCPCommunication(object):
 
         """
         return self.request.recv(*args, **kwargs)
-    
+
     def send(self, message):
         """
         Send a message to the server.
@@ -123,12 +123,12 @@ class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
     handler_class : Handler
         The request handler. Each new request generates a separate process
         running that handler.
-    
+
     Examples
     --------
     >>> server = TCPServerBase(("192.168.11.1", 22), Handler)
     >>> server.serve_forever()
-    
+
     """
     allow_reuse_address = True  # Can resume immediately after shutdown
 
@@ -147,7 +147,7 @@ class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
 class TCPClientBase(TCPCommunication):
     """
     A TCP client base.
-    
+
     Parameters
     ----------
     server_address : 2-tuple of (str, int)
@@ -158,7 +158,7 @@ class TCPClientBase(TCPCommunication):
     ----------
     request : socket
         Handles communication with the server.
-    
+
     Examples
     --------
     >>> client = TCPClientBase(("192.168.11.1", 22))
@@ -178,14 +178,14 @@ class TCPClientBase(TCPCommunication):
         self.request.connect(server_address)
         self.logger.info("Connected to {}:{}".format(server_address[0],
                                                      server_address[1]))
-    
+
     @abc.abstractmethod
     def run(self):
         """
         Keep sending requests until a ``KeyboardInterrupt`` is received.
 
         Subclasses must implement this method.
-        
+
         """
         pass
 

@@ -102,7 +102,7 @@ class Buttons(object):
 
     Note that this is only tested with the Logitech RumblePad 2. Other input
     devices may have different configurations.
-    
+
     When registering the mapping for a new controller, please run the
     ``get_name()`` function to obtain the name to use.
 

@@ -22,30 +22,31 @@ from rpi.bitfields import CurrentConfiguration, CurrentAlerts
 
 def get_i2c_bus():
     """
-    Detect the revision number of a Raspberry Pi, useful for changing functionality
-    like default I2C bus based on revision. The revision list is available online.
-    [1]_
-    
+    Detect the revision number of a Raspberry Pi, useful for changing
+    functionality like default I2C bus based on revision. The revision list is
+    available online. [1]_
+
     Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.
-    
+
     This function is based on an Adafruit I2C implementation. [2]_
-    
+
     References
     ----------
     .. [1] ELinux.org. "RPi Hardware History."
            http://elinux.org/RPi_HardwareHistory#Board_Revision_History
     .. [2] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
            https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53
-    
+
     """
     with open('/proc/cpuinfo', 'r') as infile:
         for line in infile:
             # Match a line of the form "Revision : 0002" while ignoring extra
-            # info in front of the revsion (like 1000 when the Pi was over-volted).
-            match = re.match('Revision\s+:\s+.*(\w{4})$', line, flags=re.IGNORECASE)
-            if match and match.group(1) in ['0000', '0002', '0003']:  # Revision 1
+            # info in front of the revsion (like 1000 when RPi is over-volted).
+            match = re.match('Revision\s+:\s+.*(\w{4})$',
+                             line, flags=re.IGNORECASE)
+            if match and match.group(1) in ['0000', '0002', '0003']:  # Rev. 1
                 return 0
-            elif match:  # Revision 2
+            elif match:  # Rev. 2
                 return 1
         # Couldn't find the revision, throw an exception.
         raise RuntimeError('Could not determine Raspberry Pi revision.')
@@ -88,40 +89,40 @@ def get_used_i2c_slots(bus_number=i2c_bus):
 def require_repeated_start():
     """
     Enable repeated start conditions for I2C register reads.
-    
+
     This is the normal behaviour for I2C. However, on the Raspberry Pi,
     there is a bug which disables repeated starts unless explicitly enabled
     with this function.
-    
+
     The bug occurs during register reads, and does not send a repeated start
     condition as the Linux kernel smbus I2C driver functions define. As a
     workaround, this bit in the BMC2708 driver sysfs tree can be changed to
     enable I2C repeated starts.
-    
+
     Note that the Raspberry Pi models A, B, and B+ all use the BMC2835 CPU,
     and the Raspberry Pi 2 uses the BCM2836 CPU. [1]_ Both CPUs are
     implementations of the BCM2708 series, [2]_ so this fix should work for
     all models.
-    
+
     See this Raspberry Pi forum thread for more details. [3]_
-    
+
     This function is based on an Adafruit I2C implementation, shown to
     @masasin by Tony DiCola, one of the authors and contributors. [4]_
-    
+
     References
     ----------
     .. [1] Wikipedia. "Raspberry Pi."
            https://en.wikipedia.org/wiki/Raspberry_Pi
-           
+
     .. [2] Linux, Raspberry Pi, Github. "Issue #22. BCM2708 vs. BCM2835."
            https://github.com/raspberrypi/linux/issues/22
-           
+
     .. [3] Raspberry Pi Forums. "i2c repeated start transactions"
            http://www.raspberrypi.org/forums/viewtropic.php?f=44&t=15840
-    
+
     .. [4] Adafruit Python GPIO, Adafruit, Github. "I2C.py"
            https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/I2C.py#L68
-    
+
     """
     sysfs_tree = "/sys/module/i2c_bcm2708/parameters/combined"
     subprocess.check_call("chmod 666 {}".format(sysfs_tree), shell=True)
@@ -283,7 +284,7 @@ class ThermalSensor(Device):
             - 2 bytes : Reference temperature.
             - 32 bytes : Cell temperature for 16 cells.
             - 1 byte : Error byte.
-        
+
         This function is based on an official application note. [1]_
 
         Returns
@@ -294,8 +295,8 @@ class ThermalSensor(Device):
             The temperature matrix, containing 16 temperatures in Celsius.
         good_data : bool
             Whether the data is good.
-        
-        
+
+
         References
         ----------
         .. [1] Omron, D6T-44L-06 application note 01.
@@ -306,7 +307,7 @@ class ThermalSensor(Device):
         readout = self.bus.read_i2c_block_data(self.address,
                                                ThermalSensor.start_read,
                                                35)
-                                               
+
         self.logger.debug("Checking error")
         good_data = self._error_check(readout)  # Data integrity check
         if not good_data:
@@ -815,9 +816,9 @@ def __test_current_sensor():
 def __test_thermal_sensor():
     """
     Test the thermal sensor.
-    
+
     This assumes that the thermal sensor is connected properly.
-    
+
     """
     thermal_sensor = ThermalSensor()
     while True:
