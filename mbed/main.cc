@@ -69,19 +69,18 @@ class Motor {
 int main() {
     // The four motors are in an array. The raspberry pi expects this order;
     // do not change it without changing the code for the rpi as well.
-    Motor motors[4] = { Motor(p21, p11), // Left wheels
-    Motor(p22, p12), // Right wheels
-    Motor(p23, p13), // Left flipper
-    Motor(p24, p14) }; // Right flipper
+    Motor motors[4] = { Motor(p21, p11),   // Left wheels
+                        Motor(p22, p12),   // Right wheels
+                        Motor(p23, p13),   // Left flipper
+                        Motor(p24, p14) }; // Right flipper
     
-    AnalogIn pots[6] = {p15, // CO2 sensor
-                        p16,
-                        p17,
-                        p18,
-                        p19, // Left flipper position
-                        p20}; // Right flipper position
+    // Set up ADC ports. If you add ADC devices, please add them in order
+    // from the lowest pin to the highest.
+    AnalogIn pots[6] = {p15, p16, p17, p18,  // Unused 
+                        p19,                 // Left flipper position
+                        p20};                // Right flipper position
     
-    int n_adc = 3; // Number of ADC Channels in use. Max is 6.
+    int n_adc = 2; // Number of ADC Channels in use. Max is 6.
     uint16_t adc_results[n_adc];
     for (int i = 0; i < n_adc; i++) {
         adc_results[i] = 0; // Zero the results.
@@ -94,36 +93,52 @@ int main() {
         // Drive the motor
         if(rpi.readable()) {
             packet.as_byte = rpi.getc(); // Get packet from rpi.
-            //rpi.printf("%c\n\r", packet.as_byte);
         }
 
-
-        if(packet.b.negative and !packet.b.speed) { // Update ADC results.
-            //printf("Special command! ");
-            if(packet.b.motor_id < n_adc - 2) { // Last two channels are flippers.
-                //printf("Channel %d. ", packet.b.motor_id);
-                adc_results[packet.b.motor_id] = pots[packet.b.motor_id].read_u16();
-                //printf("New ADC value: %d\n\r", adc_results[packet.b.motor_id]);
+        // If speed is 0 but negative is true, you can consider these as special
+        // requests, and you may do whatever you want. Since there is a maximum
+        // of 4 motor IDs, you can use a switch statement.
+        // 
+        // It is best if you write a function and simply call it from here.
+        //
+        // Uncomment this code to use it.
+        if(packet.b.negative and !packet.b.speed) {
+        /*
+            switch(packet.b.motor_id) {
+                case 0:
+                    // Code
+                    break;
+                case 1:
+                    // Code
+                    break;
+                case 2:
+                    // Code
+                    break;
+                case 3:
+                    // Code
+                    break;
             }
-            //else printf("Invalid channel.\n\r");
+        */
         }
         else { // Drive motor.
-            //printf("Driving motor %d! ", packet.b.motor_id);
             sign = packet.b.negative ? -1 : 1;
             motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
-            
-            //printf("%5.2f percent\n\r", sign * packet.b.speed / 0.31);
         }
 
-        // Update flipper positions.
+        // Update extra ADC results.
+        for(int i = 0; i < n_adc - 2; i++)
+        {
+            adc_results[i] = pots[i].read_u16();
+        }
+        
         adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
-        adc_results[n_adc - 1] = pots[5].read_u16(); // Right flipper position
+        adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
 
         // Send data to Rpi.
         for(int i = 0; i < n_adc; i++) {
             rpi.printf("0x%X ", adc_results[i]);
         }
 
-        rpi.printf("\n\r");
+        rpi.printf("\n");
     }
 }
