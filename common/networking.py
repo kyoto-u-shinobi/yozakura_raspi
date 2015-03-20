@@ -178,7 +178,7 @@ class UDPServerBase(LoggingForkingServer, socketserver.UDPServer):
     pass
 
 
-class ClientBase(Object):
+class ClientBase(object):
     """
     A Client base.
     
