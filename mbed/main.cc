@@ -3,6 +3,8 @@
 #include "mbed.h"
 #include "motor.h"
 
+Serial rpi(USBTX, USBRX);  // USB port acts as a serial connection with rpi.
+
 int main() {
     // The four motors are in an array. The raspberry pi expects this order;
     // do not change it without changing the code for the rpi as well.
