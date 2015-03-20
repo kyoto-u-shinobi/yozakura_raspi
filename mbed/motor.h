@@ -59,10 +59,7 @@ class Motor {
         }
         
     private:
-        // Variables:
-        // pwm: PwmOut for the motor driver's PWM pin.
-        // dir: DigitalOut for the motor driver's direction pin.
-        PwmOut pwm;
-        DigitalOut dir;
+        PwmOut pwm;      // PwmOut for the motor driver's PWM pin.
+        DigitalOut dir;  // DigitalOut for the motor driver's direction pin.
 };
 #endif
