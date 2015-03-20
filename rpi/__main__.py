@@ -1,7 +1,6 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import logging
-import multiprocessing as mp
 import serial
 
 from common.networking import get_ip_address
@@ -43,11 +42,6 @@ def main():
         client.add_motor(right_flipper, ser=mbed)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
-    
-    logging.debug("Starting UDP server")
-    server = Server((ip_address, 9999), Handler, mbed_ser, period=0.001)
-    server_process = mp.Process(target=server.serve_forever)
-    server_process.start()
     
     try:
         client.run()
