@@ -14,7 +14,6 @@ import socket
 import time
 
 from common.networking import TCPServerBase, TCPHandlerBase
-from opstn.client import Client
 
 
 class Handler(TCPHandlerBase):
@@ -57,9 +56,10 @@ class Handler(TCPHandlerBase):
         self.reverse_mode = False
         self._sticks_timestamp = self._reverse_timestamp = time.time()
         
-        client = Client((self.client_address[0], 9999))
-        client_process = mp.Process(target=client.run)
-        client_process.start()
+        # TODO(murata): Remove everything related to _sensors_client and the
+        # try/finally block once you add your udp server.
+        self._sensors_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sensors_client.bind(("", 9999))
         
         try:
             while True:
@@ -104,7 +104,7 @@ class Handler(TCPHandlerBase):
     
                 self.send(reply)
         finally:
-            client_process.terminate()
+            self._sensors_client.close()
 
     def _get_needed_speeds(self, state):
         """
