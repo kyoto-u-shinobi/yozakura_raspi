@@ -45,7 +45,7 @@ def main():
         logging.warning("The mbed is not connected")
     
     logging.debug("Starting UDP server")
-    server = Server((ip_address, 9999), Handler, mbed_ser, period=0.01)
+    server = Server((ip_address, 9999), Handler, mbed_ser, period=0.001)
     server_process = mp.Process(target=server.serve_forever)
     server_process.start()
     
@@ -57,7 +57,7 @@ def main():
         Motor.shutdown_all()
         try:
             logging.debug("Shutting down connection with mbed")
-            mbed_ser.close()
+            mbed.close()
         except NameError:
             logging.debug("The mbed was not connected")
             pass
