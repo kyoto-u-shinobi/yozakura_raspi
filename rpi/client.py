@@ -29,6 +29,9 @@ class Client(TCPClientBase):
     ----------
     request : socket
         Handles communication with the server.
+    server_address : 2-tuple of (str, int)
+        The address at which the server is listening. The elements are the
+        server address and the port number respectively.
     motors : dict
         Contains all registered motors.
 
@@ -42,6 +45,8 @@ class Client(TCPClientBase):
     def __init__(self, server_address):
         super().__init__(server_address)
         self.request.settimeout(0.5)  # seconds
+        self.server_address = server_address
+        self._sensors_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
         self.motors = {}
         self.serials = {}
 
@@ -94,13 +99,13 @@ class Client(TCPClientBase):
                     timed_out = False
 
                 # Get flipper positions from last two items of mbed reply.
-                #try:
-                    #positions = self.serials["mbed"].readline().split()
-                    #*_, lpos, rpos = [int(i, 0) / 0xFFFF for i in positions]
+                try:
+                    sensor_data = self.serials["mbed"].readline().split()
+                    #*_, lpos, rpos = [int(i, 0) / 0xFFFF for i in sensor_data]
                     #self.logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
-                #except ValueError:
-                    #self.logger.debug("An error occured when trying to read " +
-                                      ##"the flipper positions from the mbed.")
+                except ValueError:
+                    self.logger.debug("An error occured when trying to read " +
+                                      "the flipper positions from the mbed.")
                 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
@@ -109,6 +114,10 @@ class Client(TCPClientBase):
                 # TODO(masasin): Hold position if input is 0.
                 self.motors["left_flipper"].drive(lflipper)
                 self.motors["right_flipper"].drive(rflipper)
+                
+                # Send sensor data back to base station.
+                self._sensors_server.sendto(pickle.dumps(sensor_data),
+                                           self.server_address)
 
             except (KeyboardInterrupt, RuntimeError):
                 break
