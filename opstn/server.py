@@ -10,7 +10,7 @@ simultaneously.
 """
 import pickle
 import multiprocessing as mp
-from socket import timeout
+import socket
 import time
 
 from common.networking import TCPServerBase, TCPHandlerBase
@@ -65,7 +65,7 @@ class Handler(TCPHandlerBase):
             while True:
                 try:
                     data = self.receive(64).decode().strip()
-                except timeout:
+                except socket.timeout:
                     self.logger.warning("Lost connection to robot")
                     self.logger.info("Robot will shut down motors")
                     continue
