@@ -160,6 +160,8 @@ class Device(object):
 
     """
     devices = {}
+    # TODO(masasin): Fix segfaulting.
+    # require_repeated_start()
 
     def __init__(self, address, name, bus_number=i2c_bus):
         self.logger = logging.getLogger("i2c-{}-{}".format(name, hex(address)))
@@ -198,7 +200,7 @@ class ThermalSensor(Device):
 
     The device returns a 4x4 matrix containing temperatures. It has two
     addresses: a write address and a read address. The ``start_read`` byte
-    needs to be written to the start address before starting to read.
+    needs to be written to the address before starting to read. [2]_
 
     .. note:: All words are little-endian.
 
@@ -224,7 +226,10 @@ class ThermalSensor(Device):
 
     References
     ----------
-    .. [1] Omron, D6T-44L-06 application note 01.
+    .. [1] Omron, D6T-44L-06 datasheet.
+           http://www.omron.com/ecb/products/pdf/en-d6t.pdf
+
+    .. [2] Omron, D6T-44L-06 application note 01.
            http://www.omron.com/ecb/products/sensor/special/mems/pdf/AN-D6T-01EN_r2.pdf
 
     """
@@ -246,6 +251,8 @@ class ThermalSensor(Device):
             - 2 bytes : Reference temperature.
             - 32 bytes : Cell temperature for 16 cells.
             - 1 byte : Error byte.
+        
+        This function is based on an official application note. [1]_
 
         Returns
         -------
@@ -255,14 +262,19 @@ class ThermalSensor(Device):
             The temperature matrix, containing 16 temperatures in Celsius.
         good_data : bool
             Whether the data is good.
+        
+        
+        References
+        ----------
+        .. [1] Omron, D6T-44L-06 application note 01.
+               http://www.omron.com/ecb/products/sensor/special/mems/pdf/AN-D6T-01EN_r2.pdf
 
         """
         self.logger.debug("Getting temperature")
-        self.logger.debug("Writing to start read")
-        self.bus.write_byte(self.address, ThermalSensor.start_read)
-        self.logger.debug("Reading")
-        readout = self.bus.read_i2c_block_data(self.address, 35)
-
+        readout = self.bus.read_i2c_block_data(self.address,
+                                               ThermalSensor.start_read,
+                                               35)
+                                               
         self.logger.debug("Checking error")
         good_data = self._error_check(readout)  # Data integrity check
         if not good_data:
