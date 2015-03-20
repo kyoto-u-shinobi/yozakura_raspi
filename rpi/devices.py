@@ -780,5 +780,24 @@ def __test_current_sensor():
         print("{}          {}".format(print_upper, print_lower), end="\r")
 
 
+def __test_thermal_sensor():
+    """
+    Test the thermal sensor.
+    
+    This assumes that the thermal sensor is connected properly.
+    
+    """
+    thermal_sensor = ThermalSensor()
+    while True:
+        temp_ref, matrix, good_data = thermal_sensor.get_temperature_matrix()
+        if not good_data:
+            print("CRC Error!")
+        print(temp_ref)
+        for i in range(4):
+            for j in range(4):
+                print(matrix[i * 4 + j], end=" ")
+            print()
+
+
 if __name__ == "__main__":
     __test_current_sensor()
