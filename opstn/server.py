@@ -150,7 +150,7 @@ class Handler(TCPHandlerBase):
             if self.wheels_single_stick:
                 self.logger.debug("lx: {:9.7}  ".fromat(lstick.x) +
                                   "ly: {:9.7}".format(lstick.y))
-                if abs(lstick.y) < 0.1:  # Rotate in place
+                if abs(lstick.y) == 0:  # Rotate in place
                     lmotor = -lstick.x
                     rmotor = lstick.x
                 else:
@@ -188,7 +188,7 @@ class Handler(TCPHandlerBase):
             if self.wheels_single_stick:
                 self.logger.debug("lx: {:9.7}  ".format(lstick.x) +
                                   "ly: {:9.7}".format(lstick.y))
-                if abs(lstick.y) < 0.1:  # Rotate in place
+                if abs(lstick.y) == 0:  # Rotate in place
                     lmotor = lstick.x
                     rmotor = -lstick.x
                 else:
