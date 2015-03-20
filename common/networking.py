@@ -63,7 +63,7 @@ def get_ip_address(interface):
                                         packed)[20:24])
 
 
-class TCPCommunication(object):
+class Communication(object):
     def receive(self, *args, **kwargs):
         """
         Receive a message from the server.
@@ -81,6 +81,8 @@ class TCPCommunication(object):
         """
         return self.request.recv(*args, **kwargs)
 
+
+class TCPCommunication(Communication):
     def send(self, message):
         """
         Send a message to the server.
@@ -97,7 +99,7 @@ class TCPCommunication(object):
             self.request.sendall(message)
 
 
-class UDPCommunication(object):
+class UDPCommunication(Communication):
     def send(self, message, address):
         """
         Send a message to the server.
@@ -111,9 +113,9 @@ class UDPCommunication(object):
 
         """
         try:
-            self.request[1].sendto(str.encode(message), address)
+            self.request.sendto(str.encode(message), address)
         except TypeError:  # Already bytecode
-            self.request[1].sendto(message, address)
+            self.request.sendto(message, address)
 
 
 class HandlerBase(socketserver.BaseRequestHandler):

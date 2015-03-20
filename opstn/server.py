@@ -57,7 +57,7 @@ class Handler(TCPHandlerBase):
         self.reverse_mode = False
         self._sticks_timestamp = self._reverse_timestamp = time.time()
         
-        client = Client(self.client_address)
+        client = Client((self.client_address[0], 9999))
         client_process = mp.Process(target=client.run)
         client_process.start()
         
