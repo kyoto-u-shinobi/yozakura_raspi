@@ -190,8 +190,6 @@ class Motor(object):
         elif gpio.input(self.pin_fault_2):
             self.logger.warning("Fault detected! Short circuit. " +
                                 "Motor driver has been latched.")
-        else:
-            self.logger.warning("Fault detected! Unknown fault.")
 
     def _scale_speed(self, speed):
         """
