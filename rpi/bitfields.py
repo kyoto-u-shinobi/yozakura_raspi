@@ -1,16 +1,16 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 """
-Provide bitfields for Kaginawa.
+Provide bitfields for Yozakura.
 
 A bitfield is a structure used to store neighbouring bits where each set of
-bits, and individual bits, can be addressed. Kaginawa uses them to represent
+bits, and individual bits, can be addressed. Yozakura uses them to represent
 flags, or a packed bit.
 
 These bitfields typically fit into either a single byte, or a word. They allow
 easy-to-use bit manipulation, and help prevent manipulation mistakes.
 
-In Kaginawa, we use both the structures holding the named bits themselves, as
+In Yozakura, we use both the structures holding the named bits themselves, as
 well as unions which allow us to address the full byte or word at one time.
 This makes it easy to store data simultaneously, or to transmit it.
 

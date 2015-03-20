@@ -1,27 +1,27 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 """
-Exceptions used in the entire Kaginawa project.
+Exceptions used in the entire Yozakura project.
 
-Exceptions in Kaginawa are only used when there is a fatal error that would be
+Exceptions in Yozakura are only used when there is a fatal error that would be
 dangerous, or would cause the robot to be unable to move or carry out its tasks
 properly.
 
 """
 
 
-class KaginawaException(Exception):
+class YozakuraException(Exception):
     """
-    Root for all Kaginawa exceptions, never raised.
+    Root for all Yozakura exceptions, never raised.
 
-    All custom exceptions derive from ``KaginawaException``. That way, when you
+    All custom exceptions derive from ``YozakuraException``. That way, when you
     need to filter out only exceptions caused by the robot (as opposed to, say,
     an error caused by your workstation or installation), you can simply use
     something like this:
 
     >>> try:
     ...     # Some code
-    ... except KaginawaException:
+    ... except YozakuraException:
     ...     # Do something
     ... except KeyboardInterrupt:
     ...     # Exit cleanly
@@ -31,7 +31,7 @@ class KaginawaException(Exception):
     """
 
 
-class InvalidArgError(KaginawaException):
+class InvalidArgError(YozakuraException):
     """
     Raised when there is an invalid argument.
 
@@ -40,7 +40,7 @@ class InvalidArgError(KaginawaException):
     """
 
 
-class NoControllerMappingError(KaginawaException):
+class NoControllerMappingError(YozakuraException):
     """
     Raised when the mapping of the controller buttons is unknown.
 
@@ -61,7 +61,7 @@ class NoControllerMappingError(KaginawaException):
         super().__init__(message.format(make))
 
 
-class NoDriversError(KaginawaException):
+class NoDriversError(YozakuraException):
     """
     Raised when a motor has no drivers enabled.
 
@@ -83,7 +83,7 @@ class NoDriversError(KaginawaException):
         super().__init__(message.format(motor))
 
 
-class TooManyMotorsError(KaginawaException):
+class TooManyMotorsError(YozakuraException):
     """
     Raised when more than four motors are registered.
 
@@ -93,7 +93,7 @@ class TooManyMotorsError(KaginawaException):
     msg = "Four motors have already been registered!"
 
 
-class NoMotorsError(KaginawaException):
+class NoMotorsError(YozakuraException):
     """
     Raised when RPi client is run with no motors registered.
 
@@ -105,7 +105,7 @@ class NoMotorsError(KaginawaException):
     msg = "No motors are registered!"
 
 
-class NoSerialsError(KaginawaException):
+class NoSerialsError(YozakuraException):
     """
     Raised when RPi client is run with no serial devices registered.
 
@@ -117,7 +117,7 @@ class NoSerialsError(KaginawaException):
     msg = "No serial devices are registered!"
 
 
-class I2CSlotBusyError(KaginawaException):
+class I2CSlotBusyError(YozakuraException):
     """
     Raised when an I2C slot is busy.
 
@@ -128,7 +128,7 @@ class I2CSlotBusyError(KaginawaException):
     msg = "A device is already registered at this address!"
 
 
-class NotCalibratedError(KaginawaException):
+class NotCalibratedError(YozakuraException):
     """
     Raised when a sensor is not calibrated.
 

@@ -1,7 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 """
-Server for Kaginawa motor commands.
+Server for Yozakura motor commands.
 
 After connecting with the client, the server receives requests and responds
 accordingly. Can read joystick input, and connect to multiple clients
