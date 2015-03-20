@@ -1,7 +1,8 @@
 // (C) 2015 Kyoto University Mechatronics Laboratory
 // Released under the GNU General Public License, version 3
+#ifndef MOTOR_H
+#define MOTOR_H
 #include "mbed.h"
-Serial rpi(USBTX, USBRX); // USB port acts as a serial connection with rpi.
 // A bitfield representing the motor packet received from the rpi.
 //
 // The first two bits of the packet represent the motor ID, between 0 and 3.
@@ -64,3 +65,4 @@ class Motor {
         PwmOut pwm;
         DigitalOut dir;
 };
+#endif
