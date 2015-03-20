@@ -6,7 +6,7 @@ import serial
 
 from common.networking import get_ip_address
 from rpi.client import Client
-from rpi.motors import Motor
+from rpi.motor import Motor
 from rpi.server import Server, Handler
 
 
