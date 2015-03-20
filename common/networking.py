@@ -63,7 +63,7 @@ def get_ip_address(interface):
                                         packed)[20:24])
 
 
-class Communication(object):
+class TCPCommunication(object):
     def receive(self, *args, **kwargs):
         """
         Receive a message from the server.
@@ -80,9 +80,7 @@ class Communication(object):
 
         """
         return self.request.recv(*args, **kwargs)
-
-
-class TCPCommunication(Communication):
+    
     def send(self, message):
         """
         Send a message to the server.
@@ -99,26 +97,7 @@ class TCPCommunication(Communication):
             self.request.sendall(message)
 
 
-class UDPCommunication(Communication):
-    def send(self, message, address):
-        """
-        Send a message to the server.
-
-        Parameters
-        ----------
-        message : str
-            The message to send to the server.
-        address : 2-tuple of (str, int)
-            The address to which to send the message
-
-        """
-        try:
-            self.request.sendto(str.encode(message), address)
-        except TypeError:  # Already bytecode
-            self.request.sendto(message, address)
-
-
-class HandlerBase(socketserver.BaseRequestHandler):
+class TCPHandlerBase(socketserver.BaseRequestHandler, TCPCommunication):
     """A logging base request handler."""
     def __init__(self, request, client_address, server):
         """
@@ -132,15 +111,7 @@ class HandlerBase(socketserver.BaseRequestHandler):
         super().__init__(request, client_address, server)
 
 
-class TCPHandlerBase(HandlerBase, TCPCommunication):
-    pass
-
-
-class UDPHandlerBase(HandlerBase, UDPCommunication):
-    pass
-
-
-class LoggingForkingServer(socketserver.ForkingMixIn):
+class TCPServerBase(socketserver.ForkingMixIn, socketserver.TCPServer):
     """
     A logging.
 
@@ -156,6 +127,7 @@ class LoggingForkingServer(socketserver.ForkingMixIn):
     Examples
     --------
     >>> server = TCPServerBase(("192.168.11.1", 22), Handler)
+    >>> server.serve_forever()
     
     """
     allow_reuse_address = True  # Can resume immediately after shutdown
@@ -172,17 +144,9 @@ class LoggingForkingServer(socketserver.ForkingMixIn):
         super().serve_forever(*args, **kwargs)
 
 
-class TCPServerBase(LoggingForkingServer, socketserver.TCPServer):
-    pass
-
-
-class UDPServerBase(LoggingForkingServer, socketserver.UDPServer):
-    pass
-
-
-class ClientBase(object):
+class TCPClientBase(TCPCommunication):
     """
-    A Client base.
+    A TCP client base.
     
     Parameters
     ----------
@@ -194,6 +158,11 @@ class ClientBase(object):
     ----------
     request : socket
         Handles communication with the server.
+    
+    Examples
+    --------
+    >>> client = TCPClientBase(("192.168.11.1", 22))
+    >>> client.run()
 
     """
     def __init__(self, server_address):
@@ -205,6 +174,10 @@ class ClientBase(object):
 
         self.logger = logging.getLogger("{}_client".format(ip_address))
         self.logger.debug("Creating client")
+        self.request = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.request.connect(server_address)
+        self.logger.info("Connected to {}:{}".format(server_address[0],
+                                                     server_address[1]))
     
     @abc.abstractmethod
     def run(self):
@@ -212,6 +185,7 @@ class ClientBase(object):
         Keep sending requests until a ``KeyboardInterrupt`` is received.
 
         Subclasses must implement this method.
+        
         """
         pass
 
@@ -220,59 +194,3 @@ class ClientBase(object):
         self.logger.debug("Shutting down client")
         self.request.close()
         self.logger.info("Client shut down")
-        
-
-class TCPClientBase(ClientBase, TCPCommunication):
-    """
-    A TCPClient base.
-
-    Parameters
-    ----------
-    server_address : 2-tuple of (str, int)
-        The address at which the server is listening. The elements are the
-        server address and the port number respectively.
-
-    Attributes
-    ----------
-    request : socket
-        Handles communication with the server.
-
-    Examples
-    --------
-    >>> client = TCPClientBase(("192.168.11.1", 22))
-
-    """
-    def __init__(self, server_address):
-        super().__init__(server_address)
-        self.request = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.request.connect(server_address)
-        self.logger.info("Connected to {}:{}".format(server_address[0],
-                                                     server_address[1]))
-
-
-class UDPClientBase(ClientBase, UDPCommunication):
-    """
-    A UDP client base.
-
-    Parameters
-    ----------
-    server_address : 2-tuple of (str, int)
-        The address at which the server is listening. The elements are the
-        server address and the port number respectively.
-
-    Attributes
-    ----------
-    request : socket
-        Handles communication with the server.
-
-    Examples
-    --------
-    >>> client = UDPClientBase(("192.168.11.1", 22))
-
-    """
-    def __init__(self, server_address):
-        super().__init__(server_address)
-        self.server_address = server_address
-        self.request = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.logger.info("Listening to {}:{}".format(server_address[0],
-                                                     server_address[1]))
