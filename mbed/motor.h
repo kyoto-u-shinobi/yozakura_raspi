@@ -2,6 +2,7 @@
 // Released under the GNU General Public License, version 3
 #ifndef MOTOR_H
 #define MOTOR_H
+
 #include "mbed.h"
 // A bitfield representing the motor packet received from the rpi.
 //
@@ -37,6 +38,10 @@ union MotorPacket {
 // motor.drive(0.5) // Runs motor forward at 50% speed.
 // motor.drive(-0.5) // Runs motor backwards at 50% speed.
 class Motor {
+    private:
+        PwmOut pwm;      // PwmOut for the motor driver's PWM pin.
+        DigitalOut dir;  // DigitalOut for the motor driver's direction pin.
+
     public:
         // Initialize the motor.
         //
@@ -44,22 +49,13 @@ class Motor {
         // pin_pwm: The motor driver's PWM pin. In order to have PWM output,
         // the pin should be between 21 and 26.
         // pin_dir: The motor driver's DIR pin. HI is forward, LO is reverse.
-        Motor(PinName pin_pwm, PinName pin_dir) : pwm(pin_pwm), dir(pin_dir) {
-            pwm = dir = 0; // Set all outputs to low.
-            pwm.period_us(40); // Set PWM output frequency to 25 kHz.
-        }
+        Motor(PinName pin_pwm, PinName pin_dir);
         
         // Drive the motor at the given speed.
         //
         // Args:
         // speed: A value between -1 and 1, representing the speed of the motor.
-        void drive(float speed) {
-            dir = speed < 0 ? 0 : 1;
-            pwm = abs(speed);
-        }
-        
-    private:
-        PwmOut pwm;      // PwmOut for the motor driver's PWM pin.
-        DigitalOut dir;  // DigitalOut for the motor driver's direction pin.
+        void drive(float speed);
 };
+
 #endif
