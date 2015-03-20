@@ -103,6 +103,11 @@ class Handler(TCPHandlerBase):
                     self.logger.debug(reply)
     
                 self.send(reply)
+                
+                # Receive sensor data
+                raw_data, address = self._sensors_client.recvfrom(64)
+                self.logger.debug("{}".format(pickle.loads(raw_data))
+                
         finally:
             self._sensors_client.close()
 
