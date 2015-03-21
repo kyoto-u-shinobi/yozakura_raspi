@@ -23,7 +23,7 @@ class YozakuraException(Exception):
     ...     # Some code
     ... except YozakuraException:
     ...     # Do something
-    ... except KeyboardInterrupt:
+    ... except (KeyboardInterrupt, SystemExit):
     ...     # Exit cleanly
     ... except:
     ...     # Other

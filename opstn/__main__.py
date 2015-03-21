@@ -27,8 +27,8 @@ def main():
     try:
         logging.debug("Starting server")
         server.serve_forever()
-    except KeyboardInterrupt:
-        pass
+    except (KeyboardInterrupt, SystemExit):
+        raise
     finally:
         logging.info("Shutting down...")
         Controller.shutdown_all()

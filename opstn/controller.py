@@ -260,7 +260,7 @@ class State(object):
         >>> while True:
         ...     try:  # Below, end="backslash r"
         ...         print(stick_body.get_state(), end="\r")
-        ...     except KeyboardInterrupt:  # Exit safely.
+        ...     except (KeyboardInterrupt, SystemExit):  # Exit safely.
         ...         Controller.shutdown_all()
         ...         break
         dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
@@ -386,7 +386,7 @@ if __name__ == "__main__":
     while True:
         try:
             print(stick_body.get_state(), end="\r")
-        except KeyboardInterrupt:  # Exit safely.
+        except (KeyboardInterrupt, SystemExit):  # Exit safely.
             logging.info("")
             logging.info("Exiting")
             Controller.shutdown_all()

@@ -81,8 +81,8 @@ class Client(TCPClientBase):
         self.logger.info("Client started")
         timed_out = False
 
-        while True:
-            try:
+        try:
+            while True:
                 try:
                     self.send("speeds")      # Request speed data.
                     result = self.receive(64)  # Receive speed data.
@@ -119,8 +119,8 @@ class Client(TCPClientBase):
                 self._sensors_server.sendto(pickle.dumps(sensor_data),
                                             self.server_address)
 
-            except (KeyboardInterrupt, RuntimeError):
-                break
+        except (KeyboardInterrupt, RuntimeError, SystemExit):
+            break
 
     def add_serial_device(self, name, ser):
         """
