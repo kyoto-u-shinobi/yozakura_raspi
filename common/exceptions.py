@@ -31,7 +31,7 @@ class YozakuraException(Exception):
     """
 
 
-class InvalidArgError(YozakuraException):
+class BadArgError(YozakuraException):
     """
     Raised when there is an invalid argument.
 
@@ -40,7 +40,7 @@ class InvalidArgError(YozakuraException):
     """
 
 
-class NoControllerMappingError(YozakuraException):
+class UnknownControllerError(YozakuraException):
     """
     Raised when the mapping of the controller buttons is unknown.
 
@@ -83,26 +83,31 @@ class NoDriversError(YozakuraException):
         super().__init__(message.format(motor))
 
 
-class TooManyMotorsError(YozakuraException):
+class MotorCountError(YozakuraException):
     """
-    Raised when more than four motors are registered.
-
-    The ``MotorPacket`` structure only allows for a motor ID between 0 and 3;
-    further motors would not be addressable.
-    """
-    msg = "Four motors have already been registered!"
-
-
-class NoMotorsError(YozakuraException):
-    """
-    Raised when RPi client is run with no motors registered.
+    Raised when no motors, or more than four motors are registered.
 
     The Raspberry Pi client keeps a list of all motors it needs to control. If
     the client is run with no motors registered, the robot would not be able
     to move.
 
+    In addition, the ``MotorPacket`` structure only allows for a motor ID
+    between 0 and 3; further motors would not be addressable.
+
+    Parameters
+    ----------
+    count : int, optional
+        The amount of motors that have been registered.
+
     """
-    msg = "No motors are registered!"
+    def __init__(self, count=None):
+        if count is None:
+            message = "The motor count is bad!"
+        elif count == 0:
+            message == "No motors have been registered!"
+        else:
+            message = "{} motors have already been registered!".format(count)
+        super().__init__(message)
 
 
 class NoSerialsError(YozakuraException):
@@ -130,7 +135,7 @@ class I2CSlotBusyError(YozakuraException):
 
 class NotCalibratedError(YozakuraException):
     """
-    Raised when a sensor is not calibrated.
+    Raised when a device has not been calibrated.
 
     Parameters
     ----------

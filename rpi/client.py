@@ -8,14 +8,15 @@ motors. If the received speed for a flipper is zero, it attempts to hold the
 position based on encoder data received from the mbed.
 
 """
+import logging
 import pickle
 import socket
 
-from common.exceptions import NoDriversError, NoMotorsError, NoSerialsError
-from common.networking import TCPClientBase
+from common.exceptions import NoDriversError, MotorCountError, NoSerialsError
+from common.networking import get_ip_address
 
 
-class Client(TCPClientBase):
+class Client(object):
     """
     A client to communicate with the base station and control the robot.
 
@@ -41,9 +42,25 @@ class Client(TCPClientBase):
 
         **Dictionary format :** {name (str): connection (Serial)}
 
+    Examples
+    --------
+    >>> client = TCPClientBase(("192.168.11.1", 22))
+    >>> client.run()
+
     """
     def __init__(self, server_address):
-        super().__init__(server_address)
+        # Get local IP address.
+        try:
+            ip_address = get_ip_address("eth0")
+        except OSError:
+            ip_address = get_ip_address("enp2s0")
+
+        self.logger = logging.getLogger("{}_client".format(ip_address))
+        self.logger.debug("Creating client")
+        self.request = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.request.connect(server_address)
+        self.logger.info("Connected to {}:{}".format(server_address[0],
+                                                     server_address[1]))
         self.request.settimeout(0.5)  # seconds
         self.server_address = server_address
         self._sensors_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -64,7 +81,7 @@ class Client(TCPClientBase):
 
         Raises
         ------
-        NoMotorsError
+        MotorCountError
             If there are no motors registered
         NoSerialsError
             If there are no serial devices registered
@@ -72,7 +89,7 @@ class Client(TCPClientBase):
         """
         if not self.motors:
             self.logger.critical("No motors registered!")
-            raise NoMotorsError
+            raise MotorCountError(0)
 
         if not self.serials:
             self.logger.critical("No serial devices registered!")
@@ -85,7 +102,7 @@ class Client(TCPClientBase):
             while True:
                 try:
                     self.send("speeds")      # Request speed data.
-                    result = self.receive(64)  # Receive speed data.
+                    result = self.request.recv(64)  # Receive speed data.
                 except socket.timeout:
                     if not timed_out:
                         self.logger.warning("No connection to base station.")
@@ -205,3 +222,9 @@ class Client(TCPClientBase):
             del self.motors[motor.name]
         else:
             self.logger.warning("{} not found in motors".format(motor))
+
+    def shutdown(self):
+        """Shut down the client."""
+        self.logger.debug("Shutting down client")
+        self.request.close()
+        self.logger.info("Client shut down")

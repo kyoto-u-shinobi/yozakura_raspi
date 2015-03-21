@@ -12,7 +12,7 @@ import logging
 
 import pygame
 
-from common.exceptions import NoControllerMappingError
+from common.exceptions import UnknownControllerError
 
 
 class Position(object):
@@ -69,23 +69,23 @@ class Position(object):
 
         """
         if self.y > 0:
-            vert = "D" if self.inverted else "U"
+            vertical = "D" if self.inverted else "U"
         elif self.y < 0:
-            vert = "U" if self.inverted else "D"
+            vertical = "U" if self.inverted else "D"
         else:
-            vert = ""
+            vertical = ""
 
         if self.x > 0:
-            hrz = "R"
+            horizontal = "R"
         elif self.x < 0:
-            hrz = "L"
+            horizontal = "L"
         else:
-            hrz = ""
+            horizontal = ""
 
-        if vert == "" and hrz == "":
+        if not vertical and not horizontal:
             direction = "none"
         else:
-            direction = vert + hrz
+            direction = "{}{}".format(vertical, horizontal)
 
         return direction
 
@@ -117,13 +117,11 @@ class Buttons(object):
         A list containing the state of each button.
     pressed_buttons: list of str
         A list containing the names of each button that is pressed.
-    known_makes : list of str
-        A list containing the known controller mappings.
 
     Raises
     ------
-    NoControllerMappingError
-        Raised when the mapping of the controller buttons is unknown.
+    UnknownControllerError
+        If the mapping of the controller buttons is unknown.
 
     """
     _button_list = ("□", "✕", "○", "△",   # 0-3
@@ -134,15 +132,14 @@ class Buttons(object):
     _mappings = {"Logitech Logitech RumblePad 2 USB": {},
                  "Elecom Wireless Gamepad": {1: 3, 2: 1, 3: 2}}
 
+    # Populate the mappings.
     for make in _mappings:
         for i in range(13):
-            _mappings[make].setdefault(i, i)  # Fill the mappings.
-
-    known_makes = list(_mappings.keys())
+            _mappings[make].setdefault(i, i)
 
     def __init__(self, make, buttons):
-        if make not in Buttons.known_makes:
-            raise NoControllerMappingError
+        if make not in Buttons._mappings.keys():
+            raise UnknownControllerError(make)
 
         self._make = make
         self.buttons = buttons
@@ -365,7 +362,6 @@ class Controller(object):
         if not Controller.controllers:
             pygame.quit()
 
-    @classmethod
     def shutdown_all(self):
         """A class method to safely quit all controllers."""
         logging.info("Closing all controller handlers")

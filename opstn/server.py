@@ -8,15 +8,18 @@ accordingly. Can read joystick input, and connect to multiple clients
 simultaneously.
 
 """
+import logging
 import pickle
 import socket
+import socketserver
 import time
 
-from common.networking import TCPServerBase, TCPHandlerBase
 
+class Handler(socketserver.BaseRequestHandler):
+    """
+    A handler for connection requests.
 
-class Handler(TCPHandlerBase):
-    """A handler for connection requests.
+    It gets called by the server automatically whenever a new client connects.
 
     Attributes
     ----------
@@ -29,6 +32,11 @@ class Handler(TCPHandlerBase):
         are both inverted.
 
     """
+    def __init__(self, request, client_address, server):
+        self.logger = logging.getLogger("{}_handler".format(client_address[0]))
+        self.logger.debug("New handler created")
+        super().__init__(request, client_address, server)
+
     def handle(self):
         """
         Handle the requests to the server.
@@ -63,7 +71,7 @@ class Handler(TCPHandlerBase):
         try:
             while True:
                 try:
-                    data = self.receive(64).decode().strip()
+                    data = self.request.recv(64).decode().strip()
                 except socket.timeout:
                     self.logger.warning("Lost connection to robot")
                     self.logger.info("Robot will shut down motors")
@@ -101,7 +109,10 @@ class Handler(TCPHandlerBase):
                     reply = 'Unable to parse command: "{}"'.format(data)
                     self.logger.debug(reply)
 
-                self.send(reply)
+                try:
+                    self.request.sendall(str.encode(reply))
+                except TypeError:  # Already bytecode
+                    self.request.sendall(reply)
 
                 # Receive sensor data
                 raw_data, address = self._sensors_client.recvfrom(64)
@@ -271,7 +282,7 @@ class Handler(TCPHandlerBase):
             self._reverse_timestamp = current_time
 
 
-class Server(TCPServerBase):
+class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
     """
     A TCP Server.
 
@@ -284,7 +295,6 @@ class Server(TCPServerBase):
         The request handler. Each new request generates a separate process
         running that handler.
 
-
     Attributes
     ----------
     controllers : dict
@@ -292,10 +302,25 @@ class Server(TCPServerBase):
 
         **Dictionary format :** {name (str): controller (Controller)}
 
+    Examples
+    --------
+    >>> server = Server(("192.168.11.1", 22), Handler)
+    >>> server.serve_forever()
+
     """
+    allow_reuse_address = True  # Can resume immediately after shutdown
+
     def __init__(self, server_address, handler_class):
+        self.logger = logging.getLogger("{}_server".format(server_address[0]))
+        self.logger.debug("Creating server")
         super().__init__(server_address, handler_class)
+        self.logger.info("Listening to port {}".format(server_address[1]))
         self.controllers = {}
+
+    def serve_forever(self, *args, **kwargs):
+        """Handle requests until an explicit ``shutdown()`` request."""
+        self.logger.info("Server started")
+        super().serve_forever(*args, **kwargs)
 
     def add_controller(self, controller):
         """

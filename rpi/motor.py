@@ -13,8 +13,7 @@ from time import sleep
 
 from RPi import GPIO as gpio
 
-from common.exceptions import NoDriversError, TooManyMotorsError, \
-    InvalidArgError
+from common.exceptions import BadArgError, NoDriversError, MotorCountError
 from rpi.bitfields import MotorPacket
 
 
@@ -54,7 +53,7 @@ class Motor(object):
     TooManyMotorsError
         Raised when a motor is added after all four motors have already been
         registered.
-    InvalidArgError
+    BadArgError
         Raised when bad inputs are made.
 
     Attributes
@@ -99,11 +98,11 @@ class Motor(object):
     def __init__(self, name, fault_1, fault_2, reset,
                  start_input=0, max_speed=1):
         if Motor._count == 4:
-            raise TooManyMotorsError
+            raise MotorCountError(Motor._count)
         if not 0 <= start_input <= 1:
-            raise InvalidArgError("start_input should be between 0 and 1.")
+            raise BadArgError("start_input should be between 0 and 1.")
         if not 0 <= max_speed <= 1:
-            raise InvalidArgError("max_speed should be between 0 and 1.")
+            raise BadArgError("max_speed should be between 0 and 1.")
 
         self.logger = logging.getLogger(name)
         self.logger.debug("Initializing motor")
@@ -306,7 +305,6 @@ class Motor(object):
         Motor.motors.remove(self)
         self.logger.info("Motor shut down")
 
-    @classmethod
     def shutdown_all(self):
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
