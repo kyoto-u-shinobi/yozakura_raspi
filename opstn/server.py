@@ -33,8 +33,9 @@ class Handler(socketserver.BaseRequestHandler):
 
     """
     def __init__(self, request, client_address, server):
-        self.logger = logging.getLogger("{}_handler".format(client_address[0]))
-        self.logger.debug("New handler created")
+        self._logger = logging.getLogger("{client_ip}_handler".format(
+            client_ip=client_address[0]))
+        self._logger.debug("New handler created")
         super().__init__(request, client_address, server)
 
     def handle(self):
@@ -57,7 +58,7 @@ class Handler(socketserver.BaseRequestHandler):
             - print : ``echo``, and print to ``stdout``.
 
         """
-        self.logger.info("Connected to client")
+        self._logger.info("Connected to client")
         self.request.settimeout(0.5)  # seconds
         self.wheels_single_stick = False
         self.reverse_mode = False
@@ -73,13 +74,13 @@ class Handler(socketserver.BaseRequestHandler):
                 try:
                     data = self.request.recv(64).decode().strip()
                 except socket.timeout:
-                    self.logger.warning("Lost connection to robot")
-                    self.logger.info("Robot will shut down motors")
+                    self._logger.warning("Lost connection to robot")
+                    self._logger.info("Robot will shut down motors")
                     continue
-                self.logger.debug('Received: "{}"'.format(data))
+                self._logger.debug('Received: "{}"'.format(data))
 
                 if data == "":  # Client exited safely.
-                    self.logger.info("Terminating client session")
+                    self._logger.info("Terminating client session")
                     break
 
                 if data == "state":
@@ -103,11 +104,11 @@ class Handler(socketserver.BaseRequestHandler):
 
                 elif data.split()[0] == "print":
                     reply = " ".join(data.split()[1:])
-                    self.logger.info('Client says: "{}"'.format(reply))
+                    self._logger.info('Client says: "{}"'.format(reply))
 
                 else:
                     reply = 'Unable to parse command: "{}"'.format(data)
-                    self.logger.debug(reply)
+                    self._logger.debug(reply)
 
                 try:
                     self.request.sendall(str.encode(reply))
@@ -116,7 +117,7 @@ class Handler(socketserver.BaseRequestHandler):
 
                 # Receive sensor data
                 raw_data, address = self._sensors_client.recvfrom(64)
-                self.logger.debug("{}".format(pickle.loads(raw_data)))
+                self._logger.debug("{}".format(pickle.loads(raw_data)))
 
         finally:
             self._sensors_client.close()
@@ -163,8 +164,8 @@ class Handler(socketserver.BaseRequestHandler):
         if self.reverse_mode:
             # Wheels
             if self.wheels_single_stick:
-                self.logger.debug("lx: {:9.7}  ".fromat(lstick.x) +
-                                  "ly: {:9.7}".format(lstick.y))
+                self._logger.debug("lx: {:9.7}  ".fromat(lstick.x) +
+                                   "ly: {:9.7}".format(lstick.y))
                 if abs(lstick.y) == 0:  # Rotate in place
                     lmotor = -lstick.x
                     rmotor = lstick.x
@@ -174,8 +175,8 @@ class Handler(socketserver.BaseRequestHandler):
                     lmotor = lstick.y * l_mult
                     rmotor = lstick.y * r_mult
             else:
-                self.logger.debug("ly: {:9.7}  ".fromat(lstick.y) +
-                                  "ry: {:9.7}".format(rstick.y))
+                self._logger.debug("ly: {:9.7}  ".fromat(lstick.y) +
+                                   "ry: {:9.7}".format(rstick.y))
                 lmotor = rstick.y
                 rmotor = lstick.y
 
@@ -201,8 +202,8 @@ class Handler(socketserver.BaseRequestHandler):
         else:  # Forward mode
             # Wheels
             if self.wheels_single_stick:
-                self.logger.debug("lx: {:9.7}  ".format(lstick.x) +
-                                  "ly: {:9.7}".format(lstick.y))
+                self._logger.debug("lx: {:9.7}  ".format(lstick.x) +
+                                   "ly: {:9.7}".format(lstick.y))
                 if abs(lstick.y) == 0:  # Rotate in place
                     lmotor = lstick.x
                     rmotor = -lstick.x
@@ -212,8 +213,8 @@ class Handler(socketserver.BaseRequestHandler):
                     lmotor = -lstick.y * l_mult
                     rmotor = -lstick.y * r_mult
             else:
-                self.logger.debug("ly: {:9.7}  ".format(lstick.y) +
-                                  "ry: {:9.7}".format(rstick.y))
+                self._logger.debug("ly: {:9.7}  ".format(lstick.y) +
+                                   "ry: {:9.7}".format(rstick.y))
                 lmotor = -lstick.y
                 rmotor = -rstick.y
 
@@ -251,12 +252,12 @@ class Handler(socketserver.BaseRequestHandler):
         if current_time - self._sticks_timestamp >= 1:
             if self.wheels_single_stick:
                 self.wheels_single_stick = False
-                self.logger.info("Control mode switched: Use " +
-                                 "lstick and rstick to control robot")
+                self._logger.info("Control mode switched: Use " +
+                                  "lstick and rstick to control robot")
             else:
                 self.wheels_single_stick = True
-                self.logger.info("Control mode switched: Use " +
-                                 "lstick to control robot")
+                self._logger.info("Control mode switched: Use " +
+                                  "lstick to control robot")
             self._sticks_timestamp = current_time
 
     def _engage_reverse_mode(self):
@@ -275,10 +276,10 @@ class Handler(socketserver.BaseRequestHandler):
         if current_time - self._reverse_timestamp >= 1:
             if self.reverse_mode:
                 self.reverse_mode = False
-                self.logger.info("Reverse mode disabled!")
+                self._logger.info("Reverse mode disabled!")
             else:
                 self.reverse_mode = True
-                self.logger.info("Reverse mode enabled!")
+                self._logger.info("Reverse mode enabled!")
             self._reverse_timestamp = current_time
 
 
@@ -311,16 +312,24 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
     allow_reuse_address = True  # Can resume immediately after shutdown
 
     def __init__(self, server_address, handler_class):
-        self.logger = logging.getLogger("{}_server".format(server_address[0]))
-        self.logger.debug("Creating server")
+        self._logger = logging.getLogger("{}_server".format(server_address[0]))
+        self._logger.debug("Creating server")
         super().__init__(server_address, handler_class)
-        self.logger.info("Listening to port {}".format(server_address[1]))
+        self._logger.info("Listening to port {}".format(server_address[1]))
         self.controllers = {}
 
-    def serve_forever(self, *args, **kwargs):
-        """Handle requests until an explicit ``shutdown()`` request."""
-        self.logger.info("Server started")
-        super().serve_forever(*args, **kwargs)
+    def serve_forever(self, poll_interval=0.5):
+        """
+        Handle requests until an explicit ``shutdown()`` request.
+
+        Parameters
+        ----------
+        poll_interval : float, optional
+            The polling interval, in seconds.
+
+        """
+        self._logger.info("Server started")
+        super().serve_forever(poll_interval)
 
     def add_controller(self, controller):
         """
@@ -332,7 +341,7 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
             The controller to be registered.
 
         """
-        self.logger.debug("Adding controller {}".format(controller))
+        self._logger.debug("Adding controller {}".format(controller))
         self.controllers[controller.name] = controller
 
     def remove_controller(self, controller):
@@ -342,6 +351,7 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
         ----------
         controller : Controller
             The controller to be deregistered.
+
         """
-        self.logger.debug("Removing controller {}".format(controller))
+        self._logger.debug("Removing controller {}".format(controller))
         del self.controllers[controller.name]

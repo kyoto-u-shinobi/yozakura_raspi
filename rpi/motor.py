@@ -104,8 +104,8 @@ class Motor(object):
         if not 0 <= max_speed <= 1:
             raise BadArgError("max_speed should be between 0 and 1.")
 
-        self.logger = logging.getLogger(name)
-        self.logger.debug("Initializing motor")
+        self._logger = logging.getLogger(name)
+        self._logger.debug("Initializing motor")
         self.motor_id = Motor._count
         self.name = name
         self.pin_fault_1 = fault_1
@@ -116,19 +116,19 @@ class Motor(object):
         self.has_serial = False
         self.has_pwm = False
 
-        self.logger.debug("Setting up fault interrupt")
+        self._logger.debug("Setting up fault interrupt")
         gpio.setup(fault_1, gpio.IN, pull_up_down=gpio.PUD_DOWN)
         gpio.setup(fault_2, gpio.IN, pull_up_down=gpio.PUD_DOWN)
         gpio.add_event_detect(fault_1, gpio.RISING, callback=self._catch_fault)
         gpio.add_event_detect(fault_2, gpio.RISING, callback=self._catch_fault)
 
-        self.logger.debug("Resetting motor driver")
+        self._logger.debug("Resetting motor driver")
         gpio.setup(reset, gpio.OUT)
         self.reset_driver()
 
-        self.logger.debug("Registering motor")
+        self._logger.debug("Registering motor")
         Motor.motors.append(self)
-        self.logger.info("Motor initialized")
+        self._logger.info("Motor initialized")
         Motor._count += 1
 
     def enable_pwm(self, pwm, direction, frequency=28000):
@@ -152,11 +152,11 @@ class Motor(object):
         self.pin_pwm = pwm
         self.pin_dir = direction
 
-        self.logger.debug("Setting up GPIO pins")
+        self._logger.debug("Setting up GPIO pins")
         gpio.setup(self.pin_pwm, gpio.OUT)
         gpio.setup(self.pin_dir, gpio.OUT)
 
-        self.logger.debug("Starting PWM drivers")
+        self._logger.debug("Starting PWM drivers")
         gpio.output(self.pin_dir, gpio.LOW)
         self._pwm = gpio.PWM(self.pin_pwm, frequency)
         self._pwm.start(0)
@@ -182,12 +182,12 @@ class Motor(object):
     def _catch_fault(self, channel):
         """Threaded callback for fault detection."""
         if gpio.input(self.pin_fault_1) and gpio.input(self.pin_fault_2):
-            self.logger.warning("Fault detected! Undervolt.")
+            self._logger.warning("Fault detected! Undervolt.")
         elif gpio.input(self.pin_fault_1):
-            self.logger.warning("Fault detected! Overtemp.")
+            self._logger.warning("Fault detected! Overtemp.")
         elif gpio.input(self.pin_fault_2):
-            self.logger.warning("Fault detected! Short circuit. " +
-                                "Motor driver has been latched.")
+            self._logger.warning("Fault detected! Short circuit. " +
+                                 "Motor driver has been latched.")
 
     def _scale_speed(self, speed):
         """
@@ -280,7 +280,7 @@ class Motor(object):
         elif self.has_pwm:
             self._pwm_drive(speed)
         else:
-            self.logger.error("Cannot drive motor! No serial or PWM enabled.")
+            self._logger.error("Cannot drive motor! No serial or PWM enabled.")
             raise NoDriversError(self)
 
     def reset_driver(self):
@@ -297,13 +297,13 @@ class Motor(object):
 
     def shutdown(self):
         """Shut down and deregister the motor."""
-        self.logger.debug("Shutting down motor")
-        self.logger.debug("Stopping motor")
+        self._logger.debug("Shutting down motor")
+        self._logger.debug("Stopping motor")
         self.drive(0)
 
-        self.logger.debug("Deregistering motor")
+        self._logger.debug("Deregistering motor")
         Motor.motors.remove(self)
-        self.logger.info("Motor shut down")
+        self._logger.info("Motor shut down")
 
     def shutdown_all(self):
         """A class method to shut down and deregister all motors."""

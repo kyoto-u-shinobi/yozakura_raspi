@@ -117,6 +117,8 @@ class Buttons(object):
         A list containing the state of each button.
     pressed_buttons: list of str
         A list containing the names of each button that is pressed.
+    known_makes : list of str
+        A list containing all the makes whose mappings have been registered.
 
     Raises
     ------
@@ -137,8 +139,10 @@ class Buttons(object):
         for i in range(13):
             _mappings[make].setdefault(i, i)
 
+    known_makes = list(_mappings.keys())
+
     def __init__(self, make, buttons):
-        if make not in Buttons._mappings.keys():
+        if make not in Buttons.known_makes:
             raise UnknownControllerError(make)
 
         self._make = make
@@ -159,6 +163,7 @@ class Buttons(object):
         -------
         bool
             Whether the button is pressed.
+
         """
         return button in self.pressed
 
@@ -175,6 +180,7 @@ class Buttons(object):
         -------
         bool
             True if all the buttons are pressed.
+
         """
         return all([self.is_pressed(button) for button in buttons])
 
@@ -254,12 +260,11 @@ class State(object):
         Examples
         --------
         >>> stick = Controller(0, "body")
-        >>> while True:
-        ...     try:  # Below, end="backslash r"
+        >>> try:
+        ...     While True:  # Below, end="backslash r"
         ...         print(stick_body.get_state(), end="\r")
-        ...     except (KeyboardInterrupt, SystemExit):  # Exit safely.
-        ...         Controller.shutdown_all()
-        ...         break
+        ... except (KeyboardInterrupt, SystemExit):  # Exit safely.
+        ...     Controller.shutdown_all()
         dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
 
         """
@@ -291,7 +296,7 @@ class Controller(object):
         The ID of the controller.
     make : str
         The make of the controller.
-    name : str
+    name : str, optional
         The name of the controller.
     controllers : dict
         A class variable containing all registered controllers. It is used to
@@ -304,8 +309,8 @@ class Controller(object):
     controllers = {}
 
     def __init__(self, stick_id, name=None):
-        self.logger = logging.getLogger("controller-{}".format(stick_id))
-        self.logger.debug("Initializing controller")
+        self._logger = logging.getLogger("controller-{}".format(stick_id))
+        self._logger.debug("Initializing controller")
         self.controller = pygame.joystick.Joystick(stick_id)
         self.stick_id = stick_id
         self.make = self.controller.get_name()
@@ -316,15 +321,15 @@ class Controller(object):
             self.name = self.make
 
         if self.make not in Buttons.known_makes:
-            self.logger.warning("{} has no registered ".format(self.make) +
-                                "button mapping. Results may be wrong.")
+            self._logger.warning("{} has no registered ".format(self.make) +
+                                 "button mapping. Results may be wrong.")
 
         self.controller.init()
 
-        self.logger.debug("Registering controller")
+        self._logger.debug("Registering controller")
         Controller.controllers[stick_id] = self
 
-        self.logger.info("Controller initialized")
+        self._logger.info("Controller initialized")
 
     def get_state(self):
         """
@@ -342,10 +347,10 @@ class Controller(object):
         stick = self.controller
         n_buttons = stick.get_numbuttons()
 
-        self.logger.debug("Syncronizing pygame")
+        self._logger.debug("Syncronizing pygame")
         pygame.event.pump()
 
-        self.logger.debug("Getting state")
+        self._logger.debug("Getting state")
         dpad = Position(*stick.get_hat(0))
         lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
         rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
@@ -356,7 +361,7 @@ class Controller(object):
 
     def shutdown(self):
         """Safely quits a controller."""
-        self.logger.info("Closing controller handler")
+        self._logger.info("Closing controller handler")
         self.controller.quit()
         del Controller.controllers[self.stick_id]
         if not Controller.controllers:

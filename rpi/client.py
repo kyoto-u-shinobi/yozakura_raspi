@@ -55,13 +55,15 @@ class Client(object):
         except OSError:
             ip_address = get_ip_address("enp2s0")
 
-        self.logger = logging.getLogger("{}_client".format(ip_address))
-        self.logger.debug("Creating client")
+        self._logger = logging.getLogger("{}_client".format(ip_address))
+        self._logger.debug("Creating client")
         self.request = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.request.connect(server_address)
-        self.logger.info("Connected to {}:{}".format(server_address[0],
-                                                     server_address[1]))
+        self._logger.info("Connected to {}:{}".format(server_address[0],
+                                                      server_address[1]))
+
         self.request.settimeout(0.5)  # seconds
+
         self.server_address = server_address
         self._sensors_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.motors = {}
@@ -88,14 +90,14 @@ class Client(object):
 
         """
         if not self.motors:
-            self.logger.critical("No motors registered!")
+            self._logger.critical("No motors registered!")
             raise MotorCountError(0)
 
         if not self.serials:
-            self.logger.critical("No serial devices registered!")
+            self._logger.critical("No serial devices registered!")
             raise NoSerialsError
 
-        self.logger.info("Client started")
+        self._logger.info("Client started")
         timed_out = False
 
         try:
@@ -105,8 +107,8 @@ class Client(object):
                     result = self.request.recv(64)  # Receive speed data.
                 except socket.timeout:
                     if not timed_out:
-                        self.logger.warning("No connection to base station.")
-                        self.logger.info("Turning off motors")
+                        self._logger.warning("No connection to base station.")
+                        self._logger.info("Turning off motors")
                         for motor in self.motors.values():
                             motor.drive(0)
                         timed_out = True
@@ -119,10 +121,10 @@ class Client(object):
                 try:
                     sensor_data = self.serials["mbed"].readline().split()
                     *_, lpos, rpos = [int(i, 0) / 0xFFFF for i in sensor_data]
-                    self.logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
+                    self._logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
                 except ValueError:
-                    self.logger.debug("An error occured when trying to read " +
-                                      "the flipper positions from the mbed.")
+                    self._logger.debug("An error occured when trying to read" +
+                                       " the flipper positions from the mbed.")
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
@@ -151,7 +153,7 @@ class Client(object):
             The serial connection to the microcontroller.
 
         """
-        self.logger.debug("Registering {}".format(name))
+        self._logger.debug("Registering {}".format(name))
         self.serials[name] = ser
 
     def add_motor(self, motor, ser=None, pwm_pins=None):
@@ -179,9 +181,9 @@ class Client(object):
             Neither ``ser`` nor ``pwm_pins`` are provided.
 
         """
-        self.logger.debug("Adding motor {}".format(motor))
+        self._logger.debug("Adding motor {}".format(motor))
         if not ser and not pwm_pins:
-            self.logger.error("Cannot drive motor! No serial or PWM enabled.")
+            self._logger.error("Cannot drive motor! No serial or PWM enabled.")
             raise NoDriversError(motor)
 
         if pwm_pins is not None:
@@ -201,11 +203,11 @@ class Client(object):
             The name of the device to be deregistered.
 
         """
-        self.logger.debug("Removing {}".format(name))
+        self._logger.debug("Removing {}".format(name))
         if name in self.serials:
             del self.serials[name]
         else:
-            self.logger.warning("{} not found in serials".format(name))
+            self._logger.warning("{} not found in serials".format(name))
 
     def remove_motor(self, motor):
         """
@@ -217,14 +219,14 @@ class Client(object):
             The motor to be deregistered.
 
         """
-        self.logger.debug("Removing motor {}".format(motor))
+        self._logger.debug("Removing motor {}".format(motor))
         if motor.name in self.motors:
             del self.motors[motor.name]
         else:
-            self.logger.warning("{} not found in motors".format(motor))
+            self._logger.warning("{} not found in motors".format(motor))
 
     def shutdown(self):
         """Shut down the client."""
-        self.logger.debug("Shutting down client")
+        self._logger.debug("Shutting down client")
         self.request.close()
-        self.logger.info("Client shut down")
+        self._logger.info("Client shut down")

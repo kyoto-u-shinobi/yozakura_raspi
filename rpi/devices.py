@@ -197,7 +197,9 @@ class Device(object):
     # require_repeated_start()
 
     def __init__(self, address, name, bus_number=i2c_bus):
-        self.logger = logging.getLogger("i2c-{}-{}".format(name, hex(address)))
+        self._logger = logging.getLogger("i2c-{name}-{address}".format(
+                                         name=name,
+                                         address=hex(address)))
         self.logger.debug("Initializing device")
         slots = get_used_i2c_slots()
         if address not in slots.keys():
