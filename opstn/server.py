@@ -329,7 +329,10 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
 
         """
         self._logger.info("Server started")
-        super().serve_forever(poll_interval)
+        try:
+            super().serve_forever(poll_interval)
+        except (KeyboardInterrupt, SystemExit):
+            pass
 
     def add_controller(self, controller):
         """

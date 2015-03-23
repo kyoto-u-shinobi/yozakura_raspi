@@ -138,8 +138,8 @@ class Client(object):
                 self._sensors_server.sendto(pickle.dumps(sensor_data),
                                             self.server_address)
 
-        except (KeyboardInterrupt, RuntimeError, SystemExit):
-            break
+        except (KeyboardInterrupt, SystemExit):
+            pass
 
     def add_serial_device(self, name, ser):
         """
