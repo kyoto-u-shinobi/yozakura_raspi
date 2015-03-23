@@ -305,7 +305,7 @@ class Motor(object):
         Motor.motors.remove(self)
         self._logger.info("Motor shut down")
 
-    def shutdown_all(self):
+    def shutdown_all():
         """A class method to shut down and deregister all motors."""
         logging.info("Shutting down all motors.")
         for motor in Motor.motors:

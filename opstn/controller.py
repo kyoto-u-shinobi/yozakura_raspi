@@ -367,7 +367,7 @@ class Controller(object):
         if not Controller.controllers:
             pygame.quit()
 
-    def shutdown_all(self):
+    def shutdown_all():
         """A class method to safely quit all controllers."""
         logging.info("Closing all controller handlers")
         for controller in list(Controller.controllers.values()):
