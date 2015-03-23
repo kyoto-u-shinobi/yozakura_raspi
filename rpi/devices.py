@@ -457,7 +457,7 @@ class CurrentSensor(Device):
 
         super().__init__(address, name, bus_number)
         self.pin_alert = None
-        self.calibrate(15)  # 15 A max current.
+        self.calibrate(10)  # 10 A max current.
 
     def _read_register(self, register, signed=True):
         """

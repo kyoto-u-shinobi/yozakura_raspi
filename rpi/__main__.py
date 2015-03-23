@@ -5,6 +5,7 @@ import serial
 
 from common.networking import get_ip_address
 from rpi.client import Client
+from rpi.devices import CurrentSensor
 from rpi.motor import Motor
 
 
@@ -24,23 +25,31 @@ def main():
     client = Client((opstn_address, 9999))
 
     logging.debug("Initializing motors")
-    left_motor = Motor("left_motor", 11, 12, 13)
-    right_motor = Motor("right_motor", 15, 16, 18)
-    left_flipper = Motor("left_flipper", 31, 32, 33)
-    right_flipper = Motor("right_flipper", 35, 36, 37)
+    motors = [Motor("left_motor", 11, 12, 13),
+              Motor("right_motor", 15, 16, 18),
+              Motor("left_flipper", 31, 32, 33),
+              Motor("right_flipper", 35, 36, 37)]
+
+    logging.debug("Initializing current sensors")
+    current_sensors = [
+                       CurrentSensor(0x40, name="left_motor"),
+                       CurrentSensor(0x44, name="right_motor"),
+                       CurrentSensor(0x47, name="left_flipper"),
+                       CurrentSensor(0x48, name="right_flipper")
+                      ]
 
     try:
         logging.debug("Connecting mbed")
         mbed = serial.Serial("/dev/ttyACM0", 9600)
         client.add_serial_device("mbed", mbed)
-
-        logging.debug("Registering motors to client")
-        client.add_motor(left_motor, ser=mbed)
-        client.add_motor(right_motor, ser=mbed)
-        client.add_motor(left_flipper, ser=mbed)
-        client.add_motor(right_flipper, ser=mbed)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
+
+    logging.debug("Registering motors and sensors to client")
+    for motor in motors:
+        client.add_motor(motor, ser=mbed)
+    for sensor in current_sensors:
+        client.add_current_sensor(sensor)
 
     try:
         client.run()
@@ -52,7 +61,6 @@ def main():
             mbed.close()
         except NameError:
             logging.debug("The mbed was not connected")
-            pass
         client.shutdown()
 
     logging.info("All done")
