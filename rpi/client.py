@@ -103,8 +103,11 @@ class Client(object):
         try:
             while True:
                 try:
-                    self.send("speeds")      # Request speed data.
+                    self.request.send(str.encode("speeds"))  # Request speeds.
                     result = self.request.recv(64)  # Receive speed data.
+                    if not result:
+                        self._logger.debug("Speed data was empty.")
+                        continue
                 except socket.timeout:
                     if not timed_out:
                         self._logger.warning("No connection to base station.")
