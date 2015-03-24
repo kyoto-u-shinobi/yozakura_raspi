@@ -6,7 +6,7 @@ SHINOBI遠隔班
 
 Setup
 =====
-#Contec
+##Contec
 CONTEC access point opstn side admin:pass
 ip address 192.168.54.225
 IEEE802.11n (2.4 GHz)  10 channels
