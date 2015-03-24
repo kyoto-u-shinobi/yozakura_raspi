@@ -67,12 +67,13 @@ class Handler(socketserver.BaseRequestHandler):
         # TODO(murata): Remove everything related to _sensors_client and the
         # try/finally block once you add your udp server.
         self._sensors_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sensors_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sensors_client.bind(("", 9999))
 
         try:
             while True:
                 try:
-                    data = self.request.recv(64).decode().strip()
+                    data = self.request.recv(256).decode().strip()
                 except socket.timeout:
                     self._logger.warning("Lost connection to robot")
                     self._logger.info("Robot will shut down motors")
@@ -116,8 +117,13 @@ class Handler(socketserver.BaseRequestHandler):
                     self.request.sendall(reply)
 
                 # Receive sensor data
-                raw_data, address = self._sensors_client.recvfrom(64)
-                self._logger.debug("{}".format(pickle.loads(raw_data)))
+                raw_data, address = self._sensors_client.recvfrom(1024)
+                try:
+                    adc_data, current_data = pickle.loads(raw_data)
+
+                    self._logger.info("{:6.3f}  {:6.3f}  ({:6.3f} A  {:6.3f} W  {:6.3f} V)".format(adc_data[0], adc_data[1], current_data[2][0], current_data[2][1], current_data[2][2]))
+                except (EOFError, IndexError, TypeError):
+                    self._logger.debug("No or bad data was received from robot")
 
         finally:
             self._sensors_client.close()
