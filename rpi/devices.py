@@ -9,11 +9,10 @@ each attached device.
 """
 from collections import OrderedDict
 import logging
-import re
 import subprocess
 
 from RPi import GPIO as gpio
-import RTIMULib
+import RTIMU
 import smbus
 
 from common.exceptions import BadArgError, I2CSlotBusyError, \
@@ -536,6 +535,30 @@ class CurrentSensor(Device):
 
         return flags
 
+class IMU(object):
+    def __init__(self, settings_file=None, address=None, name="MPU-9150"):
+        if settings_file is None:
+            settings_file = "RTIMULib"
 
-if __name__ == "__main__":
-    __test_current_sensor()
+        settings = RTIMU.Setings(settings_file)
+        if address is not None:
+            settings.I2CAddress = address
+        self._logger = logging.getLogger("imu-{name}-{address}".format(
+            name=name, address=hex(settings.I2CAddress)))
+        self._logger.debug("Setting up IMU")
+        self._imu = RTIMU.RTIMU(settings)
+        self._logger.debug("IMU Name: {}".format(self._imu.IMUName()))
+        if not self._imu.IMUInit():
+            self._logger.warning("IMU init failed")
+        else:
+            self._logger.info("IMU has been set up")
+
+        self.poll_interval = self._imu.IMUGetPollInterval()
+        self._logger.debug("Recommended poll interval: {} ms".format(
+            self.poll_interval))
+        self.name = name
+
+    @property
+    def rpy(self):
+        return self._imu.getFusionData()
+

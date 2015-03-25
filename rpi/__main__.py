@@ -5,7 +5,7 @@ import serial
 
 from common.networking import get_ip_address
 from rpi.client import Client
-from rpi.devices import CurrentSensor
+from rpi.devices import CurrentSensor, IMU
 from rpi.motor import Motor
 
 
@@ -32,10 +32,14 @@ def main():
 
     logging.debug("Initializing current sensors")
     current_sensors = [
-                       CurrentSensor(0x48, name="left_flipper")
+                       CurrentSensor(0x48, name="left_flipper_current")
                       ]
 
-    #current_sensors[0].set_configuration(bus_ct=0, shunt_ct=0)
+    logging.debug("Initializing IMUs")
+    imus = [
+            IMU(name="front_imu", address=0x68),
+            IMU(name="rear_imu", address=0x69)
+           ]
 
     try:
         logging.debug("Connecting mbed")
@@ -49,6 +53,8 @@ def main():
         client.add_motor(motor, ser=mbed)
     for sensor in current_sensors:
         client.add_current_sensor(sensor)
+    for imu in imus:
+        client.add_imu(imu)
 
     try:
         client.run()

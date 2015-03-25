@@ -161,12 +161,22 @@ class Client(object):
                     else:
                         voltage = power / current
 
-                    current_tuple = (current, power, voltage)
                     current_data.append((current, power, voltage))
+
+                # Get IMU data to send back.
+                imu_data = []
+                for imu in ("front_imu", "rear_imu"):
+                    try:
+                        rpy = self.imus[imu].rpy
+                        imu_data.append(rpy)
+                    except KeyError:
+                        imu_data.append(None)
+                        continue
 
                 # Send sensor data back to base station.
                 self._sensors_server.sendto(pickle.dumps((adc_data, 
-                                                         current_data)),
+                                                          current_data,
+                                                          imu_data)),
                                             self.server_address)
 
         except (KeyboardInterrupt, SystemExit):
@@ -237,53 +247,18 @@ class Client(object):
         self._logger.debug("Registering {} current sensor".format(sensor.name))
         self.current_sensors[sensor.name] = sensor
 
-    def remove_serial_device(self, name):
+    def add_imu(self, imu):
         """
-        Deregister a serial device.
+        Register an IMU.
 
         Parameters
         ----------
-        name : str
-            The name of the device to be deregistered.
+        imu : IMU
+            The IMU to be added.
 
         """
-        self._logger.debug("Removing {}".format(name))
-        if name in self.serials:
-            del self.serials[name]
-        else:
-            self._logger.warning("{} not found in serials".format(name))
-
-    def remove_motor(self, motor):
-        """
-        Deregister a motor.
-
-        Parameters
-        ----------
-        motor : Motor
-            The motor to be deregistered.
-
-        """
-        self._logger.debug("Removing motor {}".format(motor))
-        if motor.name in self.motors:
-            del self.motors[motor.name]
-        else:
-            self._logger.warning("{} not found in motors".format(motor))
-
-    def remove_current_sensor(self, sensor):
-        """
-        Deregister a motor.
-
-        Parameters
-        ----------
-        sensor : CurrentSensor
-            The current sensor to be deregistered.
-
-        """
-        self._logger.debug("Removing {} current sensor".format(sensor.name))
-        if sensor.name in self.current_sensors:
-            del self.current_sensors[sensor.name]
-        else:
-            self._logger.warning("{} current sensor not found".format(sensor))
+        self._logger.debug("Registering {} imu".format(imu.name))
+        self.imus[imu.name] = imu
 
     def shutdown(self):
         """Shut down the client."""
