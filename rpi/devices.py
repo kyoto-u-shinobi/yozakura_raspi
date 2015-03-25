@@ -13,7 +13,6 @@ import re
 import subprocess
 
 from RPi import GPIO as gpio
-import RTIMULib
 import smbus
 
 from common.exceptions import BadArgError, I2CSlotBusyError, \
