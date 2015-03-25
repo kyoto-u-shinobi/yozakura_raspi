@@ -41,6 +41,10 @@ class Client(object):
         Contains all registered serial connections.
 
         **Dictionary format :** {name (str): connection (Serial)}
+    current_sensors : dict
+        Contains all registered current sensors.
+
+        **Dictionary format :** {name (str): sensor (CurrentSensor)}
 
     Examples
     --------
@@ -68,6 +72,7 @@ class Client(object):
         self._sensors_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.motors = {}
         self.serials = {}
+        self.current_sensors = {}
 
     def run(self):
         """
@@ -122,12 +127,15 @@ class Client(object):
 
                 # Get flipper positions from last two items of mbed reply.
                 try:
-                    sensor_data = self.serials["mbed"].readline().split()
-                    *_, lpos, rpos = [int(i, 0) / 0xFFFF for i in sensor_data]
+                    for _ in range(4):
+                        mbed_data = self.serials["mbed"].readline().split()
+                    adc_data = [int(i, 16) / 0xFFFF for i in mbed_data]
+                    lpos, rpos = adc_data[-2:]
                     self._logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
                 except ValueError:
                     self._logger.debug("An error occured when trying to read" +
                                        " the flipper positions from the mbed.")
+                    adc_data = None
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
@@ -137,8 +145,28 @@ class Client(object):
                 self.motors["left_flipper"].drive(lflipper)
                 self.motors["right_flipper"].drive(rflipper)
 
+                # Get current sensor data to send back.
+                current_data = []
+                for motor in ("left_motor", "right_motor",
+                              "left_flipper", "right_flipper", "motor"):
+                    try:
+                        sensor = self.current_sensors[motor]
+                    except KeyError:
+                        current_data.append(None)
+                        continue
+                    current = sensor.get_measurement("current")
+                    power = sensor.get_measurement("power")
+                    if current == 0:
+                        voltage = 0
+                    else:
+                        voltage = power / current
+
+                    current_tuple = (current, power, voltage)
+                    current_data.append((current, power, voltage))
+
                 # Send sensor data back to base station.
-                self._sensors_server.sendto(pickle.dumps(sensor_data),
+                self._sensors_server.sendto(pickle.dumps((adc_data, 
+                                                         current_data)),
                                             self.server_address)
 
         except (KeyboardInterrupt, SystemExit):
@@ -195,6 +223,19 @@ class Client(object):
             motor.enable_serial(ser)
 
         self.motors[motor.name] = motor
+        
+    def add_current_sensor(self, sensor):
+        """
+        Register a current sensor.
+
+        Parameters
+        ----------
+        sensor : CurrentSensor
+            The current sensor associated with the motor.
+
+        """
+        self._logger.debug("Registering {} current sensor".format(sensor.name))
+        self.current_sensors[sensor.name] = sensor
 
     def remove_serial_device(self, name):
         """
@@ -227,6 +268,22 @@ class Client(object):
             del self.motors[motor.name]
         else:
             self._logger.warning("{} not found in motors".format(motor))
+
+    def remove_current_sensor(self, sensor):
+        """
+        Deregister a motor.
+
+        Parameters
+        ----------
+        sensor : CurrentSensor
+            The current sensor to be deregistered.
+
+        """
+        self._logger.debug("Removing {} current sensor".format(sensor.name))
+        if sensor.name in self.current_sensors:
+            del self.current_sensors[sensor.name]
+        else:
+            self._logger.warning("{} current sensor not found".format(sensor))
 
     def shutdown(self):
         """Shut down the client."""
