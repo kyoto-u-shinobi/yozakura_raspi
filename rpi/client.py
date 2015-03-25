@@ -147,8 +147,11 @@ class Client(object):
 
                 # Get current sensor data to send back.
                 current_data = []
-                for motor in ("left_motor", "right_motor",
-                              "left_flipper", "right_flipper", "motor"):
+                for current_sensor in ("left_motor_current",
+                                       "right_motor_current",
+                                       "left_flipper_current",
+                                       "right_flipper_current",
+                                       "motor_current"):
                     try:
                         sensor = self.current_sensors[motor]
                     except KeyError:
