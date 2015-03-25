@@ -566,7 +566,7 @@ class IMU(object):
            https://github.com/richards-tech/RTIMULib
 
     """
-    def __init__(self, name="MPU-9150", settings_file="RTIMULib", address=None):
+    def __init__(self, name="MPU-9150", settings_file="imu_settings", address=None):
         settings = RTIMU.Setings(settings_file)
         if address is not None:
             settings.I2CAddress = address
