@@ -32,7 +32,7 @@ def main():
 
     logging.debug("Initializing current sensors")
     current_sensors = [
-                       CurrentSensor(0x48, name="left_flipper_current")
+                       #CurrentSensor(0x48, name="left_flipper_current")
                       ]
 
     logging.debug("Initializing IMUs")

@@ -555,6 +555,8 @@ class IMU(object):
 
     Args
     ----
+    poll_interval : int
+        The recommended poll interval, in milliseconds.
     name : str
         The name of the device.
 
@@ -567,23 +569,21 @@ class IMU(object):
 
     """
     def __init__(self, name="MPU-9150", settings_file="imu_settings", address=None):
-        settings = RTIMU.Setings(settings_file)
+        self._settings = RTIMU.Settings(settings_file)
         if address is not None:
-            settings.I2CAddress = address
+            self._settings.I2CAddress = address
 
         self._logger = logging.getLogger("imu-{name}-{address}".format(
-            name=name, address=hex(settings.I2CAddress)))
-        self._logger.debug("Setting up IMU")
-        self._imu = RTIMU.RTIMU(settings)
-        self._logger.debug("IMU Name: {}".format(self._imu.IMUName()))
+            name=name, address=hex(self._settings.I2CAddress)))
+
+        self._imu = RTIMU.RTIMU(self._settings)
         if not self._imu.IMUInit():
             self._logger.warning("IMU init failed")
+            return
         else:
-            self._logger.info("IMU has been set up")
+            self._logger.info("IMU init succeeded.")
 
-        self._poll_interval = self._imu.IMUGetPollInterval()
-        self._logger.debug("Recommended poll interval: {} ms".format(
-            self._poll_interval))
+        self.poll_interval = self._imu.IMUGetPollInterval
         self.name = name
 
     @property
@@ -597,8 +597,6 @@ class IMU(object):
             The roll, pitch, and yaw readings of the IMU, in radians.
 
         """
-        if self._imu.IMURead():
-            return self._imu.getFusionData()
-        else:
-            return None
-
+        while True:
+            if self._imu.IMURead():
+                return self._imu.getFusionData()

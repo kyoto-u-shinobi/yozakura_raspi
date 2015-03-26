@@ -73,6 +73,7 @@ class Client(object):
         self.motors = {}
         self.serials = {}
         self.current_sensors = {}
+        self.imus = {}
 
     def run(self):
         """
@@ -131,11 +132,10 @@ class Client(object):
                         mbed_data = self.serials["mbed"].readline().split()
                     adc_data = [int(i, 16) / 0xFFFF for i in mbed_data]
                     lpos, rpos = adc_data[-2:]
-                    self._logger.debug("{:5.3f}  {:5.3f}".format(lpos, rpos))
                 except ValueError:
                     self._logger.debug("An error occured when trying to read" +
                                        " the flipper positions from the mbed.")
-                    adc_data = None
+                    adc_data = [None, None]
 
                 lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
                 self.motors["left_motor"].drive(lmotor)
@@ -153,9 +153,9 @@ class Client(object):
                                        "right_flipper_current",
                                        "motor_current"):
                     try:
-                        sensor = self.current_sensors[motor]
+                        sensor = self.current_sensors[current_sensor]
                     except KeyError:
-                        current_data.append(None)
+                        current_data.append([None, None, None])
                         continue
                     current = sensor.get_measurement("current")
                     power = sensor.get_measurement("power")
@@ -173,13 +173,14 @@ class Client(object):
                         rpy = self.imus[imu].rpy
                         imu_data.append(rpy)
                     except KeyError:
-                        imu_data.append(None)
+                        imu_data.append([None, None, None])
                         continue
 
                 # Send sensor data back to base station.
                 self._sensors_server.sendto(pickle.dumps((adc_data, 
                                                           current_data,
-                                                          imu_data)),
+                                                          imu_data),
+                                                          protocol=2),
                                             self.server_address)
 
         except (KeyboardInterrupt, SystemExit):
