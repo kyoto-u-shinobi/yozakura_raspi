@@ -128,8 +128,7 @@ class Client(object):
 
                 # Get flipper positions from last two items of mbed reply.
                 try:
-                    for _ in range(4):
-                        mbed_data = self.serials["mbed"].readline().split()
+                    mbed_data = self.serials["mbed"].readline().split()
                     adc_data = [int(i, 16) / 0xFFFF for i in mbed_data]
                     lpos, rpos = adc_data[-2:]
                 except ValueError:

@@ -43,7 +43,7 @@ def main():
 
     try:
         logging.debug("Connecting mbed")
-        mbed = serial.Serial("/dev/ttyACM0", 9600)
+        mbed = serial.Serial("/dev/ttyACM0", 38400)
         client.add_serial_device("mbed", mbed)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
