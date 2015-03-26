@@ -124,6 +124,7 @@ class Client(object):
                     continue
 
                 if timed_out:  # Connection returned.
+                    self._logger.info("Connection returned.")
                     timed_out = False
 
                 # Get flipper positions from last two items of mbed reply.
@@ -136,7 +137,12 @@ class Client(object):
                                        " the flipper positions from the mbed.")
                     adc_data = [None, None]
 
-                lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
+                try:
+                    lmotor, rmotor, lflipper, rflipper = pickle.loads(result)
+                    #print(lmotor, rmotor, lflipper, rflipper)
+                except EOFError:
+                    self._logger.warning("Did not receive good speed data.")
+                    continue
                 self.motors["left_motor"].drive(lmotor)
                 self.motors["right_motor"].drive(rmotor)
 

@@ -18,7 +18,7 @@ def main():
 
     # Connect to correct server based on local IP address.
     if ip_address.startswith("192.168"):  # Contec
-        opstn_address = "192.168.54.125"
+        opstn_address = "192.168.54.200"
     elif ip_address.startswith("10.249"):  # Lab dev
         opstn_address = "10.249.255.172"
 
