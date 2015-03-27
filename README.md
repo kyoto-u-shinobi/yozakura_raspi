@@ -26,7 +26,8 @@ WPA2-PSK(AES)
 
 #Wiring
 ##Raspberry Pi
-![RPi B+ Pinout Diagram](http://www.element14.com/community/servlet/JiveServlet/previewBody/68203-102-6-294412/GPIO.png)
+
+<img src="http://www.element14.com/community/servlet/JiveServlet/previewBody/68203-102-6-294412/GPIO.png" alt="RPi B+ Pinout Diagram" width="600x">
 * Pin 1: Power bus to devices
 * Pin 3: SDA bus to devices
 * Pin 5: SDC bus to devices
