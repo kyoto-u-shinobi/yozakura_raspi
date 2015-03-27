@@ -26,6 +26,7 @@ WPA2-PSK(AES)
 
 #Wiring
 ##Raspberry Pi
+![RPi B+ Pinout Diagram](http://www.element14.com/community/servlet/JiveServlet/previewBody/68203-102-6-294412/GPIO.png)
 * Pin 1: Power bus to devices
 * Pin 3: SDA bus to devices
 * Pin 5: SDC bus to devices
@@ -48,6 +49,7 @@ WPA2-PSK(AES)
 * Pin 18: Right flipper FF2
 
 ##mbed
+![mbed LPC1768 Pinout Diagram](http://nora66.com/mbed/pinout.png)
 * Pin 19: Left flipper position ADC
 * Pin 20: Right flipper position ADC
 * Pin 23: Right flipper PWM
