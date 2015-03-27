@@ -9,10 +9,13 @@ each attached device.
 """
 from collections import OrderedDict
 import logging
-import re
 import subprocess
 
 from RPi import GPIO as gpio
+<<<<<<< HEAD
+=======
+import RTIMU
+>>>>>>> imu
 import smbus
 
 from common.exceptions import BadArgError, I2CSlotBusyError, \
@@ -536,5 +539,67 @@ class CurrentSensor(Device):
         return flags
 
 
-if __name__ == "__main__":
-    __test_current_sensor()
+class IMU(object):
+    """
+    Invenense MPU-9150 9-axis MEMS MotionTracking Device. [1]_
+
+    Simple wrapper for the RTIMU library by richards-tech [2]_ for accessing
+    the sensor fusion data of the MPU-9150.
+
+    Parameters
+    ----------
+    name : str, optional
+        The name of the device.
+    settings_file : str, optional
+        The location of the settings file, without the ".ini" extension.
+    address : int, optional
+        The address of the device. If provided, it overrides the I2C address
+        found in the settings file.
+
+    Args
+    ----
+    poll_interval : int
+        The recommended poll interval, in milliseconds.
+    name : str
+        The name of the device.
+
+    References
+    ----------
+    .. [1] Invensense, MPU-9150 Product Specification.
+           http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf
+    .. [2] RTIMULib, richards-tech, Github.
+           https://github.com/richards-tech/RTIMULib
+
+    """
+    def __init__(self, name="MPU-9150", settings_file="imu_settings", address=None):
+        self._settings = RTIMU.Settings(settings_file)
+        if address is not None:
+            self._settings.I2CAddress = address
+
+        self._logger = logging.getLogger("imu-{name}-{address}".format(
+            name=name, address=hex(self._settings.I2CAddress)))
+
+        self._imu = RTIMU.RTIMU(self._settings)
+        if not self._imu.IMUInit():
+            self._logger.warning("IMU init failed")
+            return
+        else:
+            self._logger.info("IMU init succeeded.")
+
+        self.poll_interval = self._imu.IMUGetPollInterval
+        self.name = name
+
+    @property
+    def rpy(self):
+        """
+        Return the Roll, Pitch, and Yaw data, in radians.
+
+        Returns
+        -------
+        3-tuple of (float, float, float)
+            The roll, pitch, and yaw readings of the IMU, in radians.
+
+        """
+        while True:
+            if self._imu.IMURead():
+                return self._imu.getFusionData()

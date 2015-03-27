@@ -5,7 +5,7 @@ import serial
 
 from common.networking import get_ip_address
 from rpi.client import Client
-from rpi.devices import CurrentSensor
+from rpi.devices import CurrentSensor, IMU
 from rpi.motor import Motor
 
 
@@ -18,7 +18,7 @@ def main():
 
     # Connect to correct server based on local IP address.
     if ip_address.startswith("192.168"):  # Contec
-        opstn_address = "192.168.54.125"
+        opstn_address = "192.168.54.200"
     elif ip_address.startswith("10.249"):  # Lab dev
         opstn_address = "10.249.255.172"
 
@@ -32,14 +32,18 @@ def main():
 
     logging.debug("Initializing current sensors")
     current_sensors = [
-                       CurrentSensor(0x48, name="left_flipper")
+                       #CurrentSensor(0x48, name="left_flipper_current")
                       ]
 
-    #current_sensors[0].set_configuration(bus_ct=0, shunt_ct=0)
+    logging.debug("Initializing IMUs")
+    imus = [
+            IMU(name="front_imu", address=0x68),
+            IMU(name="rear_imu", address=0x69)
+           ]
 
     try:
         logging.debug("Connecting mbed")
-        mbed = serial.Serial("/dev/ttyACM0", 9600)
+        mbed = serial.Serial("/dev/ttyACM0", 38400)
         client.add_serial_device("mbed", mbed)
     except serial.SerialException:
         logging.warning("The mbed is not connected")
@@ -49,6 +53,8 @@ def main():
         client.add_motor(motor, ser=mbed)
     for sensor in current_sensors:
         client.add_current_sensor(sensor)
+    for imu in imus:
+        client.add_imu(imu)
 
     try:
         client.run()

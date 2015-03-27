@@ -14,6 +14,8 @@ import socket
 import socketserver
 import time
 
+import numpy as np
+
 
 class Handler(socketserver.BaseRequestHandler):
     """
@@ -119,10 +121,17 @@ class Handler(socketserver.BaseRequestHandler):
                 # Receive sensor data
                 raw_data, address = self._sensors_client.recvfrom(1024)
                 try:
-                    adc_data, current_data = pickle.loads(raw_data)
-
-                    self._logger.info("{:6.3f}  {:6.3f}  ({:6.3f} A  {:6.3f} W  {:6.3f} V)".format(adc_data[0], adc_data[1], current_data[2][0], current_data[2][1], current_data[2][2]))
-                except (EOFError, IndexError, TypeError):
+                    adc_data, current_data, pose_data_rad = pickle.loads(raw_data)
+                    pose_data = np.rad2deg(pose_data_rad)
+                    self._logger.info("lflipper: {:6.3f}  rflipper: {:6.3f}".format(adc_data[0], adc_data[1]))
+                    self._logger.info("lmotor_current: {:6.3f} A  {:6.3f} W  {:6.3f} V".format(current_data[0][0], current_data[0][1], current_data[0][2]))
+                    self._logger.info("rmotor_current: {:6.3f} A  {:6.3f} W  {:6.3f} V".format(current_data[1][0], current_data[1][1], current_data[1][2])
+                    self._logger.info("lflipper_current: {:6.3f} A  {:6.3f} W  {:6.3f} V".format(current_data[2][0], current_data[2][1], current_data[2][2])
+                    self._logger.info("rflipper_current: {:6.3f} A  {:6.3f} W  {:6.3f} V".format(current_data[3][0], current_data[3][1], current_data[3][2])
+                    self._logger.info("battery_current: {:6.3f} A  {:6.3f} W  {:6.3f} V".format(current_data[4][0], current_data[4][1], current_data[4][2])
+                    self._logger.info("Front roll: {:6.3f}  pitch: {:6.3f}  yaw: {:6.3f}".format(pose_data[0][0], pose_data[0][1], pose_data[0][2]))
+                    self._logger.info(" Rear roll: {:6.3f}  pitch: {:6.3f}  yaw: {:6.3f}".format(pose_data[1][0], pose_data[1][1], pose_data[1][2]))
+                except (AttributeError, EOFError, IndexError, TypeError):
                     self._logger.debug("No or bad data was received from robot")
 
         finally:
