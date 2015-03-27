@@ -367,6 +367,7 @@ class Controller(object):
         if not Controller.controllers:
             pygame.quit()
 
+    @static_method
     def shutdown_all():
         """A class method to safely quit all controllers."""
         logging.info("Closing all controller handlers")
@@ -378,17 +379,3 @@ class Controller(object):
 
     def __str__(self):
         return self.name
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    stick_body = Controller(0, "Body controller")
-
-    while True:
-        try:
-            print(stick_body.get_state(), end="\r")
-        except (KeyboardInterrupt, SystemExit):  # Exit safely.
-            logging.info("")
-            logging.info("Exiting")
-            Controller.shutdown_all()
-            break
