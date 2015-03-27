@@ -46,7 +46,7 @@ IP Address: 192.168.54.163
 #Wiring
 ##Raspberry Pi
 
-<img src="http://www.element14.com/community/servlet/JiveServlet/previewBody/68203-102-6-294412/GPIO.png" alt="RPi B+ Pinout Diagram" width="600x">
+<img src="http://www.element14.com/community/servlet/JiveServlet/previewBody/68203-102-6-294412/GPIO.png" alt="RPi B+ Pinout Diagram" width="490x" align="right">
 * Pin 1: Power bus to devices
 * Pin 3: SDA bus to devices
 * Pin 5: SDC bus to devices
@@ -69,7 +69,7 @@ IP Address: 192.168.54.163
 * Pin 18: Right flipper FF2
 
 ##mbed
-![mbed LPC1768 Pinout Diagram](http://nora66.com/mbed/pinout.png)
+<img src="http://nora66.com/mbed/pinout.png" alt="mbedLPC1768 Pinout Diagram" width="400x" align="right">
 * Pin 19: Left flipper position ADC
 * Pin 20: Right flipper position ADC
 * Pin 23: Right flipper PWM
