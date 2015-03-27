@@ -8,7 +8,7 @@ SHINOBI遠隔班
 Settings
 =====
 ##Contec  
-**CONTEC access point opstn side admin:pass**  
+**CONTEC access point yozakura side     admin:pass**  
 IP Address: 192.168.54.225  
 IEEE802.11n (2.4 GHz)  10 channels  
 コンパチブルインフラストラクチャ  
@@ -16,7 +16,7 @@ ESSID SHINOBI_TELE_YOZAKURA_10ch
 WPA2-PSK(AES)  
 1:8  
 
-**CONTEC station rpi side     blank**  
+**CONTEC station opstn side     blank**  
 IP Address: 192.168.54.220  
 IEEE802.11n (2.4GHz)  
 コンパチブルインフラストラクチャ  
