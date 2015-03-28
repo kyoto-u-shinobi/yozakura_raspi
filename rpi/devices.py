@@ -12,10 +12,7 @@ import logging
 import subprocess
 
 from RPi import GPIO as gpio
-<<<<<<< HEAD
-=======
 import RTIMU
->>>>>>> imu
 import smbus
 
 from common.exceptions import BadArgError, I2CSlotBusyError, \
