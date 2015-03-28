@@ -25,8 +25,8 @@ union MotorPacket {
                    struct MotorPacketBits b;
                    unsigned char as_byte;
                   };
-     
-                  
+
+
 // Class representing a motor driver.
 //
 // Connect the PWM and DIR pins to the mbed. The motor driver's fault signals
@@ -45,15 +45,15 @@ class Motor {
   // Parameters:
   //   pin_pwm: The motor driver's PWM pin. In order to have PWM output, the
   //            pin should be between 21 and 26.
-  //   pin_dir: The motor driver's DIR pin. If the driver is not connected
-  //            in reverse, HI is forward, and LO is reverse.
+  //   pin_dir: The motor driver's DIR pin. If the driver is not connected in
+  //            reverse, HI is forward, and LO is reverse.
   //   reversed: Whether the motor driver's DIR pin is connected in reverse.
-  Motor(PinName pin_pwm, PinName pin_dir, bool reversed) 
+  Motor(PinName pin_pwm, PinName pin_dir, bool reversed)
       : pwm_(pin_pwm), dir_(pin_dir), reversed_(reversed) {
     pwm_ = dir_ = 0;     // Set all outputs to low.
     pwm_.period_us(40); // Set PWM output frequency to 25 kHz.
   }
-  
+
   // Drive the motor at the given speed.
   //
   // Parameters:
@@ -66,7 +66,7 @@ class Motor {
     }
     pwm_ = abs(speed);
   }
-  
+
  private:
     PwmOut pwm_;      // The motor driver's PWM pin.
     DigitalOut dir_;  // The motor driver's DIR pin.
@@ -75,8 +75,8 @@ class Motor {
 
 
 int main() {
-  // The four motors are in an array. The raspberry pi expects this order;
-  // do not change it without changing the code for the rpi as well.
+  // The four motors are in an array. The raspberry pi expects this order; do
+  // not change it without changing the code for the RPi as well.
   Motor motors[4] = { Motor(p21, p11, false),     // Left wheels
                       Motor(p22, p12, true),      // Right wheels
                       Motor(p23, p13, true),      // Left flipper
@@ -96,7 +96,7 @@ int main() {
   int sign;
 
   rpi.baud(38400);  // Match this in the RPi settings.
-  
+
   while(1) {
     // Get packet from RPi.
     if(rpi.readable()) {
