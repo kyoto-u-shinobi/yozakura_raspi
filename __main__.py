@@ -5,7 +5,7 @@ import os
 import opstn
 import rpi
 
-if os.uname()[1] == "kohgapi":
+if os.uname()[1] == "kohgapi" or os.uname()[1] == "pi":
   """Start rpi on ssh."""
 
 else:
