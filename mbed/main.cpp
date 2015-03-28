@@ -39,77 +39,83 @@ union MotorPacket {
 //     motor.drive(0.5) // Runs motor forward at 50% speed.
 //     motor.drive(-0.5) // Runs motor backwards at 50% speed.
 class Motor {
-    public:
-        // Initialize the motor.
-        //
-        // Parameters:
-        //     pin_pwm: The motor driver's PWM pin. In order to have PWM
-        //              output, the pin should be between 21 and 26.
-        //     pin_dir: The motor driver's DIR pin. HI is forward, LO is
-        //              reverse.
-        Motor(PinName pin_pwm, PinName pin_dir) : pwm(pin_pwm), dir(pin_dir) {
-            pwm = dir = 0;     // Set all outputs to low.
-            pwm.period_us(40); // Set PWM output frequency to 25 kHz.
-        }
-        
-        // Drive the motor at the given speed.
-        //
-        // Parameters:
-        //     speed: A value between -1 and 1, representing the motor speed.
-        void drive(float speed) {
-            dir = speed < 0 ? 0 : 1;
-            pwm = abs(speed);
-        }
-        
-    private:
-        PwmOut pwm;      // The motor driver's PWM pin.
-        DigitalOut dir;  // The motor driver's DIR pin.
+ public:
+  // Initialize the motor.
+  //
+  // Parameters:
+  //   pin_pwm: The motor driver's PWM pin. In order to have PWM output, the
+  //            pin should be between 21 and 26.
+  //   pin_dir: The motor driver's DIR pin. If the driver is not connected
+  //            in reverse, HI is forward, and LO is reverse.
+  //   reversed: Whether the motor driver's DIR pin is connected in reverse.
+  Motor(PinName pin_pwm, PinName pin_dir, bool reversed) 
+      : pwm_(pin_pwm), dir_(pin_dir), reversed_(reversed) {
+    pwm_ = dir_ = 0;     // Set all outputs to low.
+    pwm_.period_us(40); // Set PWM output frequency to 25 kHz.
+  }
+  
+  // Drive the motor at the given speed.
+  //
+  // Parameters:
+  //   speed: A value between -1 and 1, representing the motor speed.
+  void drive(float speed) {
+    if (reversed_) {
+      dir_ = speed < 0 ? 1 : 0;
+    } else {
+      dir_ = speed < 0 ? 0 : 1;
+    }
+    pwm_ = abs(speed);
+  }
+  
+ private:
+    PwmOut pwm_;      // The motor driver's PWM pin.
+    DigitalOut dir_;  // The motor driver's DIR pin.
+    bool reversed_;   // Whether DIR is connected in reverse.
 };
 
 
 int main() {
-    // The four motors are in an array. The raspberry pi expects this order;
-    // do not change it without changing the code for the rpi as well.
-    Motor motors[4] = { Motor(p21, p11),       // Left wheels
-                        Motor(p22, p12),       // Right wheels
-                        Motor(p23, p13),       // Left flipper
-                        Motor(p24, p14) };     // Right flipper
-    
-    AnalogIn pots[6] = { p15, p16, p17, p18,   // Unused
-                         p19,                  // Left flipper position
-                         p20 };                // Right flipper position
-    
-    int n_adc = 2; // Number of ADC Channels in use. Max is 6.
-    uint16_t adc_results[n_adc];
-    for (int i = 0; i < n_adc; i++) {
-        adc_results[i] = 0; // Zero the results.
+  // The four motors are in an array. The raspberry pi expects this order;
+  // do not change it without changing the code for the rpi as well.
+  Motor motors[4] = { Motor(p21, p11, false),     // Left wheels
+                      Motor(p22, p12, true),      // Right wheels
+                      Motor(p23, p13, true),      // Left flipper
+                      Motor(p24, p14, false) };   // Right flipper
+
+  AnalogIn pots[6] = { p15, p16, p17, p18,   // Unused
+                       p19,                  // Left flipper position
+                       p20 };                // Right flipper position
+
+  int n_adc = 2; // Number of ADC Channels in use. Max is 6.
+  uint16_t adc_results[n_adc];
+  for (int i = 0; i < n_adc; i++) {
+    adc_results[i] = 0; // Zero the results.
+  }
+
+  union MotorPacket packet;
+  int sign;
+
+  rpi.baud(38400);  // Match this in the RPi settings.
+  
+  while(1) {
+    // Get packet from RPi.
+    if(rpi.readable()) {
+      packet.as_byte = rpi.getc();
     }
-    
-    union MotorPacket packet;
-    int sign;
-    
-    rpi.baud(38400);  // Match this in the RPi settings.
-    
-    while(1) {
-        // Drive the motor
-        if(rpi.readable()) {
-            packet.as_byte = rpi.getc(); // Get packet from rpi.
-        }
 
-        // Drive motor.
-        sign = packet.b.negative ? -1 : 1;
-        motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
+    // Drive motor.
+    sign = packet.b.negative ? -1 : 1;
+    motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
 
-        // Update flipper positions.
-        adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
-        adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
+    // Update flipper positions.
+    adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
+    adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
 
-        // Send data to Rpi.
-        for(int i = 0; i < n_adc; i++) {
-            rpi.printf("0x%X ", adc_results[i]);
-        }
-
-        rpi.printf("\n");
-        fflush(rpi);
+    // Send data to RPi.
+    for(int i = 0; i < n_adc; i++) {
+      rpi.printf("0x%X ", adc_results[i]);
     }
+    rpi.printf("\n");
+    fflush(rpi);
+  }
 }
