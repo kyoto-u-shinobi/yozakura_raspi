@@ -100,8 +100,10 @@ class MotorPacket(ctypes.Union):
     speed : 5 bits
         The magnitude of the speed. Can range between 0 and 31.
 
-    .. note:: Anonymous usage is the bitfield, ``b``. The full byte can be
-              access via ``as_byte``.
+    Notes
+    -----
+    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
+    ``as_byte``.
 
     """
     _fields_ = [("b", MotorPacketBits),
@@ -164,8 +166,10 @@ class CurrentConfiguration(ctypes.Union):
     mode : 3 bits
         Operating mode. Can range between 0 and 7.
 
-    .. note:: Anonymous usage is the bitfield, ``b``. The full byte can be
-              access via ``as_byte``.
+    Notes
+    -----
+    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
+    ``as_byte``.
 
     References
     ----------
@@ -247,8 +251,10 @@ class CurrentAlerts(ctypes.Union):
         Whether to latch the alert and flag bits, even after the fault has
         cleared. Default is ``False``.
 
-    .. note:: Anonymous usage is the bitfield, ``b``. The full byte can be
-              access via ``as_byte``.
+    Notes
+    -----
+    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
+    ``as_byte``.
 
     References
     ----------
