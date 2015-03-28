@@ -40,6 +40,16 @@ class BadArgError(YozakuraException):
     """
 
 
+class NoMbedError(YozakuraException):
+    """Raised when the raspberry pi cannot connect to the mbed."""
+    msg = "The mbed is not connected!"
+
+
+class NoControllerError(YozakuraException):
+    """Raised when there are no controllers connected to the base station."""
+    msg = "There are no controllers attached!"
+
+
 class UnknownControllerError(YozakuraException):
     """
     Raised when the mapping of the controller buttons is unknown.
@@ -55,32 +65,32 @@ class UnknownControllerError(YozakuraException):
 
     """
     def __init__(self, make=None):
-        message = "{} has an unknown mapping!"
+        message = "{make} has an unknown mapping!"
         if not make:
             make = "This controller"
-        super().__init__(message.format(make))
+        super().__init__(message.format(make=make))
 
 
 class NoDriversError(YozakuraException):
     """
-    Raised when a motor has no drivers enabled.
+    Raised when a motor driver has no control method enabled.
 
     For a ``Motor`` to be able to use PWM, it needs either the ``Serial``
     connection to a microcontroller for hardware PWM (preferable if available),
-    or a list of Raspberry Pi GPIO pins in order to use soft PWM.
+    or a list of Raspberry Pi GPIO pins in order to use software PWM.
 
     Parameters
     ----------
     motor : Motor, optional
-        The motor which has no drivers. If it is provided, the error message
-        will specify the motor.
+        The motor which has no control methods. If it is provided, the error
+        message will specify the motor.
 
     """
     def __init__(self, motor=None):
-        message = "{} does not have any drivers enabled!"
+        message = "{motor} does not have any drivers enabled!"
         if not motor:
             motor = "This motor"
-        super().__init__(message.format(motor))
+        super().__init__(message.format(motor=motor))
 
 
 class MotorCountError(YozakuraException):
@@ -103,10 +113,8 @@ class MotorCountError(YozakuraException):
     def __init__(self, count=None):
         if count is None:
             message = "The motor count is bad!"
-        elif count == 0:
-            message == "No motors have been registered!"
         else:
-            message = "{} motors have already been registered!".format(count)
+            message = "{n} motors have been registered!".format(n=count)
         super().__init__(message)
 
 
@@ -122,6 +130,26 @@ class NoSerialsError(YozakuraException):
     msg = "No serial devices are registered!"
 
 
+class I2CSlotEmptyError(YozakuraException):
+    """
+    Raised when no device is found at a given address.
+
+    Parameters
+    ----------
+    address : int, optional
+        The address at which the error occured. If it is provided, the error
+        message will specify the address.
+
+    """
+    def __init__(self, address=None):
+        message = "The I2C slot at {addr} contains no devices!"
+        if not address:
+            address = "this address"
+        else:
+            address = hex(address)
+        super().__init__(message.format(addr=address))
+
+
 class I2CSlotBusyError(YozakuraException):
     """
     Raised when an I2C slot is busy.
@@ -129,8 +157,20 @@ class I2CSlotBusyError(YozakuraException):
     This can happen when a device is registered at a given slot, and a new
     (or the same) device is attempted to be added with the same address.
 
+    Parameters
+    ----------
+    address : int, optional
+        The address at which the error occured. If it is provided, the error
+        message will specify the address.
+
     """
-    msg = "A device is already registered at this address!"
+    def __init__(self, address=None):
+        message = "The I2C slot at {addr} is busy!"
+        if not address:
+            address = "this address"
+        else:
+            address = hex(address)
+        super().__init__(message.format(addr=address))
 
 
 class NotCalibratedError(YozakuraException):
@@ -139,13 +179,13 @@ class NotCalibratedError(YozakuraException):
 
     Parameters
     ----------
-    sensor : Device, optional
+    device : Device, optional
         The uncalibrated device. If it is provided, the error message will
         specify the device.
 
     """
     def __init__(self, device=None):
-        message = "{} has not been calibrated yet!"
+        message = "{dev} has not been calibrated yet!"
         if not device:
             device = "This device"
-        super().__init__(message.format(device))
+        super().__init__(message.format(dev=device))
