@@ -4,7 +4,18 @@
 Functions and classes for using I2C devices.
 
 Provides functions to simplify work with I2C devices, as well as classes for
-each attached device.
+each attached device. The following devices are currently supported:
+
+- Texas Instruments INA226 Current/Power Monitor [1]_
+- Invenense MPU-9150 9-axis MEMS MotionTracking Device [2]_
+
+References
+----------
+.. [1] Texas Instruments, INA 226 datasheet.
+       http://www.ti.com/lit/ds/symlink/ina226.pdf
+
+.. [2] Invensense, MPU-9150 Product Specification.
+       http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf
 
 """
 from collections import OrderedDict
@@ -16,74 +27,9 @@ from RPi import GPIO as gpio
 import RTIMU
 import smbus
 
-from common.exceptions import BadArgError, I2CSlotBusyError, \
-    NotCalibratedError
+from common.exceptions import BadArgError, I2CSlotEmptyError,\
+    I2CSlotBusyError, NotCalibratedError
 from rpi.bitfields import CurrentConfiguration, CurrentAlerts
-
-
-def get_i2c_bus():
-    """
-    Detect the revision number of a Raspberry Pi, useful for changing functionality
-    like default I2C bus based on revision. The revision list is available online.
-    [1]_
-    
-    Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.
-    
-    This function is based on an Adafruit I2C implementation. [2]_
-    
-    References
-    ----------
-    .. [1] ELinux.org. "RPi Hardware History."
-           http://elinux.org/RPi_HardwareHistory#Board_Revision_History
-    .. [2] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
-           https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53
-    
-    """
-    with open('/proc/cpuinfo', 'r') as infile:
-        for line in infile:
-            # Match a line of the form "Revision : 0002" while ignoring extra
-            # info in front of the revsion (like 1000 when the Pi was over-volted).
-            match = re.match('Revision\s+:\s+.*(\w{4})$', line, flags=re.IGNORECASE)
-            if match and match.group(1) in ['0000', '0002', '0003']:  # Revision 1
-                return 0
-            elif match:  # Revision 2
-                return 1
-        # Couldn't find the revision, throw an exception.
-        raise RuntimeError('Could not determine Raspberry Pi revision.')
-
-
-i2c_bus = get_i2c_bus()  # /dev/i2c-0 or /dev/i2c-1
-
-
-def get_used_i2c_slots(bus_number=i2c_bus):
-    """
-    Find all used i2c slots.
-
-    This function calls an external ``i2cdetect`` command, and works on the
-    resultant table to find out which slots are occupied.
-
-    Parameters
-    ----------
-    bus : int, optional
-        The bus to be used.
-
-    Returns
-    -------
-    slots : dict
-        Contains all used i2c slots and their values.
-
-        **Dictionary format :** {slot_number (int): slot_number_hex (str)}
-
-    """
-    slots = OrderedDict()
-    command = "i2cdetect -y {}".format(bus_number)
-    table = subprocess.check_output(command.split()).splitlines()[1:]
-    for i, row in enumerate(table):
-        row = str(row, encoding="utf-8")
-        for j, item in enumerate(row.split()[1:]):
-            if item != "--":
-                slots[16*i + (j if i > 0 else j + 3)] = item
-    return slots
 
 
 class Device(object):
@@ -92,27 +38,25 @@ class Device(object):
 
     Parameters
     ----------
-    address : byte
+    address : int
         The address of the i2c device.
     name : str
         The name of the device.
-    bus_number : int, optional
-        The I2C bus being used.
 
     Raises
     ------
+    I2CSlotEmptyError
+        No devices could be found at the specified address.
     I2CSlotBusyError
         The address is valid, but another device has already been registered at
         that address and has not been removed yet.
 
     Attributes
     ----------
-    address : byte
+    address : int
         The address of the I2C device.
     name : str
         The name of the device.
-    bus_number : int
-        The I2C bus being used.
     devices : dict
         Contains all registered devices.
 
@@ -120,26 +64,86 @@ class Device(object):
 
     """
     devices = {}
+    _i2c_bus = None
 
-    def __init__(self, address, name, bus_number=i2c_bus):
-        self._logger = logging.getLogger("i2c-{name}-{address}".format(
-                                         name=name,
-                                         address=hex(address)))
+    def __init__(self, address, name):
+        self._logger = logging.getLogger("i2c-{name}-{address}"
+                                         .format(name=name,
+                                                 address=hex(address)))
+        if Device._i2c_bus is None:
+            Device._i2c_bus = self._get_i2c_bus()  # /dev/i2c-0 or /dev/i2c-1
+
         self._logger.debug("Initializing device")
-        slots = get_used_i2c_slots()
-        if address not in slots.keys():
-            self._logger.warning("No device detected")
-        elif slots[address] == "UU":
-            self._logger.warning("Device at address is busy")
-        elif address in Device.devices.values():
-            self._logger.error("Address belongs to a registered device.")
-            raise I2CSlotBusyError
-        else:
+        slots = self._get_used_i2c_slots()
+        if address not in slots:
+            raise I2CSlotEmptyError(address)
+        elif slots[address] == "UU" or address in Device.devices.values():
+            raise I2CSlotBusyError(address)
+
+        else:  # Everything is fine.
             self.address = address
             self.name = name
-            self.bus = smbus.SMBus(bus_number)
+            self.bus = smbus.SMBus(Device._i2c_bus)
             Device.devices[address] = self
         self._logger.info("Device initialized")
+
+    @staticmethod
+    def _get_i2c_bus():
+        """
+        Detect the revision number of a Raspberry Pi, useful for changing
+        functionality like default I2C bus based on revision. The revision list
+        is available online. [1]_
+
+        Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.
+
+        This function is based on an Adafruit I2C implementation. [2]_
+
+        References
+        ----------
+        .. [1] ELinux.org. "RPi Hardware History."
+               http://elinux.org/RPi_HardwareHistory#Board_Revision_History
+        .. [2] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
+               https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53
+
+        """
+        with open("/proc/cpuinfo", "r") as infile:
+            for line in infile:
+                # Match a line of the form "Revision : 0002" while ignoring
+                # info in front of the revsion (like 1000 when overvolted).
+                match = re.match("Revision\s+:\s+.*(\w{4})$", line,
+                                 flags=re.IGNORECASE)
+                if match and match.group(1) in ["0000", "0002", "0003"]:
+                    return 0  # Revision 1
+                elif match:
+                    return 1  # Revision 2
+            # Couldn't find the revision, throw an exception.
+            raise RuntimeError('Could not determine Raspberry Pi revision.')
+
+    @staticmethod
+    def _get_used_i2c_slots():
+        """
+        Find all used i2c slots.
+
+        This function calls an external ``i2cdetect`` command, and works on the
+        resultant table to find out which slots are occupied.
+
+        Returns
+        -------
+        slots : dict
+            Contains all used i2c slots and their values.
+
+            **Dictionary format :** {slot_number (int): slot_number_hex (str)}
+
+        """
+        slots = OrderedDict()
+        command = "i2cdetect -y {bus}".format(bus=Device.i2c_bus)
+        table = subprocess.check_output(command.split()).splitlines()[1:]
+        for i, row in enumerate(table):
+            row = str(row, encoding="utf-8")
+            for j, item in enumerate(row.split()[1:]):
+                if item != "--":
+                    slots[16*i + (j if i > 0 else j + 3)] = item
+        return slots
 
     def remove(self):
         """Deregister the device."""
@@ -147,8 +151,10 @@ class Device(object):
         del Device.devices[self.address]
 
     def __repr__(self):
-        return "{} at {} ({})".format(self.__class__.__name__,
-                                      hex(self.address), self.name)
+        return "{dev_type} at {addr} ({name})".format(
+            dev_type=self.__class__.__name__,
+            addr=hex(self.address),
+            name=self.name)
 
     def __str__(self):
         return self.name
@@ -160,27 +166,21 @@ class CurrentSensor(Device):
 
     The current sensor must be calibrated before use.
 
-    .. note:: All words are big endian.
-
     Parameters
     ----------
-    address : byte
+    address : int
         The address of the device.
     name : str, optional
         The name of the device.
-    bus_number : int, optional
-        The I2C bus being used.
 
     Attributes
     ----------
-    address : byte
+    address : int
         The address of the device.
     pin_alert : int
         The alert pin of the device. None if not connected.
     name : str
         The name of the device.
-    bus_number : int
-        The I2C bus being used.
     registers : dict
         Contains the addresses of each register.
 
@@ -219,6 +219,10 @@ class CurrentSensor(Device):
         current : str
             Current result register
 
+    Notes
+    -----
+    All words are big endian.
+
     References
     ----------
     .. [1] Texas Instruments, INA 226 datasheet.
@@ -235,13 +239,13 @@ class CurrentSensor(Device):
                  "alert_lim": 7,
                  "die": 0xFF}
 
-    def __init__(self, address, name="Current Sensor", bus_number=i2c_bus):
+    def __init__(self, address, name="Current Sensor"):
         self.lsbs = {"v_shunt": 2.5e-6,  # Volts
                      "v_bus": 1.25e-3,  # Volts
                      "power": None,  # Watts
                      "current": None}  # Amperes
 
-        super().__init__(address, name, bus_number)
+        super().__init__(address, name)
         self.pin_alert = None
         self.calibrate(10)  # 10 A max current.
 
@@ -263,7 +267,7 @@ class CurrentSensor(Device):
             return its two's complement.
 
         """
-        self._logger.debug("Reading {} register".format(register))
+        self._logger.debug("Reading {reg} register".format(reg=register))
         data = self.bus.read_word_data(self.address, self.registers[register])
         data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
 
@@ -282,8 +286,10 @@ class CurrentSensor(Device):
             The name of the register to be written to.
         data : word
             The data to be written.
+
         """
-        self._logger.debug("Writing {} to {} register".format(data, register))
+        self._logger.debug("Writing {data} to {reg} register"
+                           .format(data=data, reg=register))
         data = int(data)
 
         # bus.write_word_data writes one byte at a time, so we switch the byte
@@ -402,21 +408,18 @@ class CurrentSensor(Device):
             The device has not yet been calibrated.
 
         """
-        self._logger.debug("Getting {} measurement".format(register))
+        self._logger.debug("Getting {reg} measurement".format(reg=register))
         # Force a read if triggered mode.
         if 0 < self.get_configuration().mode <= 3:
             self.set_configuration()
-        #if self.pin_alert is not None:
-            #while not self.get_alerts()["cvrf"]:
-                #pass
+        # TODO(masasin): Add a wait for conversion to be complete.
 
         if register not in self.lsbs:
-            self._logger.error("{} is not a measurement!".format(register))
-            raise BadArgError("{} is not a measurement!".format(register))
+            raise BadArgError("{reg} is not a measurement!"
+                              .format(reg=register))
         try:
             return self._read_register(register) * self.lsbs[register]
         except TypeError:
-            self._logger.error("{} has not been calibrated yet!".format(self))
             raise NotCalibratedError(self)
 
     def calibrate(self, max_current, r_shunt=0.002):
@@ -447,7 +450,7 @@ class CurrentSensor(Device):
         if max_current < 2.6:
             raise BadArgError("max_current should be at least 2.6 A.")
 
-        self.lsbs["current"] = max_current / 2**15  # Amperes
+        self.lsbs["current"] = max_current / 2**15      # Amperes
         self.lsbs["power"] = 25 * self.lsbs["current"]  # Watts
         calib_value = 0.00512 / (self.lsbs["current"] * r_shunt)
         self._write_register("calib", calib_value)
@@ -568,7 +571,7 @@ class CurrentSensor(Device):
         return flags
 
 
-class IMU(object):
+class IMU(Device):
     """
     Invenense MPU-9150 9-axis MEMS MotionTracking Device. [1]_
 
@@ -577,16 +580,18 @@ class IMU(object):
 
     Parameters
     ----------
-    name : str, optional
-        The name of the device.
     settings_file : str, optional
         The location of the settings file, without the ".ini" extension.
     address : int, optional
         The address of the device. If provided, it overrides the I2C address
         found in the settings file.
+    name : str, optional
+        The name of the device.
 
-    Args
-    ----
+    Attributes
+    ----------
+    address : int
+        The address of the device.
     poll_interval : int
         The recommended poll interval, in milliseconds.
     name : str
@@ -600,23 +605,27 @@ class IMU(object):
            https://github.com/richards-tech/RTIMULib
 
     """
-    def __init__(self, name="MPU-9150", settings_file="imu_settings", address=None):
+    def __init__(self, settings_file="imu_settings", address=None,
+                 name="MPU-9150"):
         self._settings = RTIMU.Settings(settings_file)
         if address is not None:
             self._settings.I2CAddress = address
+        else:
+            address = self._settings.I2CAddress
 
-        self._logger = logging.getLogger("imu-{name}-{address}".format(
-            name=name, address=hex(self._settings.I2CAddress)))
+        self._logger = logging.getLogger("imu-{name}-{address}"
+                                         .format(name=name,
+                                                 address=hex(address)))
 
         self._imu = RTIMU.RTIMU(self._settings)
         if not self._imu.IMUInit():
             self._logger.warning("IMU init failed")
             return
         else:
-            self._logger.info("IMU init succeeded.")
+            self._logger.info("IMU init succeeded")
 
         self.poll_interval = self._imu.IMUGetPollInterval
-        self.name = name
+        super().__init__(address, name)
 
     @property
     def rpy(self):
@@ -629,6 +638,6 @@ class IMU(object):
             The roll, pitch, and yaw readings of the IMU, in radians.
 
         """
-        while True:
+        while True:  # Wait until new data is ready.
             if self._imu.IMURead():
                 return self._imu.getFusionData()
