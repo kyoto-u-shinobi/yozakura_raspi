@@ -6,11 +6,13 @@ These tests should be executed periodically when unit tests pass to ensure that 
 
 ### Summary
 
-* **Test Type:**            Manual
-* **Valid with Simulator:** No
-* **Valid with Hardware:**  Yes
-* **Script Utilized:**      ft-000_test_rpi_mbed.py
-* **External C&C Source:**  None
+| Item                 | Value                |
+| :------------------- | :------------------- |
+| Test Type            | Manual               |
+| Valid with Simulator | No                   |
+| Valid with Hardware  | Yes                  |
+| Script utilized      | ftr-000_test_mbed.py |
+| External C&C Source  | None                 |
 
 ### Objectives
 
@@ -31,7 +33,7 @@ Before beginning the test, follow this procedure:
 9. Connect the mbed to the Raspberry Pi via an A-to-MiniB USB cable.
 10. In the test script, set the maximum speeds for the motors depending on which motor is connected, and the load on the motor.
 11. In the test script, define `motor` as one of the four motors that have been predefined, depending on the pins the motor has been connected to.
-12. Start the script by running it from the root folder using `sudo python3 -m tests.functional.ft-000_test_mbed_rpi`
+12. Start the script by running it from the root folder using `sudo python3 -m tests.functional.ftr-000_test_mbed`
 
 ### Test procedure
 
