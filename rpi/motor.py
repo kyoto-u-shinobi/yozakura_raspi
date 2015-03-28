@@ -1,11 +1,18 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 """
-Control motors.
+Control the motors on the robot.
 
-Motors expect at least one driver, which can be either a serial port for
-microcontroller communication, or software PWM. Up to four motors can be
-used at any given time.
+Motors expect at least one control method, which can be either a serial port
+for microcontroller communication, or software PWM. Up to four motors can be
+used.
+
+The supported motor driver is the Pololu High-Power Motor Driver 18v15. [1]_
+
+References
+----------
+.. [1] Pololu, High-Power Motor Driver 18v15 datasheet.
+       https://www.pololu.com/product/755
 
 """
 import logging
@@ -19,14 +26,14 @@ from rpi.bitfields import MotorPacket
 
 class Motor(object):
     """
-    A motor class.
+    A class representing the motor drivers used on Yozakura.
 
-    The motor driver used here is the Pololu High-Power Motor Driver 18v15.
-    [1]_
+    The motor driver used is the Pololu High-Power Motor Driver 18v15. [1]_
 
-    After the motor is initialized and registered, at least one driver must be
-    added. The drivers can be either a serial port connected to a
-    microcontroller for hardware PWM, or software PWM.
+    After the motor is initialized and registered, at least one control method
+    must be added. These can be either a serial port connected to a
+    microcontroller for hardware PWM, or software PWM. If hardware PWM is used,
+    the software PWM will be ignored.
 
     Up to four motors can be registered.
 
@@ -50,11 +57,11 @@ class Motor(object):
 
     Raises
     ------
+    BadArgError
+        Raised when bad inputs are made.
     TooManyMotorsError
         Raised when a motor is added after all four motors have already been
         registered.
-    BadArgError
-        Raised when bad inputs are made.
 
     Attributes
     ----------
@@ -124,12 +131,38 @@ class Motor(object):
 
         self._logger.debug("Resetting motor driver")
         gpio.setup(reset, gpio.OUT)
-        self.reset_driver()
+        self.reset_driver()  # Clear any startup faults.
 
         self._logger.debug("Registering motor")
         Motor.motors.append(self)
         self._logger.info("Motor initialized")
         Motor._count += 1
+
+    def _catch_fault(self, channel):
+        """Threaded callback for fault detection."""
+        if gpio.input(self.pin_fault_1) and gpio.input(self.pin_fault_2):
+            self._logger.warning("Undervolt detected!")
+        elif gpio.input(self.pin_fault_1):
+            self._logger.warning("Overtemp detected!")
+        elif gpio.input(self.pin_fault_2):
+            self._logger.critical("Short detected!" +
+                                  "Motor driver has been latched until reset.")
+
+    def enable_serial(self, ser):
+        """
+        Allow the use of a USB serial connection.
+
+        If it is enabled, speed commands will be sent to an external
+        microcontroller, such as an mbed, which will output the PWM signal.
+
+        Parameters
+        ----------
+        ser : Serial
+            Communicates with the external hardware.
+
+        """
+        self.connection = ser
+        self.has_serial = True
 
     def enable_pwm(self, pwm, direction, frequency=28000):
         """
@@ -163,31 +196,55 @@ class Motor(object):
 
         self.has_pwm = True
 
-    def enable_serial(self, ser):
+    def drive(self, speed):
         """
-        Allow the use of a USB serial connection.
+        Drive the motor at a given speed.
 
-        If it is enabled, speed commands will be sent to an external
-        microcontroller, such as an mbed, which will output the PWM signal.
+        The priority goes to the microcontroller if serial is enabled. Software
+        PWM is used if serial is not enabled.
 
         Parameters
         ----------
-        ser : Serial
-            Communicates with the external hardware.
+        speed : float
+            A value from -1 to 1 indicating the requested speed.
+
+        Raises
+        ------
+        NoDriversError
+            Neither serial nor PWM are enabled.
 
         """
-        self.connection = ser
-        self.has_serial = True
+        if self.has_serial:
+            self._transmit(speed)
+        elif self.has_pwm:
+            self._pwm_drive(speed)
+        else:
+            raise NoDriversError(self)
 
-    def _catch_fault(self, channel):
-        """Threaded callback for fault detection."""
-        if gpio.input(self.pin_fault_1) and gpio.input(self.pin_fault_2):
-            self._logger.warning("Fault detected! Undervolt.")
-        elif gpio.input(self.pin_fault_1):
-            self._logger.warning("Fault detected! Overtemp.")
-        elif gpio.input(self.pin_fault_2):
-            self._logger.warning("Fault detected! Short circuit. " +
-                                 "Motor driver has been latched.")
+    def _transmit(self, speed):
+        """
+        Send a byte through a serial connection.
+
+        When connected to the mbed, motor control information is encoded as a
+        single byte, with the first two bits encoding the motor's ID, and the
+        next bit encoding the sign. The last five bits encode the absolute
+        value of the speed to a number between 0 and 31.
+
+        This allows only the relevant information to be transmitted, and also
+        lets the mbed perform asynchronously.
+
+        Parameters
+        ----------
+        speed : float
+            A value from -1 to 1 indicating the requested speed.
+
+        """
+        packet = MotorPacket()
+        packet.motor_id = self.motor_id
+        packet.negative = 1 if speed < 0 else 0
+        packet.speed = int(abs(self._scale_speed(speed)) * 31)
+
+        self.connection.write(bytes([packet.as_byte]))
 
     def _scale_speed(self, speed):
         """
@@ -215,31 +272,6 @@ class Motor(object):
         speed = round(speed, 4)
         return speed
 
-    def _transmit(self, speed):
-        """
-        Send a byte through a serial connection.
-
-        When connected to the mbed, motor control information is encoded as a
-        single byte, with the first two bits encoding the motor's ID, and the
-        next bit encoding the sign. The last five bits encode the absolute
-        value of the speed to a number between 0 and 31.
-
-        This allows only the relevant information to be transmitted, and also
-        lets the mbed perform asynchronously.
-
-        Parameters
-        ----------
-        speed : float
-            A value from -1 to 1 indicating the requested speed.
-
-        """
-        packet = MotorPacket()
-        packet.motor_id = self.motor_id
-        packet.negative = 1 if speed < 0 else 0
-        packet.speed = int(abs(self._scale_speed(speed)) * 31)
-
-        self.connection.write(bytes([packet.as_byte]))
-
     def _pwm_drive(self, speed):
         """
         Drive the motor using software PWM.
@@ -252,36 +284,12 @@ class Motor(object):
         speed : float
             A value from -1 to 1 indicating the requested speed of the motor.
             The speed is changed by changing the PWM duty cycle.
+
         """
         speed = self._scale_speed(speed)
 
         gpio.output(self.pin_dir, gpio.LOW if speed < 0 else gpio.HIGH)
         self._pwm.ChangeDutyCycle(abs(speed) * 100)
-
-    def drive(self, speed):
-        """
-        Drive the motor at a given speed.
-
-        The priority goes to the microcontroller if serial is enabled. Software
-        PWM is used if serial is not enabled.
-
-        Parameters
-        ----------
-        speed : float
-            A value from -1 to 1 indicating the requested speed.
-
-        Raises
-        ------
-        NoDriversError
-            Neither serial nor PWM are enabled.
-        """
-        if self.has_serial:
-            self._transmit(speed)
-        elif self.has_pwm:
-            self._pwm_drive(speed)
-        else:
-            self._logger.error("Cannot drive motor! No serial or PWM enabled.")
-            raise NoDriversError(self)
 
     def reset_driver(self):
         """
@@ -305,16 +313,17 @@ class Motor(object):
         Motor.motors.remove(self)
         self._logger.info("Motor shut down")
 
-    def shutdown_all():
-        """A class method to shut down and deregister all motors."""
-        logging.info("Shutting down all motors.")
-        for motor in Motor.motors:
+    @classmethod
+    def shutdown_all(cls):
+        """Shut down and deregister all motors."""
+        logging.info("Shutting down all motors")
+        for motor in cls.motors:
             motor.shutdown()
         gpio.cleanup()
         logging.info("All motors shut down")
 
     def __repr__(self):
-        return "{} (ID# {})".format(self.name, self.motor_id)
+        return "{name} (ID# {id})".format(name=self.name, id=self.motor_id)
 
     def __str__(self):
         return self.name

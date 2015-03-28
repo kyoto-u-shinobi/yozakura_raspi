@@ -4,31 +4,25 @@ import logging
 
 import pygame
 
+from common.exceptions import NoControllerError
 from common.networking import get_ip_address
 from opstn.controller import Controller
 from opstn.server import Server, Handler
 
 
 def main():
-    try:
-        ip_address = get_ip_address("eth0")
-    except OSError:
-        # ip_address = get_ip_address("enp2s0")
-        ip_address = get_ip_address("wlan0")
-    server = Server((ip_address, 9999), Handler)
-
     logging.debug("Initializing controllers")
     try:
         stick_body = Controller(0, name="main")
-        server.add_controller(stick_body)
     except pygame.error:
-        logging.warning("No controller attached")
+        raise NoControllerError
 
     try:
+        ip_address = get_ip_address(["eth0", "enp2s0", "wlan0"])
+        server = Server((ip_address, 9999), Handler)
+        server.add_controller(stick_body)
         logging.debug("Starting server")
         server.serve_forever()
-    except (KeyboardInterrupt, SystemExit):
-        raise
     finally:
         logging.info("Shutting down...")
         Controller.shutdown_all()

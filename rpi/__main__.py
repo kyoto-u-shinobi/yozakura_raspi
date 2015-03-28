@@ -1,8 +1,10 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import logging
+
 import serial
 
+from common.exceptions import NoMbedError
 from common.networking import get_ip_address
 from rpi.client import Client
 from rpi.devices import CurrentSensor, IMU
@@ -10,45 +12,37 @@ from rpi.motor import Motor
 
 
 def main():
-    logging.debug("Connecting to server")
-    try:
-        ip_address = get_ip_address("eth0")
-    except OSError:
-        ip_address = get_ip_address("enp2s0")
+    client_address = get_ip_address(["eth0", "enp2s0", "wlan0"])
 
     # Connect to correct server based on local IP address.
-    if ip_address.startswith("192.168"):  # Contec
+    if client_address.startswith("192.168"):  # Contec
         opstn_address = "192.168.54.200"
-    elif ip_address.startswith("10.249"):  # Lab dev
+    elif client_address.startswith("10.249"):  # Lab dev
         opstn_address = "10.249.255.172"
 
-    client = Client((opstn_address, 9999))
+    client = Client(client_address, (opstn_address, 9999))
 
     logging.debug("Initializing motors")
-    motors = [Motor("left_motor", 11, 12, 13),
-              Motor("right_motor", 15, 16, 18),
-              Motor("left_flipper", 31, 32, 33),
-              Motor("right_flipper", 35, 36, 37)]
+    motors = [Motor("left_wheel_motor", 11, 12, 13),
+              Motor("right_wheel_motor", 15, 16, 18),
+              Motor("left_flipper_motor", 31, 32, 33),
+              Motor("right_flipper_motor", 35, 36, 37)]
 
     logging.debug("Initializing current sensors")
-    current_sensors = [
-                       #CurrentSensor(0x48, name="left_flipper_current")
-                      ]
+    current_sensors = [CurrentSensor(0x48, name="left_flipper_current")]
 
     logging.debug("Initializing IMUs")
-    imus = [
-            IMU(name="front_imu", address=0x68),
-            IMU(name="rear_imu", address=0x69)
-           ]
+    imus = [IMU(name="front_imu", address=0x68),
+            IMU(name="rear_imu", address=0x69)]
 
     try:
-        logging.debug("Connecting mbed")
+        logging.debug("Connecting to mbed")
         mbed = serial.Serial("/dev/ttyACM0", 38400)
-        client.add_serial_device("mbed", mbed)
     except serial.SerialException:
-        logging.warning("The mbed is not connected")
+        raise NoMbedError
 
-    logging.debug("Registering motors and sensors to client")
+    logging.debug("Registering peripherals to client")
+    client.add_serial_device("mbed", mbed)
     for motor in motors:
         client.add_motor(motor, ser=mbed)
     for sensor in current_sensors:
@@ -61,11 +55,8 @@ def main():
     finally:
         logging.info("Shutting down...")
         Motor.shutdown_all()
-        try:
-            logging.debug("Shutting down connection with mbed")
-            mbed.close()
-        except NameError:
-            logging.debug("The mbed was not connected")
+        logging.debug("Shutting down connection with mbed")
+        mbed.close()
         client.shutdown()
 
     logging.info("All done")
