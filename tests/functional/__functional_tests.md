@@ -2,7 +2,7 @@
 
 These tests should be executed periodically when unit tests pass to ensure that the functional requirements are met.
 
-## FT-000 Test the mbed connected to the Raspberry Pi
+## FTR-000 Test the mbed connected to the Raspberry Pi
 
 ### Summary
 
@@ -39,14 +39,15 @@ Before beginning the test, follow this procedure:
 
 1. Press "a" several times and verify that the motor turns in the positive direction. Ensure that the speed never goes above the defined maximum speed.
   * If the motor does not turn, it might mean that a short-circuit fault had occurred during startup. Press "r" or "R" to reset the motor driver and clear the fault.
-2. Press "z" several times and verify that the motor slows down before starting to turn in the negative direction. Ensure that the speed never goes above the defined maximum speed.
-3. Press "a" several times and verify that the motor slows down.
-4. Press "q" or "Q" and verify that the motor stops.
-5. Press "A" and verify that the motor turns at the defined maximum speed in the positive direction.
-6. Press "q" or "Q" and verify that the motor stops.
-7. Press "Z" and verify that the motor turns at the defined maximum speed in the negative direction.
-8. Press "q" or "Q" and verify that the motor stops.
+  2. Press "z" several times and verify that the motor slows down before starting to turn in the negative direction. Ensure that the speed never goes above the defined maximum speed.
+  3. Press "a" several times and verify that the motor slows down.
+  4. Press "q" or "Q" and verify that the motor stops.
+  5. Press "A" and verify that the motor turns at the defined maximum speed in the positive direction.
+  6. Press "q" or "Q" and verify that the motor stops.
+  7. Press "Z" and verify that the motor turns at the defined maximum speed in the negative direction.
+  8. Press "q" or "Q" and verify that the motor stops.
 
 ### Pass/Fail
 
 A pass occurs when all the steps of the test procedure produce the expeted results. A failure occurs when an unexpected behaviour is seen, or if a short-circuit fault is triggered.
+

@@ -1,5 +1,6 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
+import logging
 import math
 import sys
 
@@ -7,8 +8,8 @@ from rpi.devices import IMU
 
 
 def main():
-    imu_front = IMU("Front", address=0x68)
-    imu_rear = IMU("Rear", address=0x69)
+    imu_front = IMU("front", address=0x68)
+    imu_rear = IMU("rear", address=0x69)
 
     while True:
         front = [math.degrees(i) for i in imu_front.rpy]
@@ -17,6 +18,8 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
     try:
         main()
     except KeyboardInterrupt:

@@ -2,11 +2,16 @@
 # Released under the GNU General Public License, version 3
 import logging
 import serial
+import sys
 
 from rpi.motor import Motor
 
 
 def main():
+    mbed = serial.Serial("/dev/ttyACM0", 38400)
+    motor = Motor("motor", 8, 10, 7)
+    motor.enable_serial(mbed)
+
     speed = 0
 
     while True:
@@ -30,12 +35,12 @@ def main():
         elif button.lower() == "r":
             motor.reset_driver()
 
-        logging.debug("Speed: {}".format(speed))
+        print("Speed: {}".format(speed))
         motor.drive(speed)
         try:
             positions = mbed.readline().split()
             *_, lpos, rpos = [int(i, 0) / 0xFFFF for i in positions]
-            logging.debug("Flippers: {:6.3f}  {:6.3f}".format(lpos, rpos))
+            print("Flippers: {:6.3f}  {:6.3f}".format(lpos, rpos))
         except ValueError:
             pass
 
@@ -43,14 +48,9 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-    mbed = serial.Serial("/dev/ttyACM0", 9600)
-    motor = Motor("motor", 11, 12, 13)
-    motor.enable_serial(mbed)
-
     try:
         main()
     except KeyboardInterrupt:
-        pass
-    finally:
         Motor.shutdown_all()
         mbed.close()
+        sys.exit(0)
