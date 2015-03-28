@@ -70,14 +70,14 @@ class Motor {
 int main() {
     // The four motors are in an array. The raspberry pi expects this order;
     // do not change it without changing the code for the rpi as well.
-    Motor motors[4] = { Motor(p21, p11),     // Left wheels
-                        Motor(p22, p12),     // Right wheels
-                        Motor(p23, p13),     // Left flipper
-                        Motor(p24, p14) };   // Right flipper
+    Motor motors[4] = { Motor(p21, p11),       // Left wheels
+                        Motor(p22, p12),       // Right wheels
+                        Motor(p23, p13),       // Left flipper
+                        Motor(p24, p14) };     // Right flipper
     
-    AnalogIn pots[6] = {p15, p16, p17, p18,  // Unused
-                        p19,                 // Left flipper position
-                        p20};                // Right flipper position
+    AnalogIn pots[6] = { p15, p16, p17, p18,   // Unused
+                         p19,                  // Left flipper position
+                         p20 };                // Right flipper position
     
     int n_adc = 2; // Number of ADC Channels in use. Max is 6.
     uint16_t adc_results[n_adc];
