@@ -4,7 +4,9 @@
 Implement a controller in order to control the robot.
 
 Provides classes for directional position, button states, and full controller
-state, as well as a ``Controller`` class.
+state, as well as a ``Controller`` class. The controller type is detected
+automatically, and can be used if its button mapping has been previously
+registered.
 
 """
 
@@ -17,7 +19,7 @@ from common.exceptions import UnknownControllerError
 
 class Position(object):
     """
-    A class representing a controller axis position.
+    A class containing a controller axis position.
 
     Parameters
     ----------
@@ -93,15 +95,12 @@ class Position(object):
         return str((self.x, self.y))
 
     def __str__(self):
-        return "[{:5.2f}, {:5.2f}]".format(self.x, self.y)
+        return "[{x:5.2f}, {y:5.2f}]".format(x=self.x, y=self.y)
 
 
 class Buttons(object):
     """
     A class representing the button configuration of a controller.
-
-    Note that this is only tested with the Logitech RumblePad 2. Other input
-    devices may have different configurations.
 
     When registering the mapping for a new controller, please run the
     ``get_name()`` function to obtain the name to use.
@@ -120,11 +119,6 @@ class Buttons(object):
     known_makes : list of str
         A list containing all the makes whose mappings have been registered.
 
-    Raises
-    ------
-    UnknownControllerError
-        If the mapping of the controller buttons is unknown.
-
     """
     _button_list = ("□", "✕", "○", "△",   # 0-3
                     "L1", "R1", "L2", "R2",  # 4-7
@@ -142,9 +136,6 @@ class Buttons(object):
     known_makes = list(_mappings.keys())
 
     def __init__(self, make, buttons):
-        if make not in Buttons.known_makes:
-            raise UnknownControllerError(make)
-
         self._make = make
         self.buttons = buttons
         self.pressed = [Buttons._button_list[Buttons._mappings[self._make][i]]
@@ -268,11 +259,10 @@ class State(object):
         dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
 
         """
-        out_1 = "dpad: {:4}".format(self.dpad.direction)
-        out_2 = "lstick: {}".format(self.lstick)
-        out_3 = "rstick: {}".format(self.rstick)
-        out_4 = "buttons: {:75}".format(str(self.buttons))
-        return "{}  {}  {}  {}".format(out_1, out_2, out_3, out_4)
+        return "dpad: {dpad:4}  lstick: {ls}  rstick: {rs}  buttons: {b:75}"\
+            .format(dpad=self.dpad.direction,
+                    ls=self.lstick, rs=self.rstick,
+                    b=str(self.buttons))
 
 
 class Controller(object):
@@ -304,12 +294,17 @@ class Controller(object):
 
         **Dictionary format :** {stick_id (int): controller (Controller)}
 
+    Raises
+    ------
+    UnknownControllerError
+        If the mapping of the controller buttons is unknown.
+
     """
     pygame.init()
     controllers = {}
 
     def __init__(self, stick_id, name=None):
-        self._logger = logging.getLogger("controller-{}".format(stick_id))
+        self._logger = logging.getLogger("controller-{id}".format(id=stick_id))
         self._logger.debug("Initializing controller")
         self.controller = pygame.joystick.Joystick(stick_id)
         self.stick_id = stick_id
@@ -321,8 +316,7 @@ class Controller(object):
             self.name = self.make
 
         if self.make not in Buttons.known_makes:
-            self._logger.warning("{} has no registered ".format(self.make) +
-                                 "button mapping. Results may be wrong.")
+            raise UnknownControllerError
 
         self.controller.init()
 
@@ -331,7 +325,8 @@ class Controller(object):
 
         self._logger.info("Controller initialized")
 
-    def get_state(self):
+    @property
+    def state(self):
         """
         Read the state of all the inputs of the controller.
 
@@ -357,7 +352,7 @@ class Controller(object):
         buttons = Buttons(self.make,
                           [stick.get_button(i) for i in range(n_buttons)])
 
-        return State(dpad, lstick, rstick, buttons)
+        return State(dpad, lstick, rstick, buttons).data
 
     def shutdown(self):
         """Safely quits a controller."""
@@ -367,28 +362,15 @@ class Controller(object):
         if not Controller.controllers:
             pygame.quit()
 
-    def shutdown_all():
-        """A class method to safely quit all controllers."""
+    @classmethod
+    def shutdown_all(cls):
+        """Safely quit all controllers."""
         logging.info("Closing all controller handlers")
-        for controller in list(Controller.controllers.values()):
+        for controller in list(cls.controllers.values()):
             controller.shutdown()
 
     def __repr__(self):
-        return "{} (ID# {})".format(self.name, self.stick_id())
+        return "{name} (ID# {id})".format(name=self.name, id=self.stick_id())
 
     def __str__(self):
         return self.name
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    stick_body = Controller(0, "Body controller")
-
-    while True:
-        try:
-            print(stick_body.get_state(), end="\r")
-        except (KeyboardInterrupt, SystemExit):  # Exit safely.
-            logging.info("")
-            logging.info("Exiting")
-            Controller.shutdown_all()
-            break
