@@ -349,7 +349,7 @@ class Controller(object):
         buttons = Buttons(self.make,
                           [stick.get_button(i) for i in range(n_buttons)])
 
-        return State(dpad, lstick, rstick, buttons).data
+        return State(dpad, lstick, rstick, buttons)
 
     def shutdown(self):
         """Safely quits a controller."""

@@ -102,11 +102,11 @@ class Handler(socketserver.BaseRequestHandler):
     
             if data == "state":
                 state = self.server.controllers["main"].state
-                reply = pickle.dumps(state)
+                reply = pickle.dumps(state.data)
     
             elif data == "inputs":
                 state = self.server.controllers["main"].state
-                dpad, lstick, rstick, buttons = state
+                dpad, lstick, rstick, buttons = state.data
                 reply = pickle.dumps(((dpad.x, dpad.y),
                                       (lstick.x, lstick.y),
                                       (rstick.x, rstick.y),
@@ -158,7 +158,7 @@ class Handler(socketserver.BaseRequestHandler):
 
         Parameters
         ----------
-        state : tuple
+        state : State
             Represents the controller states.
 
         Returns
@@ -174,12 +174,12 @@ class Handler(socketserver.BaseRequestHandler):
 
         See also
         --------
-        Controller.State
+        State
 
         """
         # TODO(masasin): Handle select : Synchronize flipper positions.
         # TODO(masasin): Handle start : Move flippers to forward position.
-        dpad, lstick, rstick, buttons = state
+        dpad, lstick, rstick, buttons = state.data
 
         if buttons.is_pressed("L3"):
             self._switch_control_mode()
