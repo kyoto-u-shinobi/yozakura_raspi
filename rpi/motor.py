@@ -7,11 +7,11 @@ Motors expect at least one control method, which can be either a serial port
 for microcontroller communication, or software PWM. Up to four motors can be
 used.
 
-The supported motor driver is the Pololu High-Power Motor Driver 18v15. [1]_
+The supported motor driver is the Pololu High-Power Motor Driver 18v15. [#]_
 
 References
 ----------
-.. [1] Pololu, High-Power Motor Driver 18v15 datasheet.
+.. [#] Pololu, High-Power Motor Driver 18v15 datasheet.
        https://www.pololu.com/product/755
 
 """
@@ -20,15 +20,16 @@ from time import sleep
 
 from RPi import GPIO as gpio
 
-from common.exceptions import BadArgError, NoDriversError, MotorCountError
-from rpi.bitfields import MotorPacket
+from yozakura.common.exceptions import BadArgError, NoDriversError,\
+    MotorCountError
+from yozakura.rpi.bitfields import MotorPacket
 
 
 class Motor(object):
     """
     A class representing the motor drivers used on Yozakura.
 
-    The motor driver used is the Pololu High-Power Motor Driver 18v15. [1]_
+    The motor driver used is the Pololu High-Power Motor Driver 18v15. [#]_
 
     After the motor is initialized and registered, at least one control method
     must be added. These can be either a serial port connected to a
@@ -94,7 +95,7 @@ class Motor(object):
 
     References
     ----------
-    .. [1] Pololu, High-Power Motor Driver 18v15 datasheet.
+    .. [#] Pololu, High-Power Motor Driver 18v15 datasheet.
            https://www.pololu.com/product/755
 
     """

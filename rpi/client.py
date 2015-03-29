@@ -18,7 +18,8 @@ import logging
 import pickle
 import socket
 
-from common.exceptions import NoDriversError, MotorCountError, NoSerialsError
+from yozakura.common.exceptions import NoDriversError, MotorCountError,\
+    NoSerialsError
 
 
 class Client(object):

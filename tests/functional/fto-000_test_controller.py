@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from opstn import Controller
+from yozakura.opstn import Controller
 
 
 def main():

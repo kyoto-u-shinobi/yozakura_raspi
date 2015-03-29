@@ -4,7 +4,7 @@ import logging
 import math
 import sys
 
-from rpi.devices import IMU
+from yozakura.rpi.devices import IMU
 
 
 def main():
@@ -14,7 +14,11 @@ def main():
     while True:
         front = [math.degrees(i) for i in imu_front.rpy]
         rear = [math.degrees(i) for i in imu_rear.rpy]
-        print("({:6.3f}  {:6.3f}  {:6.3f})  ({:6.3f}  {:6.3f}  {:6.3f})".format(front[0], front[1], front[2], rear[0], rear[1], rear[2]), end="\r")
+        print("({fr:6.3f}  {fp:6.3f}  {fy:6.3f})  \
+               ({rr:6.3f}  {rp:6.3f}  {ry:6.3f})"
+               .format(fr=front[0], fp=front[1], fy=front[2],
+                       rr=rear[0], rp=rear[1], ry=rear[2]),
+              end="\r")
 
 
 if __name__ == "__main__":

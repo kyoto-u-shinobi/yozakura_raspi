@@ -4,11 +4,11 @@ import logging
 
 import serial
 
-from common.exceptions import NoMbedError
-from common.networking import get_ip_address
-from rpi.client import Client
-from rpi.devices import CurrentSensor, IMU
-from rpi.motor import Motor
+from yozakura.common.exceptions import NoMbedError
+from yozakura.common.networking import get_ip_address
+from yozakura.rpi.client import Client
+from yozakura.rpi.devices import CurrentSensor, IMU
+from yozakura.rpi.motor import Motor
 
 
 def main():

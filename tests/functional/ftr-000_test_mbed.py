@@ -4,7 +4,7 @@ import logging
 import serial
 import sys
 
-from rpi.motor import Motor
+from yozakura.rpi.motor import Motor
 
 
 def main():

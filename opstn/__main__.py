@@ -4,10 +4,10 @@ import logging
 
 import pygame
 
-from common.exceptions import NoControllerError
-from common.networking import get_ip_address
-from opstn.controller import Controller
-from opstn.server import Server, Handler
+from yozakura.common.exceptions import NoControllerError
+from yozakura.common.networking import get_ip_address
+from yozakura.opstn.controller import Controller
+from yozakura.opstn.server import Server, Handler
 
 
 def main():
