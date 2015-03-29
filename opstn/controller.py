@@ -330,9 +330,6 @@ class Controller(object):
         """
         Read the state of all the inputs of the controller.
 
-        Note that this is only tested with the Logitech RumblePad 2. Other
-        input devices may have different configurations.
-
         Returns
         -------
         State
