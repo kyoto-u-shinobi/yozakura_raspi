@@ -359,7 +359,7 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
     Attributes
     ----------
     controllers : dict
-        Contains all registered motors.
+        Contains all registered controllers.
 
         **Dictionary format :** {name (str): controller (Controller)}
 
