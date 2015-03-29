@@ -80,66 +80,66 @@ class Handler(socketserver.BaseRequestHandler):
         self._sensors_client.bind(("", 9999))
 
         try:
-            while True:
-                self._loop()
+            self._loop()
         finally:
             self._sensors_client.close()
             raise SystemExit
 
     def _loop(self):
         """The main handler loop."""
-        try:
-            data = self.request.recv(64).decode().strip()
-        except socket.timeout:
-            self._logger.warning("Lost connection to robot")
-            self._logger.info("Robot will shut down motors")
-            continue
-        self._logger.debug('Received: "{data}"'.format(data=data))
-
-        if data == "":  # Client exited safely.
-            self._logger.info("Terminating client session")
-            break
-
-        if data == "state":
-            state = self.server.controllers["main"].state
-            reply = pickle.dumps(state)
-
-        elif data == "inputs":
-            state = self.server.controllers["main"].state
-            dpad, lstick, rstick, buttons = state
-            reply = pickle.dumps(((dpad.x, dpad.y),
-                                  (lstick.x, lstick.y),
-                                  (rstick.x, rstick.y),
-                                  buttons.buttons))
-
-        elif data == "speeds":
-            state = self.server.controllers["main"].state
-            reply = pickle.dumps(self._get_needed_speeds(state))
-
-        elif data.split()[0] == "echo":
-            reply = " ".join(data.split()[1:])
-
-        elif data.split()[0] == "print":
-            reply = " ".join(data.split()[1:])
-            self._logger.info('Client says: "{reply}"'
-                              .format(reply=reply))
-
-        else:
-            reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
-            self._logger.debug(reply)
-
-        try:
-            self.request.sendall(str.encode(reply))
-        except TypeError:  # Already bytecode
-            self.request.sendall(reply)
-
-        # Receive sensor data
-        raw_data, address = self._sensors_client.recvfrom(1024)
-        try:
-            adc_data, current_data, pose_data = pickle.loads(raw_data)
-            self._log_sensor_data(adc_data, current_data, pose_data)
-        except (AttributeError, EOFError, IndexError, TypeError):
-            self._logger.debug("No or bad data received from robot")
+        while True:
+            try:
+                data = self.request.recv(64).decode().strip()
+            except socket.timeout:
+                self._logger.warning("Lost connection to robot")
+                self._logger.info("Robot will shut down motors")
+                continue
+            self._logger.debug('Received: "{data}"'.format(data=data))
+    
+            if data == "":  # Client exited safely.
+                self._logger.info("Terminating client session")
+                break
+    
+            if data == "state":
+                state = self.server.controllers["main"].state
+                reply = pickle.dumps(state)
+    
+            elif data == "inputs":
+                state = self.server.controllers["main"].state
+                dpad, lstick, rstick, buttons = state
+                reply = pickle.dumps(((dpad.x, dpad.y),
+                                      (lstick.x, lstick.y),
+                                      (rstick.x, rstick.y),
+                                      buttons.buttons))
+    
+            elif data == "speeds":
+                state = self.server.controllers["main"].state
+                reply = pickle.dumps(self._get_needed_speeds(state))
+    
+            elif data.split()[0] == "echo":
+                reply = " ".join(data.split()[1:])
+    
+            elif data.split()[0] == "print":
+                reply = " ".join(data.split()[1:])
+                self._logger.info('Client says: "{reply}"'
+                                  .format(reply=reply))
+    
+            else:
+                reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
+                self._logger.debug(reply)
+    
+            try:
+                self.request.sendall(str.encode(reply))
+            except TypeError:  # Already bytecode
+                self.request.sendall(reply)
+    
+            # Receive sensor data
+            raw_data, address = self._sensors_client.recvfrom(1024)
+            try:
+                adc_data, current_data, pose_data = pickle.loads(raw_data)
+                self._log_sensor_data(adc_data, current_data, pose_data)
+            except (AttributeError, EOFError, IndexError, TypeError):
+                self._logger.debug("No or bad data received from robot")
 
     def _get_needed_speeds(self, state):
         """
