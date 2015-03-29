@@ -1,11 +1,13 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
-import os
+import getpass
 
 import opstn
 import rpi
 
-if os.uname()[1] == "kohgapi" or os.uname()[1] == "pi":
+user = getpass.getuser()
+
+if user == "kohgapi" or user == "pi":
   """Start rpi on ssh."""
 
 else:
