@@ -14,6 +14,8 @@ by Yozakura via UDP.
 """
 import logging
 import pickle
+import select
+import signal
 import socket
 import socketserver
 import time
@@ -76,8 +78,10 @@ class Handler(socketserver.BaseRequestHandler):
         # try/finally block once you add your udp server.
         self._sensors_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sensors_client.setsockopt(socket.SOL_SOCKET,
-                                        socket.SO_REUSEADDR, 1)
+                                        socket.SO_REUSEADDR, True)
         self._sensors_client.bind(("", 9999))
+        
+        signal.signal(signal.SIGALRM, _sigalrm_handler)  # Initialize handler.
 
         try:
             self._loop()
@@ -134,7 +138,7 @@ class Handler(socketserver.BaseRequestHandler):
                 self.request.sendall(reply)
     
             # Receive sensor data
-            raw_data, address = self._sensors_client.recvfrom(1024)
+            raw_data, address = self._udp_receive(self, delay=0.01, size=1024)
             try:
                 adc_data, current_data, pose_data = pickle.loads(raw_data)
                 self._log_sensor_data(adc_data, current_data, pose_data)
@@ -341,6 +345,73 @@ class Handler(socketserver.BaseRequestHandler):
         self._logger.debug("rear r: {r:6.3f}  p: {p:6.3f}  y: {y:6.3f}"
                            .format(r=rear[0], p=rear[1], y=rear[2]))
         self._logger.debug(20 * "=")
+
+    def _sigalrm_handler(signum, frame):
+        """The handler for SIGALRM."""
+        raise TimeoutError
+    
+    def _udp_get_latest(self, size=1, n_bytes=1):
+        """
+        Get the latest input.
+        
+        This function automatically empties the given socket queue.
+        
+        Parameters
+        ----------
+        size : int, optional
+            The number of bytes to read at a time.
+        n_bytes : int, optional
+            The number of bytes to return.
+        
+        Returns
+        -------
+        bytes
+            The last received message, or None if the socket was not ready.
+        
+        """
+        data = []
+        input_ready, o, e = select.select([self._server_client],
+                                          [], [], 0)  # Check ready.
+        
+        while input_ready:
+            data.append(input_ready[0].recv(size))  # Read once.
+            input_ready, o, e = select.select([self._server_client],
+                                              [], [], 0)  # Check ready.
+        
+        if not data:
+            return None
+        elif n_bytes == 1:
+            return data[-1]
+        else:
+            return data[-n_bytes:]
+    
+    def _udp_receive(self, delay=0.01, size=32):
+        """
+        Receive UDP data without blocking.
+        
+        Parameters
+        ----------
+        delay : float, optional
+            The timeout within which to read the socket, in seconds.
+        size : int
+            The number of bytes to read at a time.
+        
+        Returns
+        -------
+        recv_msg : bytes
+            The received message, or None if the buffer was empty.
+        """
+        recv_msg = None
+        
+        try:
+            signal.setitimer(signal.ITIMER_REAL, delay, 0)  # Setup interrupt.
+            recv_msg = self._get_latest(size)
+        except (BlockingIOError, TimeoutError):
+            pass
+        finally:
+            signal.alarm(0)  # Cancel interrupt.
+        
+        return recv_msg
 
 
 class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
