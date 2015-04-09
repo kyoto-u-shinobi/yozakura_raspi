@@ -43,6 +43,16 @@ IP Address: 192.168.54.162
 **AI-Ball for Overview**  
 IP Address: 192.168.54.163  
 
+## Others  
+**URG(UST-10LX)**  
+IP Address: 192.168.54.170  
+ref:  
+https://www.hokuyo-aut.co.jp/02sensor/07scanner/ust_10lx_20lx.html
+https://www.hokuyo-aut.co.jp/02sensor/07scanner/download/ust-10lx_spec.pdf
+http://www.hokuyo-aut.co.jp/02sensor/07scanner/download/pdf/UST_protocol_ja.pdf
+
+
+
 #Wiring
 ##Raspberry Pi
 
