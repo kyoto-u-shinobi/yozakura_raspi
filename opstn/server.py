@@ -15,7 +15,6 @@ by Yozakura via UDP.
 import logging
 import pickle
 import select
-import signal
 import socket
 import socketserver
 import time
@@ -80,8 +79,6 @@ class Handler(socketserver.BaseRequestHandler):
         self._sensors_client.setsockopt(socket.SOL_SOCKET,
                                         socket.SO_REUSEADDR, True)
         self._sensors_client.bind(("", 9999))
-        
-        signal.signal(signal.SIGALRM, _sigalrm_handler)  # Initialize handler.
 
         try:
             self._loop()
@@ -138,7 +135,7 @@ class Handler(socketserver.BaseRequestHandler):
                 self.request.sendall(reply)
     
             # Receive sensor data
-            raw_data, address = self._udp_receive(self, delay=0.01, size=1024)
+            raw_data, address = self._udp_receive(self, size=1024)
             try:
                 adc_data, current_data, pose_data = pickle.loads(raw_data)
                 self._log_sensor_data(adc_data, current_data, pose_data)
@@ -345,10 +342,6 @@ class Handler(socketserver.BaseRequestHandler):
         self._logger.debug("rear r: {r:6.3f}  p: {p:6.3f}  y: {y:6.3f}"
                            .format(r=rear[0], p=rear[1], y=rear[2]))
         self._logger.debug(20 * "=")
-
-    def _sigalrm_handler(signum, frame):
-        """The handler for SIGALRM."""
-        raise TimeoutError
     
     def _udp_get_latest(self, size=1, n_bytes=1):
         """
@@ -385,15 +378,13 @@ class Handler(socketserver.BaseRequestHandler):
         else:
             return data[-n_bytes:]
     
-    def _udp_receive(self, delay=0.01, size=32):
+    def _udp_receive(self, size=32):
         """
         Receive UDP data without blocking.
         
         Parameters
         ----------
-        delay : float, optional
-            The timeout within which to read the socket, in seconds.
-        size : int
+        size : int, optional
             The number of bytes to read at a time.
         
         Returns
@@ -404,12 +395,9 @@ class Handler(socketserver.BaseRequestHandler):
         recv_msg = None
         
         try:
-            signal.setitimer(signal.ITIMER_REAL, delay, 0)  # Setup interrupt.
             recv_msg = self._get_latest(size)
-        except (BlockingIOError, TimeoutError):
+        except BlockingIOError:
             pass
-        finally:
-            signal.alarm(0)  # Cancel interrupt.
         
         return recv_msg
 
