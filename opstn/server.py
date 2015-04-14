@@ -135,7 +135,7 @@ class Handler(socketserver.BaseRequestHandler):
                 self.request.sendall(reply)
     
             # Receive sensor data
-            raw_data, address = self._udp_receive(self, size=1024)
+            raw_data = self._udp_receive(self, size=1024)
             try:
                 adc_data, current_data, pose_data = pickle.loads(raw_data)
                 self._log_sensor_data(adc_data, current_data, pose_data)
