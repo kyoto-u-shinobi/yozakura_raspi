@@ -87,3 +87,12 @@ http://www.hokuyo-aut.co.jp/02sensor/07scanner/download/data/UrgBenri_ja.htm
 * p28: Right motor DIR
 * p29: Left flipper DIR
 * p30: Right flipper DIR
+
+#Raspbian Setup
+* Setup I2C
+* Install Python 3.4
+* `pip install PySerial RPi.GPIO smbus-cffi`
+* Install RTIMULib
+* Clone Yozakura
+* Setup static IP
+* If the Base Station is running, run `sudo python3 -m rpi`
