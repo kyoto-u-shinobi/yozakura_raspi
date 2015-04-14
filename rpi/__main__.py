@@ -37,7 +37,7 @@ def main():
 
     try:
         logging.debug("Connecting to mbed")
-        mbed = serial.Serial("/dev/ttyACM0", 38400)
+        mbed = serial.Serial("/dev/ttyACM0", baudrate=38400)
     except serial.SerialException:
         raise NoMbedError
 

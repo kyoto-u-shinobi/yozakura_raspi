@@ -27,6 +27,7 @@ from RPi import GPIO as gpio
 import RTIMU
 import smbus
 
+from common.datatypes import CurrentSensorData, IMUData
 from common.exceptions import BadArgError, I2CSlotEmptyError,\
     I2CSlotBusyError, NotCalibratedError
 from rpi.bitfields import CurrentConfiguration, CurrentAlerts
@@ -229,21 +230,21 @@ class CurrentSensor(Device):
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
-    registers = {"config": 0,
-                 "v_shunt": 1,
-                 "v_bus": 2,
-                 "power": 3,
-                 "current": 4,
-                 "calib": 5,
+    registers = {"config":    0,
+                 "v_shunt":   1,
+                 "v_bus":     2,
+                 "power":     3,
+                 "current":   4,
+                 "calib":     5,
                  "alert_reg": 6,
                  "alert_lim": 7,
                  "die": 0xFF}
 
     def __init__(self, address, name="Current Sensor"):
         self.lsbs = {"v_shunt": 2.5e-6,  # Volts
-                     "v_bus": 1.25e-3,  # Volts
-                     "power": None,  # Watts
-                     "current": None}  # Amperes
+                     "v_bus":  1.25e-3,  # Volts
+                     "power":     None,  # Watts
+                     "current":   None}  # Amperes
 
         super().__init__(address, name)
         self.pin_alert = None
@@ -294,7 +295,7 @@ class CurrentSensor(Device):
 
         # bus.write_word_data writes one byte at a time, so we switch the byte
         # order before writing.
-        data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
+        data = ((data & 0xff) << 8) + (data >> 8)
         self.bus.write_word_data(self.address, self.registers[register], data)
 
     def get_configuration(self):
@@ -570,6 +571,25 @@ class CurrentSensor(Device):
 
         return flags
 
+    @property
+    def ipv(self):
+        """
+        Return the Current, Power, and Voltage of the sensor, in natural units.
+
+        Returns
+        -------
+        CurrentSensorData
+            The current, power, and voltage readings of the sensor.
+
+        """
+        current = self.get_measurement("current")
+        power = self.get_measurement("power")
+        if current == 0:
+            voltage = 0
+        else:
+            voltage = power / current
+        return CurrentSensorData(current, power, voltage)
+
 
 class IMU(Device):
     """
@@ -634,10 +654,10 @@ class IMU(Device):
 
         Returns
         -------
-        3-tuple of (float, float, float)
+        IMUData
             The roll, pitch, and yaw readings of the IMU, in radians.
 
         """
         while True:  # Wait until new data is ready.
             if self._imu.IMURead():
-                return self._imu.getFusionData()
+                return IMUData(self._imu.getFusionData())

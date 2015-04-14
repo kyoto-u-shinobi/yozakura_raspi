@@ -18,6 +18,7 @@ import logging
 import pickle
 import socket
 
+from common.datatypes import CurrentSensorData, IMUData
 from common.exceptions import NoDriversError, MotorCountError, NoSerialsError
 
 
@@ -76,6 +77,8 @@ class Client(object):
         self.serials = {}
         self.current_sensors = {}
         self.imus = {}
+
+        self._timed_out = False
 
     def add_serial_device(self, name, ser):
         """
@@ -183,87 +186,198 @@ class Client(object):
             raise NoSerialsError
 
         self._logger.info("Client started")
-        timed_out = False
 
         while True:
             try:
-                self.request.send(str.encode("speeds"))  # Request speeds.
-                result = self.request.recv(64)  # Receive speed data.
-                if not result:
-                    self._logger.debug("No speed data")
+                speeds = self._request_speeds()
+                if speeds is None:
                     continue
             except socket.timeout:
-                if not timed_out:
-                    self._logger.warning("Lost connection to base station")
-                    self._logger.info("Turning off motors")
-                    for motor in self.motors.values():
-                        motor.drive(0)
-                    timed_out = True
+                if not self._timed_out:
+                    self._handle_timeout()
                 continue
 
-            if timed_out:  # Connection returned.
+            if self._timed_out:
                 self._logger.info("Connection returned")
-                timed_out = False
+                self._timed_out = False
 
-            # Get flipper positions from last two items of mbed reply.
-            try:
-                mbed_data = self.serials["mbed"].readline().split()
-                adc_data = [int(i, 16) / 0xFFFF for i in mbed_data]
-                lpos, rpos = adc_data[-2:]
-            except ValueError:
-                self._logger.debug("Bad mbed flipper data")
-                adc_data = [None, None]
+            adc_data, positions = self._get_adc_data()
 
+            self._drive_motors(speeds, positions)
+
+            current_data = self._get_current_data("left_motor_current",
+                                                  "right_motor_current",
+                                                  "left_flipper_current",
+                                                  "right_flipper_current",
+                                                  "motor_current")
+
+            imu_data = self._get_imu_data("front_imu", "rear_imu")
+
+            self._send_data(positions, current_data, imu_data)
+
+    def _handle_timeout(self):
+        """Turn off motors in case of a lost connection."""
+        self._logger.warning("Lost connection to base station")
+        self._logger.info("Turning off motors")
+        for motor in self.motors.values():
+            motor.drive(0)
+        self._timed_out = True
+
+    def _request_speeds(self):
+        """
+        Request speed data from base station.
+
+        Returns
+        -------
+        4-tuple of float
+            A list of the speeds requested of each motor.
+
+        """
+        speeds = None
+
+        self.request.send(str.encode("speeds"))
+        result = self.request.recv(64)
+
+        if not result:
+            self._logger.debug("No speed data")
+        else:
             try:
-                lwheel, rwheel, lflipper, rflipper = pickle.loads(result)
+                speeds = pickle.loads(result)
             except EOFError:
-                self._logger.warning("Bad speed data")
+                self._logger.warning("Invalid speed data")
+
+        return speeds
+
+    def _drive_motors(self, speeds, positions):
+        """
+        Drive all the motors.
+
+        Parameters
+        ----------
+        speeds : 4-tuple of float
+            The speeds with which to drive the four motors.
+        positions : 2-tuple of float
+            The current positions of the left and right flippers.
+
+        """
+        lwheel, rwheel, lflipper, rflipper = speeds
+        lpos, rpos = positions
+
+        self.motors["left_wheel_motor"].drive(lwheel)
+        self.motors["right__wheel_motor"].drive(rwheel)
+
+        # TODO(masasin): Hold position if input is 0.
+        self.motors["left_flipper_motor"].drive(lflipper)
+        self.motors["right_flipper_motor"].drive(rflipper)
+
+    def _get_adc_data(self):
+        """
+        Get ADC data from the mbed.
+
+        The mbed has six Analog-to-Digital Conversion ports, and polls all the
+        ports that are currently active. The left and right flipper positions
+        are always connected to the last two ports.
+
+        Returns
+        -------
+        adc_data : list of float
+            The ADC data from the mbed, or ``[]`` if invalid data was obtained.
+        positions : list of float
+            The flipper position data from the mbed, or ``[None, None]`` if
+            invalid data was obtained.
+
+        """
+        try:
+            mbed_data = self.serials["mbed"].readline().split()
+            float_data = [int(i, 16) / 0xFFFF for i in mbed_data]
+        except ValueError:
+            self._logger.debug("Bad mbed flipper data")
+            float_data = [None, None]
+
+        adc_data = float_data[:-2]
+        positions = float_data[-2:]
+
+        return adc_data, positions
+
+    def _get_current_data(self, current_sensors):
+        """
+        Get data from the requested current sensors.
+
+        Parameters
+        ----------
+        current_sensors : list of str
+            A list containing the names of the current sensors requested.
+
+        Returns
+        -------
+        current_data : list of CurrentSensorData
+            A list containing the current, power, and voltage readings of each
+            sensor. If invalid sensor data was obtained, the readings are set
+            to ``[None, None, None]`` by default.
+
+        """
+        current_data = []
+        for sensor in current_sensors:
+            try:
+                current_data.append(self.current_sensors[sensor].ipv)
+            except KeyError:
+                self._logger.debug("{sensor} not registered".format(
+                    sensor=sensor))
+                current_data.append(CurrentSensorData([None, None, None]))
                 continue
-            self.motors["left_wheel_motor"].drive(lwheel)
-            self.motors["right__wheel_motor"].drive(rwheel)
+        return current_data
 
-            # TODO(masasin): Hold position if input is 0.
-            self.motors["left_flipper_motor"].drive(lflipper)
-            self.motors["right_flipper_motor"].drive(rflipper)
+    def _get_imu_data(self, imus):
+        """
+        Get data from the requested inertial measurement units.
 
-            # Get current sensor data to send back.
-            current_data = []
-            for current_sensor in ("left_motor_current",
-                                   "right_motor_current",
-                                   "left_flipper_current",
-                                   "right_flipper_current",
-                                   "motor_current"):
-                try:
-                    sensor = self.current_sensors[current_sensor]
-                except KeyError:
-                    current_data.append([None, None, None])
-                    continue
-                current = sensor.get_measurement("current")
-                power = sensor.get_measurement("power")
-                if current == 0:
-                    voltage = 0
-                else:
-                    voltage = power / current
+        Parameters
+        ----------
+        imus : list of str
+            A list containing the names of the IMUs requested.
 
-                current_data.append((current, power, voltage))
+        Returns
+        -------
+        imu_data : list of IMUData
+            A list containing the roll, pitch, and yaw readings of each sensor.
+            If invalid sensor data was obtained, the readings are set to
+            ``[None, None, None]`` by default.
 
-            # Get IMU data to send back.
-            imu_data = []
-            for imu in ("front_imu", "rear_imu"):
-                try:
-                    rpy = self.imus[imu].rpy
-                    imu_data.append(rpy)
-                except KeyError:
-                    imu_data.append([None, None, None])
-                    continue
+        """
+        imu_data = []
+        for imu in imus:
+            try:
+                imu_data.append(self.imus[imu].rpy)
+            except KeyError:
+                self._logger.debug("{imu} not registered".format(imu=imu))
+                imu_data.append(IMUData([None, None, None]))
+                continue
+        return imu_data
 
-            # Send sensor data back to base station. ROS uses Python 2 for
-            # now, so use a maxmium protocol version of 2.
-            self._sensors_server.sendto(pickle.dumps((adc_data,
-                                                      current_data,
-                                                      imu_data),
-                                                     protocol=2),
-                                        self.server_address)
+    def _send_data(self, positions, current_data, imu_data, protocol=2):
+        """
+        Send data via UDP.
+
+        Parameters
+        ----------
+        positions : list of float
+            The positions of the flippers.
+        current_data : list of CurrentSensorData
+            The current sensor measurements.
+        imu_data : list of IMUData
+            The IMU measurements.
+        protocol : int, optional
+            The protocol to use to pickle the data. The ROS-based base station
+            software uses Python 2, and therefore the maximum usable protocol
+            version is 2. If you are sure that Python 2 will not be
+            used, feel free to use whatever protocol verison is necessary.
+
+        """
+        self._sensors_server.sendto(pickle.dumps((positions,
+                                                  current_data,
+                                                  imu_data),
+                                                 protocol=protocol),
+                                    self.server_address)
 
     def shutdown(self):
         """Shut down the client."""
