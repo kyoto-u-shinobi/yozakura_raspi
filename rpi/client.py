@@ -190,8 +190,12 @@ class Client(object):
         while True:
             try:
                 speeds = self._request_speeds()
-                if speeds is None:
-                    continue
+            except ValueError as e:
+                self._logger.debug(e)
+                continue
+            except EOFError:
+                self._logger.warning("Invalid speed data")
+                continue
             except socket.timeout:
                 if not self._timed_out:
                     self._handle_timeout()
@@ -202,7 +206,6 @@ class Client(object):
                 self._timed_out = False
 
             adc_data, positions = self._get_adc_data()
-
             self._drive_motors(speeds, positions)
 
             current_data = self._get_current_data("left_motor_current",
@@ -233,18 +236,12 @@ class Client(object):
             A list of the speeds requested of each motor.
 
         """
-        speeds = None
-
         self.request.send(str.encode("speeds"))
         result = self.request.recv(64)
-
         if not result:
-            self._logger.debug("No speed data")
-        else:
-            try:
-                speeds = pickle.loads(result)
-            except EOFError:
-                self._logger.warning("Invalid speed data")
+            raise ValueError("No speed data")
+
+        speeds = pickle.loads(result)
 
         return speeds
 
@@ -324,7 +321,6 @@ class Client(object):
                 self._logger.debug("{sensor} not registered".format(
                     sensor=sensor))
                 current_data.append(CurrentSensorData([None, None, None]))
-                continue
         return current_data
 
     def _get_imu_data(self, imus):
@@ -351,7 +347,6 @@ class Client(object):
             except KeyError:
                 self._logger.debug("{imu} not registered".format(imu=imu))
                 imu_data.append(IMUData([None, None, None]))
-                continue
         return imu_data
 
     def _send_data(self, positions, current_data, imu_data, protocol=2):
