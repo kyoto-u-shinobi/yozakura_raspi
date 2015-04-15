@@ -287,7 +287,6 @@ class Client(object):
             The last line from the serial device's buffer.
 
         """
-        list 
         buffer_string = ""
         dev = self.serials[ser]
         while True:
