@@ -213,7 +213,7 @@ class Client(object):
 
             # Get flipper positions from last two items of mbed reply.
             try:
-                mbed_data = self.serials["mbed"].readline().split()
+                mbed_data = self._read_last_line("mbed").split()
                 adc_data = [int(i, 16) / 0xFFFF for i in mbed_data]
                 lpos, rpos = adc_data[-2:]
             except ValueError:
@@ -271,6 +271,30 @@ class Client(object):
                                                       imu_data),
                                                      protocol=2),
                                         self.server_address)
+
+    def _read_last_line(self, ser):
+        """
+        Read the last line from a serial device's buffer.
+
+        Parameters
+        ----------
+        ser : str
+            The name of the serial device to be read.
+
+        Returns
+        -------
+        str
+            The last line from the serial device's buffer.
+
+        """
+        list 
+        buffer_string = ""
+        dev = self.serials[ser]
+        while True:
+            buffer_string += dev.read(dev.inWaiting()).decode()
+            if "\n" in buffer_string:
+                lines = buffer_string.split("\n")
+                return lines[-2]
 
     def shutdown(self):
         """Shut down the client."""

@@ -64,5 +64,5 @@ def main():
     logging.info("All done")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     main()
