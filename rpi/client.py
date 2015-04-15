@@ -192,6 +192,12 @@ class Client(object):
                 if not result:
                     self._logger.debug("No speed data")
                     continue
+            except BrokenPipeError:
+                self._logger.critical("Base station turned off!")
+                self._logger.info("Turning off motors")
+                for motor in self.motors.values():
+                    motor.drive(0)
+                raise SystemExit
             except socket.timeout:
                 if not timed_out:
                     self._logger.warning("Lost connection to base station")
@@ -212,15 +218,16 @@ class Client(object):
                 lpos, rpos = adc_data[-2:]
             except ValueError:
                 self._logger.debug("Bad mbed flipper data")
-                adc_data = [None, None]
+                adc_data = [0, 0]
 
             try:
                 lwheel, rwheel, lflipper, rflipper = pickle.loads(result)
-            except EOFError:
+                self._logger.debug("speeds: {} {} {} {}".format(lwheel, rwheel, lflipper, rflipper))
+            except (pickle.UnpicklingError, EOFError):
                 self._logger.warning("Bad speed data")
                 continue
             self.motors["left_wheel_motor"].drive(lwheel)
-            self.motors["right__wheel_motor"].drive(rwheel)
+            self.motors["right_wheel_motor"].drive(rwheel)
 
             # TODO(masasin): Hold position if input is 0.
             self.motors["left_flipper_motor"].drive(lflipper)
@@ -236,7 +243,7 @@ class Client(object):
                 try:
                     sensor = self.current_sensors[current_sensor]
                 except KeyError:
-                    current_data.append([None, None, None])
+                    current_data.append([0, 0, 0])
                     continue
                 current = sensor.get_measurement("current")
                 power = sensor.get_measurement("power")
@@ -254,7 +261,7 @@ class Client(object):
                     rpy = self.imus[imu].rpy
                     imu_data.append(rpy)
                 except KeyError:
-                    imu_data.append([None, None, None])
+                    imu_data.append([0, 0, 0])
                     continue
 
             # Send sensor data back to base station. ROS uses Python 2 for

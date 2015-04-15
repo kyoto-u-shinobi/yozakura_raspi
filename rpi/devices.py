@@ -136,7 +136,7 @@ class Device(object):
 
         """
         slots = OrderedDict()
-        command = "i2cdetect -y {bus}".format(bus=Device.i2c_bus)
+        command = "i2cdetect -y {bus}".format(bus=Device._i2c_bus)
         table = subprocess.check_output(command.split()).splitlines()[1:]
         for i, row in enumerate(table):
             row = str(row, encoding="utf-8")
