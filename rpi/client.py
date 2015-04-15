@@ -218,7 +218,7 @@ class Client(object):
                 lpos, rpos = adc_data[-2:]
             except ValueError:
                 self._logger.debug("Bad mbed flipper data")
-                adc_data = [0, 0]
+                adc_data = [None, None]
 
             try:
                 lwheel, rwheel, lflipper, rflipper = pickle.loads(result)
@@ -243,7 +243,7 @@ class Client(object):
                 try:
                     sensor = self.current_sensors[current_sensor]
                 except KeyError:
-                    current_data.append([0, 0, 0])
+                    current_data.append([None, None, None])
                     continue
                 current = sensor.get_measurement("current")
                 power = sensor.get_measurement("power")
@@ -261,7 +261,7 @@ class Client(object):
                     rpy = self.imus[imu].rpy
                     imu_data.append(rpy)
                 except KeyError:
-                    imu_data.append([0, 0, 0])
+                    imu_data.append([None, None, None])
                     continue
 
             # Send sensor data back to base station. ROS uses Python 2 for
