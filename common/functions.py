@@ -26,6 +26,16 @@ def interrupted(duration, exception=YozakuraTimeoutError, error_message=None):
     error_message : str, optional
         The error message to be used.
 
+    Examples
+    --------
+    >>> @interrupted(1)
+    ... def slow_func_1():
+    ...     time.sleep(5)
+    Traceback (most recent call last):
+        ...
+    YozakuraTimeoutError: slow_func_1 function call timed out!
+
+
     """
     def sigalrm_handler(signum, frame):
         """
