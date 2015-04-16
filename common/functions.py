@@ -1,12 +1,58 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 """
-Provide a method to determine the current IP address.
+Common functions used throughout Yozakura.
 
 """
 import fcntl
+from functools import wraps
+import signal
 import socket
 import struct
+
+from common.exceptions import YozakuraTimeoutError
+
+
+def interrupted(duration, exception=YozakuraTimeoutError, error_message=None):
+    """
+    Decorate for creating per-function interrupts.
+
+    Parameters
+    ----------
+    duration : float
+        The maximum allowable duration of the function.
+    exception : Exception, optional
+        The exception to raise.
+    error_message : str, optional
+        The error message to be used.
+
+    """
+    def sigalrm_handler(signum, frame):
+        """
+        Handle SIGALRM.
+
+        This function is automatically called by the Linux Kernel.
+
+        """
+        raise exception
+
+    def interrupt_decorator(func):
+        @wraps(func)
+        def func_wrapper(*args, **kwargs):
+            signal.signal(signal.SIGALRM, sigalrm_handler)
+            try:
+                signal.setitimer(signal.ITIMER_REAL, duration, 0)
+                return func(*args, **kwargs)
+            except exception:
+                if error_message is not None:
+                    raise exception(error_message)
+                else:
+                    raise exception("{name} function call timed out!".format(
+                        name=func.__name__))
+            finally:
+                signal.alarm(0)
+        return func_wrapper
+    return interrupt_decorator
 
 
 def get_ip_address(interfaces):
