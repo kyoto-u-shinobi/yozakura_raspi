@@ -19,7 +19,8 @@ import pickle
 import socket
 
 from common.datatypes import CurrentSensorData, IMUData
-from common.exceptions import NoDriversError, MotorCountError, NoSerialsError
+from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
+    NoSerialsError
 
 
 class Client(object):
@@ -190,16 +191,16 @@ class Client(object):
         while True:
             try:
                 speeds = self._request_speeds()
-            except ValueError as e:
+            except BadDataError as e:
                 self._logger.debug(e)
-                continue
-            except EOFError:
-                self._logger.warning("Invalid speed data")
                 continue
             except socket.timeout:
                 if not self._timed_out:
                     self._handle_timeout()
                 continue
+            except BrokenPipeError:
+                self._logger.critical("Base station turned off!")
+                raise SystemExit("Base station turned off!")
 
             if self._timed_out:
                 self._logger.info("Connection returned")
@@ -239,9 +240,12 @@ class Client(object):
         self.request.send(str.encode("speeds"))
         result = self.request.recv(64)
         if not result:
-            raise ValueError("No speed data")
+            raise BadDataError("No speed data")
 
-        speeds = pickle.loads(result)
+        try:
+            speeds = pickle.loads(result)
+        except (pickle.UnpicklingError, EOFError):
+            raise BadDataError("Invalid speed data")
 
         return speeds
 
@@ -285,7 +289,8 @@ class Client(object):
 
         """
         try:
-            mbed_data = self.serials["mbed"].readline().split()
+            mbed_data = self._serial_read_last("mbed").split()
+            # mbed_data = self.serials["mbed"].readline().split()
             float_data = [int(i, 16) / 0xFFFF for i in mbed_data]
         except ValueError:
             self._logger.debug("Bad mbed flipper data")
@@ -295,6 +300,28 @@ class Client(object):
         positions = float_data[-2:]
 
         return adc_data, positions
+
+    def _serial_read_last(self, name):
+        """
+        Read the last line from a serial device's buffer.
+
+        Parameters
+        ----------
+        name : str
+            The name of the serial device to be read.
+
+        Returns
+        -------
+        str
+            The last line from the serial device's buffer.
+
+        """
+        buffer_string = ""
+        dev = self.serials[name]
+        while True:
+            buffer_string += dev.read(dev.inWaiting()).decode()
+            if "\n" in buffer_string:
+                return buffer_string.split("\n")[-2]
 
     def _get_current_data(self, current_sensors):
         """
