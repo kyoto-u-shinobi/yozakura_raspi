@@ -28,6 +28,7 @@ def interrupted(duration, exception=YozakuraTimeoutError, error_message=None):
 
     Examples
     --------
+    >>> import time
     >>> @interrupted(1)
     ... def slow_func_1():
     ...     time.sleep(5)

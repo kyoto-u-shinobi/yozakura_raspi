@@ -6,15 +6,15 @@ Functions and classes for using I2C devices.
 Provides functions to simplify work with I2C devices, as well as classes for
 each attached device. The following devices are currently supported:
 
-- Texas Instruments INA226 Current/Power Monitor [1]_
-- Invenense MPU-9150 9-axis MEMS MotionTracking Device [2]_
+- Texas Instruments INA226 Current/Power Monitor [#]_
+- Invenense MPU-9150 9-axis MEMS MotionTracking Device [#]_
 
 References
 ----------
-.. [1] Texas Instruments, INA 226 datasheet.
+.. [#] Texas Instruments, INA 226 datasheet.
        http://www.ti.com/lit/ds/symlink/ina226.pdf
 
-.. [2] Invensense, MPU-9150 Product Specification.
+.. [#] Invensense, MPU-9150 Product Specification.
        http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf
 
 """
@@ -93,17 +93,17 @@ class Device(object):
         """
         Detect the revision number of a Raspberry Pi, useful for changing
         functionality like default I2C bus based on revision. The revision list
-        is available online. [1]_
+        is available online. [#]_
 
         Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.
 
-        This function is based on an Adafruit I2C implementation. [2]_
+        This function is based on an Adafruit I2C implementation. [#]_
 
         References
         ----------
-        .. [1] ELinux.org. "RPi Hardware History."
+        .. [#] ELinux.org. "RPi Hardware History."
                http://elinux.org/RPi_HardwareHistory#Board_Revision_History
-        .. [2] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
+        .. [#] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
                https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53
 
         """
@@ -163,7 +163,7 @@ class Device(object):
 
 class CurrentSensor(Device):
     """
-    Texas Instruments INA226 Current/Power Monitor. [1]_
+    Texas Instruments INA226 Current/Power Monitor. [#]_
 
     The current sensor must be calibrated before use.
 
@@ -226,7 +226,7 @@ class CurrentSensor(Device):
 
     References
     ----------
-    .. [1] Texas Instruments, INA 226 datasheet.
+    .. [#] Texas Instruments, INA 226 datasheet.
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
@@ -302,7 +302,7 @@ class CurrentSensor(Device):
         """
         Read the current sensor configuration.
 
-        See pages 18 and 19 in the datasheet [1]_ for more information.
+        See pages 18 and 19 in the datasheet [#]_ for more information.
 
         Returns
         -------
@@ -328,7 +328,7 @@ class CurrentSensor(Device):
 
         References
         ----------
-        .. [1] Texas Instruments, INA 226 datasheet.
+        .. [#] Texas Instruments, INA 226 datasheet.
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
@@ -342,7 +342,7 @@ class CurrentSensor(Device):
         """
         Configure the current sensor.
 
-        See pages 18 and 19 in the datasheet. [1]_ This function only changes
+        See pages 18 and 19 in the datasheet. [#]_ This function only changes
         the parameters that are specified. All other parameters remain
         unchanged.
 
@@ -362,7 +362,7 @@ class CurrentSensor(Device):
 
         References
         ----------
-        .. [1] Texas Instruments, INA 226 datasheet.
+        .. [#] Texas Instruments, INA 226 datasheet.
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
@@ -462,7 +462,7 @@ class CurrentSensor(Device):
         """
         Choose the alert function and set up the alert behaviour.
 
-        See pages 21 and 22 of the datasheet [1]_ for more information.
+        See pages 21 and 22 of the datasheet [#]_ for more information.
 
         Only one alert function may be selected. The five possible alert
         functions are:
@@ -505,7 +505,7 @@ class CurrentSensor(Device):
 
         References
         ----------
-        .. [1] Texas Instruments, INA 226 datasheet.
+        .. [#] Texas Instruments, INA 226 datasheet.
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
@@ -593,9 +593,9 @@ class CurrentSensor(Device):
 
 class IMU(Device):
     """
-    Invenense MPU-9150 9-axis MEMS MotionTracking Device. [1]_
+    Invenense MPU-9150 9-axis MEMS MotionTracking Device. [#]_
 
-    Simple wrapper for the RTIMU library by richards-tech [2]_ for accessing
+    Simple wrapper for the RTIMU library by richards-tech [#]_ for accessing
     the sensor fusion data of the MPU-9150.
 
     Parameters
@@ -619,9 +619,9 @@ class IMU(Device):
 
     References
     ----------
-    .. [1] Invensense, MPU-9150 Product Specification.
+    .. [#] Invensense, MPU-9150 Product Specification.
            http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf
-    .. [2] RTIMULib, richards-tech, Github.
+    .. [#] RTIMULib, richards-tech, Github.
            https://github.com/richards-tech/RTIMULib
 
     """

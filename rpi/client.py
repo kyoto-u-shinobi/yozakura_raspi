@@ -18,7 +18,7 @@ import logging
 import pickle
 import socket
 
-from common.datatypes import CurrentSensorData, IMUData
+from common.datatypes import FlipperPositions, CurrentSensorData, IMUData
 from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
     NoSerialsError
 
@@ -233,7 +233,7 @@ class Client(object):
 
         Returns
         -------
-        4-tuple of float
+        SpeedCmd
             A list of the speeds requested of each motor.
 
         """
@@ -255,21 +255,18 @@ class Client(object):
 
         Parameters
         ----------
-        speeds : 4-tuple of float
+        speeds : SpeedCmd
             The speeds with which to drive the four motors.
-        positions : 2-tuple of float
+        positions : FlipperPositions
             The current positions of the left and right flippers.
 
         """
-        lwheel, rwheel, lflipper, rflipper = speeds
-        lpos, rpos = positions
-
-        self.motors["left_wheel_motor"].drive(lwheel)
-        self.motors["right__wheel_motor"].drive(rwheel)
+        self.motors["left_wheel_motor"].drive(speeds.lwheel)
+        self.motors["right__wheel_motor"].drive(speeds.rwheel)
 
         # TODO(masasin): Hold position if input is 0.
-        self.motors["left_flipper_motor"].drive(lflipper)
-        self.motors["right_flipper_motor"].drive(rflipper)
+        self.motors["left_flipper_motor"].drive(speeds.lflipper)
+        self.motors["right_flipper_motor"].drive(speeds.rflipper)
 
     def _get_adc_data(self):
         """
@@ -283,7 +280,7 @@ class Client(object):
         -------
         adc_data : list of float
             The ADC data from the mbed, or ``[]`` if invalid data was obtained.
-        positions : list of float
+        positions : FlipperPositions
             The flipper position data from the mbed, or ``[None, None]`` if
             invalid data was obtained.
 
@@ -297,7 +294,7 @@ class Client(object):
             float_data = [None, None]
 
         adc_data = float_data[:-2]
-        positions = float_data[-2:]
+        positions = FlipperPositions(float_data[-2:])
 
         return adc_data, positions
 
@@ -382,7 +379,7 @@ class Client(object):
 
         Parameters
         ----------
-        positions : list of float
+        positions : FlipperPositions
             The positions of the flippers.
         current_data : list of CurrentSensorData
             The current sensor measurements.

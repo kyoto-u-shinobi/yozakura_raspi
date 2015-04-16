@@ -91,7 +91,7 @@ class MotorPacket(ctypes.Union):
     Using a union allows us to transmit the full byte to the mbed by using
     ``packet.as_byte``, and ensures that it would be exactly eight bits long.
 
-    Bit Fields
+    Attributes
     ----------
     motor_id : 2 bits
         The motor ID. Can range between 0 and 3.
@@ -136,7 +136,7 @@ class CurrentConfiguration(ctypes.Union):
 
     The current sensor used here is the Texas Instruments INA226 Current/Power
     Monitor. The configuration register details are shown on pages 18 and 19
-    of the datasheet. [1]_
+    of the datasheet. [#]_
 
     The Configuration Register settings control the operating modes for the
     INA226. This register controls the conversion time settings for both the
@@ -151,7 +151,7 @@ class CurrentConfiguration(ctypes.Union):
     on the new contents of the Configuration Register. This prevents any
     uncertainty in the conditions used for the next completed conversion.
 
-    Bit fields
+    Attributes
     ----------
     reset : bool
         Whether to reset.
@@ -173,7 +173,7 @@ class CurrentConfiguration(ctypes.Union):
 
     References
     ----------
-    .. [1] Texas Instruments, INA 226 datasheet.
+    .. [#] Texas Instruments, INA 226 datasheet.
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
@@ -212,16 +212,15 @@ class CurrentAlerts(ctypes.Union):
 
     The current sensor used here is the Texas Instruments INA226 Current/Power
     Monitor. The Mask/Enable register details are shown on pages 21 and 22 of
-    the datasheet. [1]_
+    the datasheet. [#]_
 
     The Mask/Enable Register selects the function that is enabled to control
     the Alert pin, as well as how that pin functions. If multiple functions
     are enabled, the highest significant bit position Alert Function (D11-D15)
     takes priority and responds to the Alert Limit register.
 
-    Bit Fields
+    Attributes
     ----------
-
     shunt_ol : bool
         Whether to trigger an alert when the shunt voltage goes over the limit.
     shunt_ul : bool
@@ -258,7 +257,7 @@ class CurrentAlerts(ctypes.Union):
 
     References
     ----------
-    .. [1] Texas Instruments, INA226 datasheet.
+    .. [#] Texas Instruments, INA226 datasheet.
             http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """

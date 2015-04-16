@@ -21,6 +21,8 @@ import time
 
 import numpy as np
 
+from common.datatypes import SpeedCmd, ArmCmd
+
 
 class Handler(socketserver.BaseRequestHandler):
     """
@@ -101,33 +103,7 @@ class Handler(socketserver.BaseRequestHandler):
                 self._logger.info("Terminating client session")
                 break
 
-            if data == "state":
-                state = self.server.controllers["main"].state
-                reply = pickle.dumps(state.data)
-
-            elif data == "inputs":
-                state = self.server.controllers["main"].state
-                dpad, lstick, rstick, buttons = state.data
-                reply = pickle.dumps(((dpad.x, dpad.y),
-                                      (lstick.x, lstick.y),
-                                      (rstick.x, rstick.y),
-                                      buttons.buttons))
-
-            elif data == "speeds":
-                state = self.server.controllers["main"].state
-                reply = pickle.dumps(self._get_needed_speeds(state))
-
-            elif data.split()[0] == "echo":
-                reply = " ".join(data.split()[1:])
-
-            elif data.split()[0] == "print":
-                reply = " ".join(data.split()[1:])
-                self._logger.info('Client says: "{reply}"'
-                                  .format(reply=reply))
-
-            else:
-                reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
-                self._logger.debug(reply)
+            reply = self._generate_reply(data)
 
             try:
                 self.request.sendall(str.encode(reply))
@@ -141,6 +117,51 @@ class Handler(socketserver.BaseRequestHandler):
                 self._log_sensor_data(adc_data, current_data, pose_data)
             except (AttributeError, EOFError, IndexError, TypeError):
                 self._logger.debug("No or bad data received from robot")
+
+    def _generate_reply(self, data):
+        """
+        Generate the necessary reply given a request string.
+
+        Parameters
+        ----------
+        data : str
+            The request string.
+
+        Returns
+        -------
+        str or bytes
+            The reply to send back to the client.
+
+        """
+        if data == "state":
+                state = self.server.controllers["main"].state
+                reply = pickle.dumps(state.data)
+
+        elif data == "inputs":
+            state = self.server.controllers["main"].state
+            dpad, lstick, rstick, buttons = state.data
+            reply = pickle.dumps(((dpad.x, dpad.y),
+                                  (lstick.x, lstick.y),
+                                  (rstick.x, rstick.y),
+                                  buttons.buttons))
+
+        elif data == "speeds":
+            state = self.server.controllers["main"].state
+            reply = pickle.dumps(self._get_needed_speeds(state))
+
+        elif data.split()[0] == "echo":
+            reply = " ".join(data.split()[1:])
+
+        elif data.split()[0] == "print":
+            reply = " ".join(data.split()[1:])
+            self._logger.info('Client says: "{reply}"'
+                              .format(reply=reply))
+
+        else:
+            reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
+            self._logger.debug(reply)
+
+        return reply
 
     def _get_needed_speeds(self, state):
         """
@@ -164,18 +185,16 @@ class Handler(socketserver.BaseRequestHandler):
 
         Returns
         -------
-        float
-            The speed inputs for each of the four motors, with values
-            between -1 and 1. The four motors are:
-
-            - Left wheel
-            - Right wheel
-            - Left flipper
-            - Right flipper
+        speedcmd : SpeedCmd
+            The speed commands for each of the four motors.
+        armcmd : ArmCmd
+            The commands for the Yozakura arm.
 
         See also
         --------
-        State
+        - Controller.State
+        - SpeedCmd
+        - ArmcCmd
 
         """
         # TODO(masasin): Handle select : Synchronize flipper positions.
@@ -263,7 +282,9 @@ class Handler(socketserver.BaseRequestHandler):
             else:
                 rflipper = 0
 
-        return lwheel, rwheel, lflipper, rflipper
+        speeds = SpeedCmd(lwheel, rwheel, lflipper, rflipper)
+
+        return speeds
 
     def _switch_control_mode(self):
         """
@@ -316,9 +337,9 @@ class Handler(socketserver.BaseRequestHandler):
         ----------
         adc_data : 2-list of floats
             ADC data containing flipper positions, in radians.
-        current_data : 3-list of 3-list of floats
+        current_data : 5-list of CurrentSensorData
             Current sensor data containing current, power, and voltage values.
-        pose_data : 2-list of 3-list of floats
+        pose_data : 2-list of IMUData
             Pose data containing yaw, pitch, and roll values.
 
         """

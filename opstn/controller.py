@@ -23,15 +23,19 @@ class Position(object):
 
     Parameters
     ----------
-    x, y : float
-        The positions of the axis..
+    x: float
+        The horizontal position of the axis.
+    y : float
+        The vertical position of the axis.
     inverted : bool, optional
         Whether the direction is y-inverted.
 
     Attributes
     ----------
-    x, y : float
-        The positions of the axis..
+    x: float
+        The horizontal position of the axis.
+    y : float
+        The vertical position of the axis.
     inverted : bool
         Whether the direction is y-inverted.
 
@@ -129,9 +133,9 @@ class Buttons(object):
                  "Elecom Wireless Gamepad": {1: 3, 2: 1, 3: 2}}
 
     # Populate the mappings.
-    for make in _mappings:
-        for i in range(13):
-            _mappings[make].setdefault(i, i)
+    for _make in _mappings:
+        for _i in range(13):
+            _mappings[_make].setdefault(_i, _i)
 
     known_makes = list(_mappings.keys())
 
@@ -252,8 +256,8 @@ class State(object):
         --------
         >>> stick = Controller(0, "body")
         >>> try:
-        ...     While True:  # Below, end="backslash r"
-        ...         print(stick_body.get_state(), end="\r")
+        ...     While True:
+        ...         print(stick_body.get_state(), end="\\r")
         ... except (KeyboardInterrupt, SystemExit):  # Exit safely.
         ...     Controller.shutdown_all()
         dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
