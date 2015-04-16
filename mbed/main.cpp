@@ -116,6 +116,5 @@ int main() {
       rpi.printf("0x%X ", adc_results[i]);
     }
     rpi.printf("\n");
-    fflush(rpi);
   }
 }
