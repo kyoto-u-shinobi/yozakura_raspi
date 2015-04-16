@@ -96,15 +96,15 @@ class Handler(socketserver.BaseRequestHandler):
                 self._logger.info("Robot will shut down motors")
                 continue
             self._logger.debug('Received: "{data}"'.format(data=data))
-    
+
             if data == "":  # Client exited safely.
                 self._logger.info("Terminating client session")
                 break
-    
+
             if data == "state":
                 state = self.server.controllers["main"].state
                 reply = pickle.dumps(state.data)
-    
+
             elif data == "inputs":
                 state = self.server.controllers["main"].state
                 dpad, lstick, rstick, buttons = state.data
@@ -112,28 +112,28 @@ class Handler(socketserver.BaseRequestHandler):
                                       (lstick.x, lstick.y),
                                       (rstick.x, rstick.y),
                                       buttons.buttons))
-    
+
             elif data == "speeds":
                 state = self.server.controllers["main"].state
                 reply = pickle.dumps(self._get_needed_speeds(state))
-    
+
             elif data.split()[0] == "echo":
                 reply = " ".join(data.split()[1:])
-    
+
             elif data.split()[0] == "print":
                 reply = " ".join(data.split()[1:])
                 self._logger.info('Client says: "{reply}"'
                                   .format(reply=reply))
-    
+
             else:
                 reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
                 self._logger.debug(reply)
-    
+
             try:
                 self.request.sendall(str.encode(reply))
             except TypeError:  # Already bytecode
                 self.request.sendall(reply)
-    
+
             # Receive sensor data
             raw_data = self._udp_receive(self, size=1024)
             try:
@@ -342,63 +342,63 @@ class Handler(socketserver.BaseRequestHandler):
         self._logger.debug("rear r: {r:6.3f}  p: {p:6.3f}  y: {y:6.3f}"
                            .format(r=rear[0], p=rear[1], y=rear[2]))
         self._logger.debug(20 * "=")
-    
+
     def _udp_get_latest(self, size=1, n_bytes=1):
         """
         Get the latest input.
-        
+
         This function automatically empties the given socket queue.
-        
+
         Parameters
         ----------
         size : int, optional
             The number of bytes to read at a time.
         n_bytes : int, optional
             The number of bytes to return.
-        
+
         Returns
         -------
         bytes
             The last received message, or None if the socket was not ready.
-        
+
         """
         data = []
         input_ready, o, e = select.select([self._server_client],
                                           [], [], 0)  # Check ready.
-        
+
         while input_ready:
             data.append(input_ready[0].recv(size))  # Read once.
             input_ready, o, e = select.select([self._server_client],
                                               [], [], 0)  # Check ready.
-        
+
         if not data:
             return None
         elif n_bytes == 1:
             return data[-1]
         else:
             return data[-n_bytes:]
-    
+
     def _udp_receive(self, size=32):
         """
         Receive UDP data without blocking.
-        
+
         Parameters
         ----------
         size : int, optional
             The number of bytes to read at a time.
-        
+
         Returns
         -------
         recv_msg : bytes
             The received message, or None if the buffer was empty.
         """
         recv_msg = None
-        
+
         try:
             recv_msg = self._get_latest(size)
         except BlockingIOError:
             pass
-        
+
         return recv_msg
 
 

@@ -5,7 +5,7 @@ import logging
 import pygame
 
 from common.exceptions import NoControllerError
-from common.networking import get_ip_address
+from common.functions import get_ip_address
 from opstn.controller import Controller
 from opstn.server import Server, Handler
 

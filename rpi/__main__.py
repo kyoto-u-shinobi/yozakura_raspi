@@ -5,9 +5,9 @@ import logging
 import serial
 
 from common.exceptions import NoMbedError
-from common.networking import get_ip_address
+from common.functions import get_ip_address
 from rpi.client import Client
-from rpi.devices import CurrentSensor, IMU
+# from rpi.devices import CurrentSensor, IMU
 from rpi.motor import Motor
 
 
@@ -28,12 +28,12 @@ def main():
               Motor("left_flipper_motor", 31, 32, 33),
               Motor("right_flipper_motor", 35, 36, 37)]
 
-    logging.debug("Initializing current sensors")
-    current_sensors = [CurrentSensor(0x48, name="left_flipper_current")]
+    # logging.debug("Initializing current sensors")
+    # current_sensors = [CurrentSensor(0x48, name="left_flipper_current")]
 
-    logging.debug("Initializing IMUs")
-    imus = [IMU(name="front_imu", address=0x68),
-            IMU(name="rear_imu", address=0x69)]
+    # logging.debug("Initializing IMUs")
+    # imus = [IMU(name="front_imu", address=0x68),
+    #         IMU(name="rear_imu", address=0x69)]
 
     try:
         logging.debug("Connecting to mbed")
@@ -45,13 +45,17 @@ def main():
     client.add_serial_device("mbed", mbed)
     for motor in motors:
         client.add_motor(motor, ser=mbed)
-    for sensor in current_sensors:
-        client.add_current_sensor(sensor)
-    for imu in imus:
-        client.add_imu(imu)
+    # for sensor in current_sensors:
+    #     client.add_current_sensor(sensor)
+    # for imu in imus:
+    #     client.add_imu(imu)
 
     try:
         client.run()
+    except KeyboardInterrupt:
+        pass
+    except SystemExit as e:
+        logging.error("Received SystemExit: {e}".format(e=e))
     finally:
         logging.info("Shutting down...")
         Motor.shutdown_all()
