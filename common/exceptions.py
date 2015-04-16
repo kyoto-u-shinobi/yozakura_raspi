@@ -40,6 +40,15 @@ class BadArgError(YozakuraException):
     """
 
 
+class BadDataError(YozakuraException):
+    """
+    Raised when there is invalid data.
+
+    Similar to ValueError.
+
+    """
+
+
 class NoMbedError(YozakuraException):
     """Raised when the raspberry pi cannot connect to the mbed."""
     msg = "The mbed is not connected!"
@@ -189,3 +198,12 @@ class NotCalibratedError(YozakuraException):
         if not device:
             device = "This device"
         super().__init__(message.format(dev=device))
+
+
+class YozakuraTimeoutError(YozakuraException):
+    """
+    Raised when a Timeout occurs.
+
+    Similar to TimeoutError.
+
+    """
