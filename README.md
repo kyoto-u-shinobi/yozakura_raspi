@@ -25,12 +25,18 @@ WPA2-PSK(AES)
 
 ##PC  
 **Operator Station PC**  
-IP Address: 192.168.54.200  
+IP Address: 192.168.54.200
 
 **Robot PC (Rasberry Pi)**  
 IP Address: 192.168.54.210  
 
-##Camera  
+##Camera
+**Access point for Ai-Ball**
+IP Address: 192.168.54.150  
+SSID elecom2g-d3f474  
+WPA2-PSK(AES)  
+3582988152694  
+
 **AI-Ball for Arm**  
 IP Address: 192.168.54.160  
 
