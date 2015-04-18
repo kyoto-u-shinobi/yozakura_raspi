@@ -31,7 +31,7 @@ IP Address: 192.168.54.200
 IP Address: 192.168.54.210  
 
 ##Camera
-**Access point for Ai-Ball**
+**Access point for Ai-Ball**  
 IP Address: 192.168.54.150  
 SSID elecom2g-d3f474  
 WPA2-PSK(AES)  
