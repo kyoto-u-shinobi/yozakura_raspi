@@ -14,13 +14,18 @@ In addition, front and rear body pose is returned via I2C-connected IMUs.
 All external sensor data is sent back to the base station via UDP.
 
 """
+#from collections import namedtuple
 import logging
 import pickle
 import socket
 
-from common.datatypes import CurrentSensorData, IMUData
+#from common.datatypes import CurrentSensorData, IMUData
 from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
     NoSerialsError
+
+
+#CurrentSensorData = namedtuple("CurrentSensorData", "current power voltage")
+#IMUData = namedtuple("IMUData", "roll pitch yaw")
 
 
 class Client(object):
@@ -265,7 +270,7 @@ class Client(object):
         lpos, rpos = positions
 
         self.motors["left_wheel_motor"].drive(lwheel)
-        self.motors["right__wheel_motor"].drive(rwheel)
+        self.motors["right_wheel_motor"].drive(rwheel)
 
         # TODO(masasin): Hold position if input is 0.
         self.motors["left_flipper_motor"].drive(lflipper)
@@ -323,7 +328,7 @@ class Client(object):
             if "\n" in buffer_string:
                 return buffer_string.split("\n")[-2]
 
-    def _get_current_data(self, current_sensors):
+    def _get_current_data(self, *current_sensors):
         """
         Get data from the requested current sensors.
 
@@ -345,12 +350,12 @@ class Client(object):
             try:
                 current_data.append(self.current_sensors[sensor].ipv)
             except KeyError:
-                self._logger.debug("{sensor} not registered".format(
-                    sensor=sensor))
-                current_data.append(CurrentSensorData([None, None, None]))
+                #self._logger.debug("{sensor} not registered".format(
+                    #sensor=sensor))
+                current_data.append([None, None, None])
         return current_data
 
-    def _get_imu_data(self, imus):
+    def _get_imu_data(self, *imus):
         """
         Get data from the requested inertial measurement units.
 
@@ -372,8 +377,8 @@ class Client(object):
             try:
                 imu_data.append(self.imus[imu].rpy)
             except KeyError:
-                self._logger.debug("{imu} not registered".format(imu=imu))
-                imu_data.append(IMUData([None, None, None]))
+                #self._logger.debug("{imu} not registered".format(imu=imu))
+                imu_data.append([None, None, None])
         return imu_data
 
     def _send_data(self, positions, current_data, imu_data, protocol=2):

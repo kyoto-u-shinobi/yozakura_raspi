@@ -23,10 +23,10 @@ def main():
     client = Client(client_address, (opstn_address, 9999))
 
     logging.debug("Initializing motors")
-    motors = [Motor("left_wheel_motor", 11, 12, 13),
-              Motor("right_wheel_motor", 15, 16, 18),
-              Motor("left_flipper_motor", 31, 32, 33),
-              Motor("right_flipper_motor", 35, 36, 37)]
+    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.6),
+              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.6),
+              Motor("left_flipper_motor", 22, 24, 7, max_speed=0.3),
+              Motor("right_flipper_motor", 19, 21, 7, max_speed=0.3)]
 
     # logging.debug("Initializing current sensors")
     # current_sensors = [CurrentSensor(0x48, name="left_flipper_current")]

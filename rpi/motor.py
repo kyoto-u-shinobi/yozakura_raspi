@@ -145,8 +145,7 @@ class Motor(object):
         elif gpio.input(self.pin_fault_1):
             self._logger.warning("Overtemp detected!")
         elif gpio.input(self.pin_fault_2):
-            self._logger.critical("Short detected!" +
-                                  "Motor driver has been latched until reset.")
+            self._logger.warning("Short detected!")
 
     def enable_serial(self, ser):
         """
@@ -295,9 +294,6 @@ class Motor(object):
         """
         Reset the motor driver.
 
-        The motor driver is latched upon a short circuit until the reset flag
-        is brought to LOW temporarily.
-
         """
         gpio.output(self.pin_reset, gpio.LOW)
         sleep(0.1)
@@ -306,11 +302,7 @@ class Motor(object):
     def shutdown(self):
         """Shut down and deregister the motor."""
         self._logger.debug("Shutting down motor")
-        self._logger.debug("Stopping motor")
         self.drive(0)
-
-        self._logger.debug("Deregistering motor")
-        Motor.motors.remove(self)
         self._logger.info("Motor shut down")
 
     @classmethod
