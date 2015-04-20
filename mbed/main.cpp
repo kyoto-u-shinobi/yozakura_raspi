@@ -59,7 +59,7 @@ class Motor {
   //
   // Parameters:
   //   speed: A value between -1 and 1, representing the motor speed.
-  void drive(float speed) {
+  void Drive(float speed) {
     if (reversed_) {
       dir_ = speed < 0 ? 1 : 0;
     } else {
@@ -109,7 +109,7 @@ int main() {
     } else {
       // Drive motor.
       sign = packet.b.negative ? -1 : 1;
-      motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
+      motors[packet.b.motor_id].Drive(sign * packet.b.speed / 31.0);
 
       // Update flipper positions.
       adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position

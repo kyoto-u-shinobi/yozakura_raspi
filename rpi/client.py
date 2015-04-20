@@ -189,7 +189,7 @@ class Client(object):
 
         while True:
             try:
-                speeds = self._request_speeds()
+                speeds, arms = self._request_speeds()
             except BadDataError as e:
                 self._logger.debug(e)
                 continue
@@ -207,6 +207,7 @@ class Client(object):
 
             adc_data, positions = self._get_mbed_body_data()
             self._drive_motors(speeds, positions)
+            self._command_arm(arms)
 
             current_data = self._get_current_data("left_motor_current",
                                                   "right_motor_current",
@@ -234,6 +235,8 @@ class Client(object):
         -------
         SpeedCmd
             A list of the speeds requested of each motor.
+        ArmCmd
+            A list of commands for the arm servos.
 
         """
         self.request.send(str.encode("speeds"))
@@ -242,11 +245,11 @@ class Client(object):
             raise BadDataError("No speed data")
 
         try:
-            speeds = pickle.loads(result)
+            speeds, arms = pickle.loads(result)
         except (pickle.UnpicklingError, EOFError):
             raise BadDataError("Invalid speed data")
 
-        return speeds
+        return speeds, arms
 
     def _drive_motors(self, speeds, positions):
         """
@@ -268,6 +271,21 @@ class Client(object):
         # TODO(masasin): Hold position if input is 0.
         self.motors["left_flipper_motor"].drive(lflipper)
         self.motors["right_flipper_motor"].drive(rflipper)
+    
+    def _command_arm(self, arms):
+        """
+        Command the arm.
+        
+        Parameters
+        ----------
+        arms : list of int
+            A list of commands for the arm servos.
+        
+        """
+        if "mbed_arm" in self.serials:
+            mode, linear, pitch, yaw = [2 if i == -1 else i for i in arms]
+            byte = bytes([mode + (linear << 2) + (pitch << 4) + (yaw << 6)])
+            self.serials["mbed_arm"].write(byte)
 
     def _get_mbed_body_data(self):
         """

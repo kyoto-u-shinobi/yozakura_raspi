@@ -145,7 +145,8 @@ class Handler(socketserver.BaseRequestHandler):
 
         elif data == "speeds":
             state = self.server.controllers["main"].state
-            reply = pickle.dumps(self._get_needed_speeds(state))
+            speeds, arms = self._generate_commands(state)
+            reply = pickle.dumps(speeds, arms)
 
         elif data.split()[0] == "echo":
             reply = " ".join(data.split()[1:])
@@ -161,7 +162,7 @@ class Handler(socketserver.BaseRequestHandler):
 
         return reply
 
-    def _get_needed_speeds(self, state):
+    def _generate_commands(self, state):
         """
         Get required speeds based on controller state and system state.
 
@@ -241,7 +242,7 @@ class Handler(socketserver.BaseRequestHandler):
                 lflipper = -1
             else:
                 lflipper = 0
-
+                
         else:  # Forward mode
             # Wheels
             if self.wheels_single_stick:
@@ -279,8 +280,19 @@ class Handler(socketserver.BaseRequestHandler):
                 rflipper = -1
             else:
                 rflipper = 0
+            
+        # Arm
+        if buttons.is_pressed("○"):
+            linear = dpad.y
+        else:
+            pitch = dpad.y
+            yaw = dpad.x
+        
+        mode = 0
 
-        return lwheel, rwheel, lflipper, rflipper
+        speeds = lwheel, rwheel, lflipper, rflipper
+        arms = mode, linear, pitch, yaw
+        return speeds, arms
 
     def _switch_control_mode(self):
         """
