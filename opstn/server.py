@@ -21,8 +21,6 @@ import time
 
 import numpy as np
 
-from common.datatypes import SpeedCmd, ArmCmd
-
 
 class Handler(socketserver.BaseRequestHandler):
     """
@@ -194,7 +192,7 @@ class Handler(socketserver.BaseRequestHandler):
         --------
         - Controller.State
         - SpeedCmd
-        - ArmcCmd
+        - ArmCmd
 
         """
         # TODO(masasin): Handle select : Synchronize flipper positions.
@@ -282,7 +280,7 @@ class Handler(socketserver.BaseRequestHandler):
             else:
                 rflipper = 0
 
-        speeds = SpeedCmd(lwheel, rwheel, lflipper, rflipper)
+        speeds = (lwheel, rwheel, lflipper, rflipper)
 
         return speeds
 

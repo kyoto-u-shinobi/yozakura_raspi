@@ -27,7 +27,6 @@ from RPi import GPIO as gpio
 import RTIMU
 import smbus
 
-from common.datatypes import CurrentSensorData, IMUData
 from common.exceptions import BadArgError, I2CSlotEmptyError,\
     I2CSlotBusyError, NotCalibratedError
 from rpi.bitfields import CurrentConfiguration, CurrentAlerts
@@ -588,7 +587,7 @@ class CurrentSensor(Device):
             voltage = 0
         else:
             voltage = power / current
-        return CurrentSensorData(current, power, voltage)
+        return current, power, voltage
 
 
 class IMU(Device):
@@ -660,4 +659,4 @@ class IMU(Device):
         """
         while True:  # Wait until new data is ready.
             if self._imu.IMURead():
-                return IMUData(self._imu.getFusionData())
+                return self._imu.getFusionData()

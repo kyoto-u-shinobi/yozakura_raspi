@@ -18,7 +18,6 @@ import logging
 import pickle
 import socket
 
-from common.datatypes import FlipperPositions, CurrentSensorData, IMUData
 from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
     NoSerialsError
 
@@ -295,7 +294,7 @@ class Client(object):
             float_body_data = [None, None]
 
         adc_data = float_body_data[:-2]
-        positions = FlipperPositions(float_body_data[-2:])
+        positions = float_body_data[-2:]
 
         try:
             mbed_arm_data = self._serial_read_last("mbed_arm").split()
@@ -353,7 +352,7 @@ class Client(object):
             except KeyError:
                 self._logger.debug("{sensor} not registered".format(
                     sensor=sensor))
-                current_data.append(CurrentSensorData([None, None, None]))
+                current_data.append([None, None, None])
         return current_data
 
     def _get_imu_data(self, imus):
@@ -379,7 +378,7 @@ class Client(object):
                 imu_data.append(self.imus[imu].rpy)
             except KeyError:
                 self._logger.debug("{imu} not registered".format(imu=imu))
-                imu_data.append(IMUData([None, None, None]))
+                imu_data.append([None, None, None])
         return imu_data
 
     def _send_data(self, positions, current_data, imu_data, protocol=2):
