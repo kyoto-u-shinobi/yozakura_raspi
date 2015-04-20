@@ -205,7 +205,7 @@ class Client(object):
                 self._logger.info("Connection returned")
                 self._timed_out = False
 
-            adc_data, positions = self._get_mbed_data()
+            adc_data, positions = self._get_mbed_body_data()
             self._drive_motors(speeds, positions)
 
             current_data = self._get_current_data("left_motor_current",
@@ -260,14 +260,16 @@ class Client(object):
             The current positions of the left and right flippers.
 
         """
-        self.motors["left_wheel_motor"].drive(speeds.lwheel)
-        self.motors["right__wheel_motor"].drive(speeds.rwheel)
+        lwheel, rwheel, lflipper, rflipper = speeds
+
+        self.motors["left_wheel_motor"].drive(lwheel)
+        self.motors["right_wheel_motor"].drive(rwheel)
 
         # TODO(masasin): Hold position if input is 0.
-        self.motors["left_flipper_motor"].drive(speeds.lflipper)
-        self.motors["right_flipper_motor"].drive(speeds.rflipper)
+        self.motors["left_flipper_motor"].drive(lflipper)
+        self.motors["right_flipper_motor"].drive(rflipper)
 
-    def _get_mbed_data(self):
+    def _get_mbed_body_data(self):
         """
         Get transmitted data from the mbed.
 
@@ -296,15 +298,52 @@ class Client(object):
         adc_data = float_body_data[:-2]
         positions = float_body_data[-2:]
 
+        return adc_data, positions
+
+    def _get_mbed_arm_data(self):
+        """
+        Get transmitted data from the arm mbed.
+
+        The arm mbed is connected to the servos driving the arm, as well as
+        to two temperature sensors and a CO2 sensor.
+
+        If bad data is received, or if the mbed is not connected, every value
+        returned will be ``None``.
+
+        Returns
+        -------
+        linear : 2-tuple of float
+            The position and voltage of the linear servo.
+        pitch : 2-tuple of float
+            The position and current of the pitch servo.
+        yaw : 2-tuple of float
+            The position and current of the yaw servo.
+        thermo_sensor_1 : 16-tuple of float
+            The temperature matrix of the first thermal sensor.
+        thermo_sensor_2 : 16-tuple of float
+            The temperature matrix of the second thermal sensor.
+        co2_sensor : float
+            The voltage of the carbon dioxide sensor.
+
+        """
         try:
             mbed_arm_data = self._serial_read_last("mbed_arm").split()
             float_arm_data = [float(i) for i in mbed_arm_data]
-        except ValueError:
-            self._logger.debug("Bad mbed sensor data")
-            # TODO(masasin): Verify size
-            float_arm_data = [None for i in range(48)]
+        except (KeyError, ValueError):
+            if "mbed_arm" in self.serials:
+                self._logger.debug("Bad mbed sensor data")
+            float_arm_data = [None for _ in range(39)]
 
-        return adc_data, positions, float_arm_data
+        linear = float_arm_data[0:2]  # position, voltage
+        pitch = float_arm_data[2:4]   # position, current
+        yaw = float_arm_data[4:6]     # position, current
+
+        thermo_sensor_1 = float_arm_data[6:22]
+        thermo_sensor_2 = float_arm_data[22:38]
+        co2_sensor = float_arm_data[38]
+
+        return linear, pitch, yaw, thermo_sensor_1, thermo_sensor_2, co2_sensor
+
 
     def _serial_read_last(self, name):
         """
@@ -328,7 +367,7 @@ class Client(object):
             if "\n" in buffer_string:
                 return buffer_string.split("\n")[-2]
 
-    def _get_current_data(self, current_sensors):
+    def _get_current_data(self, *current_sensors):
         """
         Get data from the requested current sensors.
 
@@ -350,12 +389,10 @@ class Client(object):
             try:
                 current_data.append(self.current_sensors[sensor].ipv)
             except KeyError:
-                self._logger.debug("{sensor} not registered".format(
-                    sensor=sensor))
                 current_data.append([None, None, None])
         return current_data
 
-    def _get_imu_data(self, imus):
+    def _get_imu_data(self, *imus):
         """
         Get data from the requested inertial measurement units.
 
@@ -377,7 +414,6 @@ class Client(object):
             try:
                 imu_data.append(self.imus[imu].rpy)
             except KeyError:
-                self._logger.debug("{imu} not registered".format(imu=imu))
                 imu_data.append([None, None, None])
         return imu_data
 

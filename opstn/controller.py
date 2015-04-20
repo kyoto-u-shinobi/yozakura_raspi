@@ -256,7 +256,7 @@ class State(object):
         --------
         >>> stick = Controller(0, "body")
         >>> try:
-        ...     While True:
+        ...     while True:
         ...         print(stick_body.get_state(), end="\\r")
         ... except (KeyboardInterrupt, SystemExit):  # Exit safely.
         ...     Controller.shutdown_all()

@@ -280,9 +280,7 @@ class Handler(socketserver.BaseRequestHandler):
             else:
                 rflipper = 0
 
-        speeds = (lwheel, rwheel, lflipper, rflipper)
-
-        return speeds
+        return lwheel, rwheel, lflipper, rflipper
 
     def _switch_control_mode(self):
         """

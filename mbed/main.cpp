@@ -50,8 +50,9 @@ class Motor {
   //   reversed: Whether the motor driver's DIR pin is connected in reverse.
   Motor(PinName pin_pwm, PinName pin_dir, bool reversed)
       : pwm_(pin_pwm), dir_(pin_dir), reversed_(reversed) {
-    pwm_ = dir_ = 0;     // Set all outputs to low.
-    pwm_.period_us(40); // Set PWM output frequency to 25 kHz.
+    pwm_ = 0;
+    dir_ = 0;
+    pwm_.period_us(40);  // Set PWM output frequency to 25 kHz.
   }
 
   // Drive the motor at the given speed.
@@ -77,10 +78,10 @@ class Motor {
 int main() {
   // The four motors are in an array. The raspberry pi expects this order; do
   // not change it without changing the code for the RPi as well.
-  Motor motors[4] = { Motor(p21, p11, false),     // Left wheels
-                      Motor(p22, p12, true),      // Right wheels
-                      Motor(p23, p13, true),      // Left flipper
-                      Motor(p24, p14, false) };   // Right flipper
+  Motor motors[4] = { Motor(p26, p27, false),     // Left wheels
+                      Motor(p25, p28, true),      // Right wheels
+                      Motor(p24, p29, true),      // Left flipper
+                      Motor(p23, p30, false) };   // Right flipper
 
   AnalogIn pots[6] = { p15, p16, p17, p18,   // Unused
                        p19,                  // Left flipper position
@@ -103,19 +104,22 @@ int main() {
       packet.as_byte = rpi.getc();
     }
 
-    // Drive motor.
-    sign = packet.b.negative ? -1 : 1;
-    motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
+    if(packet.b.motor_id == 3 and packet.b.negative and not packet.b.speed) {
+      rpi.printf("body\n")
+    } else {
+      // Drive motor.
+      sign = packet.b.negative ? -1 : 1;
+      motors[packet.b.motor_id].drive(sign * packet.b.speed / 31.0);
 
-    // Update flipper positions.
-    adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
-    adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
+      // Update flipper positions.
+      adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
+      adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
 
-    // Send data to RPi.
-    for(int i = 0; i < n_adc; i++) {
-      rpi.printf("0x%X ", adc_results[i]);
+      // Send data to RPi.
+      for(int i = 0; i < n_adc; i++) {
+        rpi.printf("%X ", adc_results[i]);
+      }
+      rpi.printf("\n");
     }
-    rpi.printf("\n");
-    fflush(rpi);
   }
 }

@@ -4,6 +4,7 @@
 Functions for use with the mbeds.
 
 """
+import logging
 import serial
 
 from common.exceptions import NoMbedError, UnknownMbedError,\
@@ -31,22 +32,27 @@ def connect_to_mbeds():
         else:
             raise UnknownMbedError
 
-    try:
-        if arm_at_zero:
+    if arm_at_zero:
+        try:
             mbed_body = serial.Serial("/dev/ttyACM1", baudarate=38400)
-        else:
+        except serial.SerialException:
+            raise NoMbedError  # Body mbed not attached.
+    else:
+        try:
             mbed_arm = serial.Serial("/dev/ttyACM1", baudarate=38400)
-    except serial.SerialException:
-        raise NoMbedError
+        except serial.SerialException:
+            logging.warning("Arm mbed is not attached!")
+            mbed_arm = None
 
     return mbed_arm, mbed_body
 
 
 @interrupted(0.5)
 def _identify_mbed(ser):
+    # Set up special request.
     id_request = MotorPacket()
     id_request.motor_id = 3
-    id_request.negative = 1
+    id_request.negative = True
     id_request.speed = 0
 
     ser.write(id_request)
