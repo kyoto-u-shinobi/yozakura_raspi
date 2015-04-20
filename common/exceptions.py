@@ -49,9 +49,14 @@ class BadDataError(YozakuraException):
     """
 
 
+class UnknownMbedError(YozakuraException):
+    """Raised when the raspberry pi connects to an unknown mbed."""
+    msg = "An mbed cannot be identified!"
+
+
 class NoMbedError(YozakuraException):
-    """Raised when the raspberry pi cannot connect to the mbed."""
-    msg = "The mbed is not connected!"
+    """Raised when the raspberry pi cannot connect to an mbed."""
+    msg = "An mbed is not connected!"
 
 
 class NoControllerError(YozakuraException):
@@ -104,7 +109,7 @@ class NoDriversError(YozakuraException):
 
 class MotorCountError(YozakuraException):
     """
-    Raised when no motors, or more than four motors are registered.
+    Raised when not enough motors, or more than four motors are registered.
 
     The Raspberry Pi client keeps a list of all motors it needs to control. If
     the client is run with no motors registered, the robot would not be able
@@ -122,21 +127,24 @@ class MotorCountError(YozakuraException):
     def __init__(self, count=None):
         if count is None:
             message = "The motor count is bad!"
+        elif count == 1:
+            message = "Only one motor has been added!"
+        elif count < 4:
+            message = "Only {n} motors have been added!".format(n=count)
         else:
-            message = "{n} motors have been registered!".format(n=count)
+            message = "{n} motors have already been added!".format(n=count)
         super().__init__(message)
 
 
 class NoSerialsError(YozakuraException):
     """
-    Raised when RPi client is run with no serial devices registered.
+    Raised when RPi client is run with both serial devices not registered.
 
     The Raspberry Pi needs to use the microcontroller to obtain position data
-    from the two flippers of the robot. That information is used to hold the
-    angle when there is no input from the server.
+    from the two flippers of the robot, as well as sensor data from the arm.
 
     """
-    msg = "No serial devices are registered!"
+    msg = "Insufficient serial devices are registered!"
 
 
 class I2CSlotEmptyError(YozakuraException):

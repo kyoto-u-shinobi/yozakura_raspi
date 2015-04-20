@@ -7,8 +7,8 @@ Common datatypes used throughout Yozakura.
 from collections import namedtuple
 
 
-SpeedCmd_ = namedtuple("SpeedCmd", "lwheel rwheel lflipper rflipper")
-class SpeedCmd(SpeedCmd_):
+_SpeedCmd = namedtuple("SpeedCmd", "lwheel rwheel lflipper rflipper")
+class SpeedCmd(_SpeedCmd):
     """
     A container for the speed commands sent to the motors.
 
@@ -26,8 +26,8 @@ class SpeedCmd(SpeedCmd_):
     """
 
 
-ArmCmd_ = namedtuple("ArmCmd", "mode yaw pitch extend")
-class ArmCmd(ArmCmd_):
+_ArmCmd = namedtuple("ArmCmd", "mode yaw pitch extend")
+class ArmCmd(_ArmCmd):
     """
     A container for the commands sent to the arm.
 
@@ -45,8 +45,8 @@ class ArmCmd(ArmCmd_):
     """
 
 
-FlipperPositions_ = namedtuple("FlipperPositions", "current power voltage")
-class FlipperPositions(FlipperPositions_):
+_FlipperPositions = namedtuple("FlipperPositions", "current power voltage")
+class FlipperPositions(_FlipperPositions):
     """
     A container for the flipper position.
 
@@ -60,8 +60,8 @@ class FlipperPositions(FlipperPositions_):
     """
 
 
-CurrentSensorData_ = namedtuple("CurrentSensorData", "current power voltage")
-class CurrentSensorData(CurrentSensorData_):
+_CurrentSensorData = namedtuple("CurrentSensorData", "current power voltage")
+class CurrentSensorData(_CurrentSensorData):
     """
     A container for the current sensor data.
 
@@ -76,8 +76,9 @@ class CurrentSensorData(CurrentSensorData_):
 
     """
 
-IMUData_ = namedtuple("IMUData", "roll pitch yaw")
-class IMUData(IMUData_):
+
+_IMUData = namedtuple("IMUData", "roll pitch yaw")
+class IMUData(_IMUData):
     """
     A container for the IMU data.
 

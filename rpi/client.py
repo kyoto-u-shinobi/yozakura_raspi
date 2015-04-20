@@ -173,17 +173,17 @@ class Client(object):
         Raises
         ------
         MotorCountError
-            If there are no motors registered
+            If there are no, or too few, motors registered
         NoSerialsError
             If there are no serial devices registered
 
         """
-        if not self.motors:
-            self._logger.critical("No motors registered!")
-            raise MotorCountError(0)
+        if len(self.motors < 4):
+            self._logger.critical("Insufficient motors registered!")
+            raise MotorCountError(len(self.motors))
 
-        if not self.serials:
-            self._logger.critical("No serial devices registered!")
+        if len(self.serials < 2):
+            self._logger.critical("Insufficient serial devices registered!")
             raise NoSerialsError
 
         self._logger.info("Client started")
@@ -206,7 +206,7 @@ class Client(object):
                 self._logger.info("Connection returned")
                 self._timed_out = False
 
-            adc_data, positions = self._get_adc_data()
+            adc_data, positions = self._get_mbed_data()
             self._drive_motors(speeds, positions)
 
             current_data = self._get_current_data("left_motor_current",
@@ -268,13 +268,15 @@ class Client(object):
         self.motors["left_flipper_motor"].drive(speeds.lflipper)
         self.motors["right_flipper_motor"].drive(speeds.rflipper)
 
-    def _get_adc_data(self):
+    def _get_mbed_data(self):
         """
-        Get ADC data from the mbed.
+        Get transmitted data from the mbed.
 
-        The mbed has six Analog-to-Digital Conversion ports, and polls all the
-        ports that are currently active. The left and right flipper positions
-        are always connected to the last two ports.
+        The body mbed has six Analog-to-Digital Conversion ports, and polls all
+        the ports that are currently active. The left and right flipper
+        positions are always connected to the last two ports.
+
+        The arm mbed sends data from the connected sensors.
 
         Returns
         -------
@@ -286,17 +288,24 @@ class Client(object):
 
         """
         try:
-            mbed_data = self._serial_read_last("mbed").split()
-            # mbed_data = self.serials["mbed"].readline().split()
-            float_data = [int(i, 16) / 0xFFFF for i in mbed_data]
+            mbed_body_data = self._serial_read_last("mbed_body").split()
+            float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
         except ValueError:
             self._logger.debug("Bad mbed flipper data")
-            float_data = [None, None]
+            float_body_data = [None, None]
 
-        adc_data = float_data[:-2]
-        positions = FlipperPositions(float_data[-2:])
+        adc_data = float_body_data[:-2]
+        positions = FlipperPositions(float_body_data[-2:])
 
-        return adc_data, positions
+        try:
+            mbed_arm_data = self._serial_read_last("mbed_arm").split()
+            float_arm_data = [float(i) for i in mbed_arm_data]
+        except ValueError:
+            self._logger.debug("Bad mbed sensor data")
+            # TODO(masasin): Verify size
+            float_arm_data = [None for i in range(48)]
+
+        return adc_data, positions, float_arm_data
 
     def _serial_read_last(self, name):
         """

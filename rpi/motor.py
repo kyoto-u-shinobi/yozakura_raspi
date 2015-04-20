@@ -79,7 +79,7 @@ class Motor(object):
         Whether a serial port is open, and hardware PWM is available.
     has_pwm : bool
         Whether software PWM is available.
-    connection : Serial
+    ser : Serial
         The serial port to be used for communication.
     pin_pwm : int
         The GPIO pin for motor PWM line.
@@ -161,7 +161,7 @@ class Motor(object):
             Communicates with the external hardware.
 
         """
-        self.connection = ser
+        self.ser = ser
         self.has_serial = True
 
     def enable_pwm(self, pwm, direction, frequency=28000):
@@ -241,10 +241,10 @@ class Motor(object):
         """
         packet = MotorPacket()
         packet.motor_id = self.motor_id
-        packet.negative = 1 if speed < 0 else 0
+        packet.negative = True if speed < 0 else False
         packet.speed = int(abs(self._scale_speed(speed)) * 31)
 
-        self.connection.write(bytes([packet.as_byte]))
+        self.ser.write(bytes([packet.as_byte]))
 
     def _scale_speed(self, speed):
         """

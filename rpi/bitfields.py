@@ -198,7 +198,7 @@ class CurrentAlertsFlags(ctypes.Structure):
                 ("bus_ul", ctypes.c_uint16, 1),      # Bus undervolt
                 ("power_ol", ctypes.c_uint16, 1),    # Power over limit
                 ("conv_watch", ctypes.c_uint16, 1),  # Conversion ready
-                ("empty", ctypes.c_uint16, 5),
+                ("empty", ctypes.c_uint16, 5),       # Not used
                 ("alert_func", ctypes.c_uint16, 1),  # Alert function flag
                 ("conv_flag", ctypes.c_uint16, 1),   # Conversion ready flag
                 ("overflow", ctypes.c_uint16, 1),    # Math overflow flag

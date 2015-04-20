@@ -2,12 +2,10 @@
 # Released under the GNU General Public License, version 3
 import logging
 
-import serial
-
-from common.exceptions import NoMbedError
 from common.functions import get_ip_address
 from rpi.client import Client
 # from rpi.devices import CurrentSensor, IMU
+from rpi.mbed import connect_to_mbeds
 from rpi.motor import Motor
 
 
@@ -35,16 +33,14 @@ def main():
     # imus = [IMU(name="front_imu", address=0x68),
     #         IMU(name="rear_imu", address=0x69)]
 
-    try:
-        logging.debug("Connecting to mbed")
-        mbed = serial.Serial("/dev/ttyACM0", baudrate=38400)
-    except serial.SerialException:
-        raise NoMbedError
+    logging.debug("Connecting to mbeds")
+    mbed_arm, mbed_body = connect_to_mbeds
 
     logging.debug("Registering peripherals to client")
-    client.add_serial_device("mbed", mbed)
+    client.add_serial_device("mbed_arm", mbed_arm)
+    client.add_serial_device("mbed_body", mbed_body)
     for motor in motors:
-        client.add_motor(motor, ser=mbed)
+        client.add_motor(motor, ser=mbed_body)
     # for sensor in current_sensors:
     #     client.add_current_sensor(sensor)
     # for imu in imus:
@@ -60,7 +56,8 @@ def main():
         logging.info("Shutting down...")
         Motor.shutdown_all()
         logging.debug("Shutting down connection with mbed")
-        mbed.close()
+        mbed_arm.close()
+        mbed_body.close()
         client.shutdown()
 
     logging.info("All done")
