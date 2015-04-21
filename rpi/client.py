@@ -20,6 +20,7 @@ import socket
 
 from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
     NoSerialsError
+from rpi.bitfields import ArmPacket
 
 
 class Client(object):
@@ -284,8 +285,13 @@ class Client(object):
         """
         if "mbed_arm" in self.serials:
             mode, linear, pitch, yaw = [2 if i == -1 else i for i in arms]
-            byte = bytes([mode + (linear << 2) + (pitch << 4) + (yaw << 6)])
-            self.serials["mbed_arm"].write(byte)
+            packet = ArmPacket()
+            packet.mode = mode
+            packet.linear = linear
+            packet.pitch = pitch
+            packet.yaw = yaw
+            
+            self.serials["mbed_arm"].write(bytes([packet.as_byte]))
 
     def _get_mbed_body_data(self):
         """
