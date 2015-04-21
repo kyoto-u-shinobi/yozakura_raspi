@@ -137,12 +137,17 @@ int main() {
 	      co2_data = GetCO2();
 
 	      led_data_output = 1;
-	      // Send Dynamixel data
+	      // Send Dynamixel position
 	      for (int i=0; i < 3; i++) {
-	        rpi.printf("%4.1f %4.1f", positions[i], values[i]);
+	        rpi.printf("%4.1f ", positions[i]);
 	      }
 
-      	// Send thermo data
+	      // Send Dynamixel values
+	      for (int i=0; i < 3; i++) {
+	        rpi.printf("%4.1f ", values[i]);
+	      }
+
+       	      // Send thermo data
 	      for (int i=0; i < 2; i++) {
 	        for (int j=0; i < 16; i++) {
 	          rpi.printf("%4.1f ", thermo_data[i][j]);
