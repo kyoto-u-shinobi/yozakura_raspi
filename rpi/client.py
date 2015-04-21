@@ -411,7 +411,7 @@ class Client(object):
         current_data = []
         for sensor in current_sensors:
             try:
-                current_data.append(self.current_sensors[sensor].ipv)
+                current_data.append(self.current_sensors[sensor].iv)
             except KeyError:
                 current_data.append([None, None])
         return current_data
