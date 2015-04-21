@@ -63,6 +63,58 @@ manipulation. What we did is the equivalent of:
 import ctypes
 
 
+# Used by the arm mbed
+class ArmPacketBits(ctypes.LittleEndianStructure):
+    """
+    The bits for the packet sent to the arm mbed.
+    
+    Note that the mbed's processor is little endian, which is why a
+    ``LittleEndianStructure`` is used.
+    
+    See Also
+    --------
+    ArmPacket
+    
+    """
+    _fields_ = [("mode", ctypes.c_uint8, 2),
+                ("linear", ctypes.c_uint8, 2),
+                ("pitch", ctypes.c_uint8, 2),
+                ("yaw", ctypes.c_uint8, 2)]
+
+
+class ArmPacket(ctypes.Union):
+    """
+    The packet sent to the arm mbed.
+
+    When the Raspberry Pi is connected to the mbed, arm control information
+    is encoded as a single byte.
+
+    Using a union allows us to transmit the full byte to the mbed by using
+    ``packet.as_byte``, and ensures that it would be exactly eight bits long.
+
+    Attributes
+    ----------
+    mode : 2 bits
+        The control mode of the arm.
+    linear : 2 bits
+        The direction in which to move the linear extension servo of the arm.
+    pitch : 2 bits
+        The direction in which to move the pitch servo of the arm.
+    yaw : 2 bits
+        The direction in which to move the yaw servo of the arm.
+
+    Notes
+    -----
+    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
+    ``as_byte``.
+
+    """
+    _fields_ = [("b", ArmPacketBits),
+                ("as_byte", ctypes.c_uint8)]
+
+    _anonymous_ = ("b")
+
+
 # Used in rpi.motors
 class MotorPacketBits(ctypes.LittleEndianStructure):
     """
