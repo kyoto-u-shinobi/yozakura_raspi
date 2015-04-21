@@ -83,7 +83,7 @@ int main() {
                       Motor(p24, p29, true),      // Left flipper
                       Motor(p23, p30, false) };   // Right flipper
 
-  AnalogIn pots[6] = { p15, p16, p17, p18,   // Unused
+  AnalogIn adcs[6] = { p15, p16, p17, p18,   // Unused
                        p19,                  // Left flipper position
                        p20 };                // Right flipper position
 
@@ -98,13 +98,13 @@ int main() {
 
   rpi.baud(38400);  // Match this in the RPi settings.
 
-  while(1) {
+  while (1) {
     // Get packet from RPi.
-    if(rpi.readable()) {
+    if (rpi.readable()) {
       packet.as_byte = rpi.getc();
     }
 
-    if(packet.b.motor_id == 3 and packet.b.negative and not packet.b.speed) {
+    if (packet.b.motor_id == 3 and packet.b.negative and not packet.b.speed) {
       rpi.printf("body\n")
     } else {
       // Drive motor.
@@ -112,11 +112,11 @@ int main() {
       motors[packet.b.motor_id].Drive(sign * packet.b.speed / 31.0);
 
       // Update flipper positions.
-      adc_results[n_adc - 2] = pots[4].read_u16();  // Left flipper position
-      adc_results[n_adc - 1] = pots[5].read_u16();  // Right flipper position
+      adc_results[n_adc - 2] = adcs[4].read_u16();  // Left flipper position
+      adc_results[n_adc - 1] = adcs[5].read_u16();  // Right flipper position
 
       // Send data to RPi.
-      for(int i = 0; i < n_adc; i++) {
+      for (int i = 0; i < n_adc; i++) {
         rpi.printf("%X ", adc_results[i]);
       }
       rpi.printf("\n");
