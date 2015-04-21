@@ -220,7 +220,7 @@ class Client(object):
             
             arm_data = self._get_mbed_arm_data()
 
-            self._send_data(positions, current_data, imu_data, arm_data)
+            self._send_data(positions, current_data, imu_data, *arm_data)
 
     def _handle_timeout(self):
         """Turn off motors in case of a lost connection."""
@@ -338,16 +338,10 @@ class Client(object):
 
         Returns
         -------
-        linear : 2-tuple of float
-            The position and voltage of the linear servo.
-        pitch : 2-tuple of float
-            The position and current of the pitch servo.
-        yaw : 2-tuple of float
-            The position and current of the yaw servo.
-        thermo_sensor_1 : 16-tuple of float
-            The temperature matrix of the first thermal sensor.
-        thermo_sensor_2 : 16-tuple of float
-            The temperature matrix of the second thermal sensor.
+        positions
+        values
+        thermo_sensors : 2-tuple of 16-tuple of float
+            The temperature matrices of the thermal sensor.
         co2_sensor : float
             The voltage of the carbon dioxide sensor.
 
@@ -360,15 +354,19 @@ class Client(object):
                 self._logger.debug("Bad mbed sensor data")
             float_arm_data = [None for _ in range(39)]
 
-        linear = float_arm_data[0:2]  # position, voltage
-        pitch = float_arm_data[2:4]   # position, current
-        yaw = float_arm_data[4:6]     # position, current
+        positions = float_arm_data[0:3]
+        values = float_arm_data[3:6]
+        servo_iv = [[values[0], None],
+                    [values[0], values[1]],
+                    [values[0], values[2]]]
 
         thermo_sensor_1 = float_arm_data[6:22]
         thermo_sensor_2 = float_arm_data[22:38]
+        thermo_sensors = [thermo_sensor_1, thermo_sensor_2]
+        
         co2_sensor = float_arm_data[38]
 
-        return linear, pitch, yaw, thermo_sensor_1, thermo_sensor_2, co2_sensor
+        return positions, servo_iv, thermo_sensors, co2_sensor
 
 
     def _serial_read_last(self, name):
@@ -415,7 +413,7 @@ class Client(object):
             try:
                 current_data.append(self.current_sensors[sensor].ipv)
             except KeyError:
-                current_data.append([None, None, None])
+                current_data.append([None, None])
         return current_data
 
     def _get_imu_data(self, *imus):
