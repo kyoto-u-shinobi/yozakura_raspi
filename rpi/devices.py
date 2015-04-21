@@ -571,14 +571,14 @@ class CurrentSensor(Device):
         return flags
 
     @property
-    def ipv(self):
+    def iv(self):
         """
-        Return the Current, Power, and Voltage of the sensor, in natural units.
+        Return the Current and Voltage of the sensor, in natural units.
 
         Returns
         -------
         CurrentSensorData
-            The current, power, and voltage readings of the sensor.
+            The current and voltage readings of the sensor.
 
         """
         current = self.get_measurement("current")
@@ -587,7 +587,7 @@ class CurrentSensor(Device):
             voltage = 0
         else:
             voltage = power / current
-        return current, power, voltage
+        return current, voltage
 
 
 class IMU(Device):
