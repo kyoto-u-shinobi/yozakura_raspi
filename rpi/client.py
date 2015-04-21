@@ -217,8 +217,10 @@ class Client(object):
                                                   "motor_current")
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
+            
+            arm_data = self._get_mbed_arm_data()
 
-            self._send_data(positions, current_data, imu_data)
+            self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
         """Turn off motors in case of a lost connection."""
