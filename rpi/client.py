@@ -270,8 +270,6 @@ class Client(object):
 
         self.motors["left_wheel_motor"].drive(lwheel)
         self.motors["right_wheel_motor"].drive(rwheel)
-
-        # TODO(masasin): Hold position if input is 0.
         self.motors["left_flipper_motor"].drive(lflipper)
         self.motors["right_flipper_motor"].drive(rflipper)
     
