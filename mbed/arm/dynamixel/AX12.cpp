@@ -23,10 +23,8 @@
 
 #include "Dynamixel.h"
 #include "mbed.h"
-//#include "SerialHalfDuplex.h"
 
-AX12::AX12(PinName tx, PinName rx, int ID)
-        : _ax12(tx,rx) {
+AX12::AX12(PinName tx, PinName rx, int ID) : _ax12(tx,rx) {
 
     _ax12.baud(1000000);
     _ID = ID;
@@ -35,7 +33,7 @@ AX12::AX12(PinName tx, PinName rx, int ID)
 // Set the mode of the servo
 //  0 = Positional (0-300 degrees)
 //  1 = Rotational -1 to 1 speed
-virtual int AX12::SetMode(int mode) {
+int AX12::SetMode(int mode) {
 
     if (mode == 1) { // set CR
         SetCWLimit(0);
@@ -46,14 +44,14 @@ virtual int AX12::SetMode(int mode) {
         SetCCWLimit(300);
         SetCRSpeed(0.0);
     }
-    return(0);
+    return 0;
 }
 
 
 // if flag[0] is set, we're blocking
 // if flag[1] is set, we're registering
 // they are mutually exclusive operations
-virtual int AX12::SetGoal(int degrees, int flags) {
+int AX12::SetGoal(int degrees, int flags) {
 
     char reg_flag = 0;
     char data[2];
@@ -84,7 +82,7 @@ virtual int AX12::SetGoal(int degrees, int flags) {
 
 
 // Set continuous rotation speed from -1 to 1
-virtual int AX12::SetCRSpeed (float speed) {
+int AX12::SetCRSpeed (float speed) {
 
     // bit 10     = direction, 0 = CCW, 1=CW
     // bits 9-0   = Speed
@@ -107,8 +105,7 @@ virtual int AX12::SetCRSpeed (float speed) {
 }
 
 
-virtual int AX12::SetCWLimit (int degrees) {
-    printf("SetCWLimit to %d\n",degrees);
+int AX12::SetCWLimit (int degrees) {
 
     char data[2];
     
@@ -128,7 +125,7 @@ virtual int AX12::SetCWLimit (int degrees) {
 }
 
 
-virtual int AX12::SetCCWLimit (int degrees) {
+int AX12::SetCCWLimit (int degrees) {
 
     char data[2];
 
@@ -147,7 +144,7 @@ virtual int AX12::SetCCWLimit (int degrees) {
 }
 
 
-virtual int AX12::SetID (int CurrentID, int NewID) {
+int AX12::SetID (int CurrentID, int NewID) {
 
     char data[1];
     data[0] = NewID;
@@ -160,7 +157,7 @@ virtual int AX12::SetID (int CurrentID, int NewID) {
 
 
 // return 1 is the servo is still in flight
-virtual int AX12::isMoving(void) {
+int AX12::isMoving(void) {
 
     char data[1];
     read(_ID,AX12_REG_MOVING,1,data);
@@ -168,7 +165,7 @@ virtual int AX12::isMoving(void) {
 }
 
 
-virtual void AX12::trigger(void) {
+void AX12::trigger(void) {
 
     char TxBuf[16];
     char sum = 0;
@@ -224,7 +221,7 @@ virtual void AX12::trigger(void) {
 }
 
 
-virtual float AX12::GetPosition(void) {
+float AX12::GetPosition(void) {
     if (AX12_DEBUG) {
         printf("\nGetPosition(%d)",_ID);
     }
@@ -239,7 +236,7 @@ virtual float AX12::GetPosition(void) {
 }
 
 
-virtual float AX12::GetTemp (void) {
+float AX12::GetTemp (void) {
 
     if (AX12_DEBUG) {
         printf("\nGetTemp(%d)",_ID);
@@ -251,7 +248,7 @@ virtual float AX12::GetTemp (void) {
 }
 
 
-virtual float AX12::GetVolts (void) {
+float AX12::GetVolts (void) {
     if (AX12_DEBUG) {
         printf("\nGetVolts(%d)",_ID);
     }
@@ -261,8 +258,12 @@ virtual float AX12::GetVolts (void) {
     return(volts);
 }
 
+float AX12::GetCurrent (void) {
+    return 0;
+}
 
-virtual int AX12::TorqueEnable (int mode) {
+
+int AX12::TorqueEnable (int mode) {
 
     char data[1];
     data[0] = mode;
@@ -271,7 +272,7 @@ virtual int AX12::TorqueEnable (int mode) {
 }
 
 
-virtual int AX12::SetTorqueLimit (float torque_lim) {
+int AX12::SetTorqueLimit (float torque_lim) {
     
     short limit = torque_lim * 1023;
     char data[2];
@@ -282,7 +283,7 @@ virtual int AX12::SetTorqueLimit (float torque_lim) {
 }
 
 
-virtual int AX12::read(int ID, int start, int bytes, char* data) {
+int AX12::read(int ID, int start, int bytes, char* data) {
 
     char PacketLength = 0x4;
     char TxBuf[16];
@@ -385,7 +386,7 @@ virtual int AX12::read(int ID, int start, int bytes, char* data) {
 }
 
 
-virtual int AX12:: write(int ID, int start, int bytes, char* data, int flag) {
+int AX12:: write(int ID, int start, int bytes, char* data, int flag) {
 // 0xff, 0xff, ID, Length, Intruction(write), Address, Param(s), Checksum
 
     char TxBuf[16];
