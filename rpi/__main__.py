@@ -34,7 +34,7 @@ def main():
     #         IMU(name="rear_imu", address=0x69)]
 
     logging.debug("Connecting to mbeds")
-    mbed_arm, mbed_body = connect_to_mbeds
+    mbed_arm, mbed_body = connect_to_mbeds()
 
     logging.debug("Registering peripherals to client")
     if mbed_arm is not None:

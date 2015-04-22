@@ -55,5 +55,5 @@ def _identify_mbed(ser):
     id_request.negative = True
     id_request.speed = 0
 
-    ser.write(id_request)
+    ser.write(bytes([id_request.as_byte]))
     return ser.readline().decode()
