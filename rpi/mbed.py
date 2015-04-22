@@ -56,4 +56,4 @@ def _identify_mbed(ser):
     id_request.speed = 0
 
     ser.write(bytes([id_request.as_byte]))
-    return ser.readline().decode()
+    return ser.read(ser.inWaiting()).split("\n".encode())[-2].decode()
