@@ -315,7 +315,7 @@ class Client(object):
 
         """
         try:
-            mbed_body_data = self._serial_read_last("mbed_body").split()
+            mbed_body_data = self.serials["mbed_body"].readline().decode().split()
             float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
         except ValueError:
             self._logger.debug("Bad mbed flipper data")
@@ -347,7 +347,7 @@ class Client(object):
 
         """
         try:
-            mbed_arm_data = self._serial_read_last("mbed_arm").split()
+            mbed_arm_data = self.serials["mbed_arm"].readline().decode().split()
             float_arm_data = [float(i) for i in mbed_arm_data]
         except (KeyError, ValueError):
             if "mbed_arm" in self.serials:
@@ -368,28 +368,6 @@ class Client(object):
 
         return positions, servo_iv, thermo_sensors, co2_sensor
 
-
-    def _serial_read_last(self, name):
-        """
-        Read the last line from a serial device's buffer.
-
-        Parameters
-        ----------
-        name : str
-            The name of the serial device to be read.
-
-        Returns
-        -------
-        str
-            The last line from the serial device's buffer.
-
-        """
-        buffer_string = ""
-        dev = self.serials[name]
-        while True:
-            buffer_string += dev.read(dev.inWaiting()).decode()
-            if "\n" in buffer_string:
-                return buffer_string.split("\n")[-2]
 
     def _get_current_data(self, *current_sensors):
         """
