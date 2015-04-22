@@ -70,4 +70,4 @@ def _identify_mbed(ser):
 
     ser.write(bytes([id_request.as_byte]))
     time.sleep(0.01);
-    return ser.read(ser.inWaiting()).decode().split("\n")[-2]
+    return ser.readline().decode().split("\n")
