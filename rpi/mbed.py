@@ -24,7 +24,6 @@ def connect_to_mbeds():
     except YozakuraTimeoutError:
         mbed_arm = mbed
         arm_at_zero = True
-
     else:
         if reply == "body":
             mbed_body = mbed
