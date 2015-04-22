@@ -207,7 +207,7 @@ class Client(object):
                 self._timed_out = False
 
             adc_data, positions = self._get_mbed_body_data()
-            self._drive_motors(speeds, positions)
+            self._drive_motors(speeds)
             self._command_arm(arms)
 
             current_data = self._get_current_data("left_motor_current",
@@ -254,7 +254,7 @@ class Client(object):
 
         return speeds, arms
 
-    def _drive_motors(self, speeds, positions):
+    def _drive_motors(self, speeds):
         """
         Drive all the motors.
 
@@ -262,16 +262,10 @@ class Client(object):
         ----------
         speeds : SpeedCmd
             The speeds with which to drive the four motors.
-        positions : FlipperPositions
-            The current positions of the left and right flippers.
 
         """
-        lwheel, rwheel, lflipper, rflipper = speeds
-
-        self.motors["left_wheel_motor"].drive(lwheel)
-        self.motors["right_wheel_motor"].drive(rwheel)
-        self.motors["left_flipper_motor"].drive(lflipper)
-        self.motors["right_flipper_motor"].drive(rflipper)
+        for motor, speed in zip(self.motors, speeds):
+            motor.drive(speed)
     
     def _command_arm(self, arms):
         """
