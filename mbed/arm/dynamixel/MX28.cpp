@@ -23,10 +23,8 @@
 
 #include "Dynamixel.h"
 #include "mbed.h"
-//#include "SerialHalfDuplex.h"
 
-MX28::MX28(PinName tx, PinName rx, int ID)
-        : _mx28(tx,rx) {
+MX28::MX28(PinName tx, PinName rx, int ID) : _mx28(tx,rx) {
 
     _mx28.baud(1000000);
     _ID = ID;
@@ -35,7 +33,7 @@ MX28::MX28(PinName tx, PinName rx, int ID)
 // Set the mode of the servo
 //  0 = Positional (0-300 degrees)
 //  1 = Rotational -1 to 1 speed
-virtual int MX28::SetMode(int mode) {
+int MX28::SetMode(int mode) {
 
     if (mode == 1) { // set CR
         SetCWLimit(0);
@@ -53,7 +51,7 @@ virtual int MX28::SetMode(int mode) {
 // if flag[0] is set, we're blocking
 // if flag[1] is set, we're registering
 // they are mutually exclusive operations
-virtual int MX28::SetGoal(int degrees, int flags) {
+int MX28::SetGoal(int degrees, int flags) {
 
     char reg_flag = 0;
     char data[2];
@@ -84,7 +82,7 @@ virtual int MX28::SetGoal(int degrees, int flags) {
 
 
 // Set continuous rotation speed from -1 to 1
-virtual int MX28::SetCRSpeed (float speed) {
+int MX28::SetCRSpeed (float speed) {
 
     // bit 10     = direction, 0 = CCW, 1=CW
     // bits 9-0   = Speed
@@ -107,7 +105,7 @@ virtual int MX28::SetCRSpeed (float speed) {
 }
 
 
-virtual int MX28::SetCWLimit (int degrees) {
+int MX28::SetCWLimit (int degrees) {
 
     char data[2];
     
@@ -127,7 +125,7 @@ virtual int MX28::SetCWLimit (int degrees) {
 }
 
 
-virtual int MX28::SetCCWLimit (int degrees) {
+int MX28::SetCCWLimit (int degrees) {
 
     char data[2];
 
@@ -146,7 +144,7 @@ virtual int MX28::SetCCWLimit (int degrees) {
 }
 
 
-virtual int MX28::SetID (int CurrentID, int NewID) {
+int MX28::SetID (int CurrentID, int NewID) {
 
     char data[1];
     data[0] = NewID;
@@ -159,7 +157,7 @@ virtual int MX28::SetID (int CurrentID, int NewID) {
 
 
 // return 1 is the servo is still in flight
-virtual int MX28::isMoving(void) {
+int MX28::isMoving(void) {
 
     char data[1];
     read(_ID,MX28_REG_MOVING,1,data);
@@ -167,7 +165,7 @@ virtual int MX28::isMoving(void) {
 }
 
 
-virtual void MX28::trigger(void) {
+void MX28::trigger(void) {
 
     char TxBuf[16];
     char sum = 0;
@@ -223,7 +221,7 @@ virtual void MX28::trigger(void) {
 }
 
 
-virtual float MX28::GetPosition(void) {
+float MX28::GetPosition(void) {
 
     if (MX28_DEBUG) {
         printf("\nGetPosition(%d)",_ID);
@@ -239,7 +237,7 @@ virtual float MX28::GetPosition(void) {
 }
 
 
-virtual float MX28::GetTemp (void) {
+float MX28::GetTemp (void) {
 
     if (MX28_DEBUG) {
         printf("\nGetTemp(%d)",_ID);
@@ -251,7 +249,7 @@ virtual float MX28::GetTemp (void) {
 }
 
 
-virtual float MX28::GetVolts (void) {
+float MX28::GetVolts (void) {
 
     if (MX28_DEBUG) {
         printf("\nGetVolts(%d)",_ID);
@@ -263,7 +261,7 @@ virtual float MX28::GetVolts (void) {
 }
 
 
-virtual float MX28::GetCurrent (void) {
+float MX28::GetCurrent (void) {
 
     if (MX28_DEBUG) {
         printf("\nGetCurrent(%d)",_ID);
@@ -275,7 +273,7 @@ virtual float MX28::GetCurrent (void) {
 }
 
 
-virtual int MX28::TorqueEnable (int mode) {
+int MX28::TorqueEnable (int mode) {
 
     char data[1];
     data[0] = mode;
@@ -284,7 +282,7 @@ virtual int MX28::TorqueEnable (int mode) {
 }
 
 
-virtual int MX28::SetTorqueLimit (float torque_lim) {
+int MX28::SetTorqueLimit (float torque_lim) {
     
     short limit = torque_lim * 1023;
     char data[2];
@@ -294,7 +292,7 @@ virtual int MX28::SetTorqueLimit (float torque_lim) {
     return (write(_ID, MX28_REG_TORQUE_LIMIT, 2, data));
 }
 
-virtual int MX28::read(int ID, int start, int bytes, char* data) {
+int MX28::read(int ID, int start, int bytes, char* data) {
 
     char PacketLength = 0x4;
     char TxBuf[16];
@@ -398,7 +396,7 @@ virtual int MX28::read(int ID, int start, int bytes, char* data) {
 }
 
 
-virtual int MX28:: write(int ID, int start, int bytes, char* data, int flag) {
+int MX28:: write(int ID, int start, int bytes, char* data, int flag) {
 // 0xff, 0xff, ID, Length, Intruction(write), Address, Param(s), Checksum
 
     char TxBuf[16];
