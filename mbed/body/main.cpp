@@ -100,12 +100,11 @@ int main() {
 
   while (1) {
     // Get packet from RPi.
-    if (rpi.readable()) {
-      packet.as_byte = rpi.getc();
-    }
+    while (not rpi.readable()) {}
+    packet.as_byte = rpi.getc();
 
     if (packet.b.motor_id == 3 and packet.b.negative and not packet.b.speed) {
-      rpi.printf("body\n")
+      rpi.printf("body\n");
     } else {
       // Drive motor.
       sign = packet.b.negative ? -1 : 1;
