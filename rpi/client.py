@@ -348,9 +348,9 @@ class Client(object):
 
         positions = float_arm_data[0:3]
         values = float_arm_data[3:6]
-        servo_iv = [[values[0], None],
-                    [values[0], values[1]],
-                    [values[0], values[2]]]
+        servo_iv = [[None, values[0]],
+                    [values[1], values[0]],
+                    [values[2], values[0]]]
 
         thermo_sensor_1 = float_arm_data[6:22]
         thermo_sensor_2 = float_arm_data[22:38]
