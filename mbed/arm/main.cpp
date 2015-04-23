@@ -108,18 +108,17 @@ int main() {
         if (not dx_relay) {
           break;
         }
-        for (int i=0; i < 3; i++) {
-            positions[i] = servos[i]->GetPosition();
-            goals[i] = positions[i];
-            if (i == 0) {
-              values[i] = servos[i]->GetVolts();
-            } else {
-              values[i] = servos[i]->GetCurrent();
-            }
-        }
-
+        
         linear->SetTorqueLimit(1);  // Reset torque limit
         for (int i=0; i < 3; i++) {
+          positions[i] = servos[i]->GetPosition();
+          goals[i] = positions[i];
+          if (i == 0) {
+            values[i] = servos[i]->GetVolts();
+          } else {
+            values[i] = servos[i]->GetCurrent();
+          }
+          
           if (commands[i] == 1) {
             goals[i]++;
           } else if (commands[i] == 2) {
@@ -147,6 +146,7 @@ int main() {
         break;
       }
     }
+    
     for (int i=0; i < 2; i++) {
       thermo_sensors[i].temp(thermo_data[i]);
     }
