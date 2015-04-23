@@ -346,8 +346,8 @@ class Client(object):
                 self._logger.debug("Bad mbed sensor data")
             float_arm_data = [None for _ in range(39)]
 
-        positions = float_arm_data[0:3]
-        values = float_arm_data[3:6]
+        positions = [None if i == -1 else i for i in float_arm_data[0:3]]
+        values = [None if i == -1 else i for i in float_arm_data[3:6]]
         servo_iv = [[None, values[0]],
                     [values[1], values[0]],
                     [values[2], values[0]]]
