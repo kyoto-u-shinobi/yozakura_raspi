@@ -60,8 +60,6 @@ void DxInitialize() {
     servos[i]->SetCRSpeed(speeds[i]);
   }
 
-  linear->SetTorqueLimit(1);
-
   DxGoHome();
 }
 
@@ -121,6 +119,7 @@ int main() {
         led_dx_read = 0;
 
         led_dx_move = 1;
+        linear->SetTorqueLimit(1);  // Reset torque limit
         for (int i=0; i < 3; i++) {
           if (commands[i] == 1) {
             goals[i]++;
