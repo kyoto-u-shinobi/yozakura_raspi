@@ -59,8 +59,6 @@ void DxInitialize() {
     servos[i]->SetCCWLimit(maxima[i]);
     servos[i]->SetCRSpeed(speeds[i]);
   }
-
-  DxGoHome();
 }
 
 void DxReset() {
@@ -73,6 +71,9 @@ void DxReset() {
 void DxEnd() {
   led_done = 1;
   DxGoHome();
+  while (lineaer->isMoving()) {}
+  DxGoHome();
+  while (pitch->isMoving() or yaw->isMoving()) {}
   dx_relay = 0;
 }
 
@@ -96,6 +97,7 @@ int main() {
   rpi.baud(38400);  // Match this in the RPi settings.
 
   DxInitialize();  // Comment this out when testing without the arm.
+  DxGoHome();
   
   while (1) {
     while (not rpi.readable()) {}
@@ -166,6 +168,7 @@ int main() {
         break;
       } case 2: {
         DxReset();
+        DxInitialize();
         break;
       } case 3: {
         if (packet.b.linear) {
