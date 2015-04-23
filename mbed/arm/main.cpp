@@ -106,6 +106,7 @@ int main() {
         }
         for (int i=0; i < 3; i++) {
             positions[i] = servos[i]->GetPosition();
+            goals[i] = positions[i];
             if (i == 0) {
               values[i] = servos[i]->GetVolts();
             } else {
