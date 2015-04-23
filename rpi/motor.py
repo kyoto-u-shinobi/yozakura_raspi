@@ -213,6 +213,7 @@ class Motor(object):
             Neither serial nor PWM are enabled.
 
         """
+        #self._logger.debug("Driving at {}".format(speed))
         if self.has_serial:
             self._transmit(speed)
         elif self.has_pwm:
@@ -238,12 +239,14 @@ class Motor(object):
             A value from -1 to 1 indicating the requested speed.
 
         """
+        #self._logger.debug("Preparing to transmit")
         packet = MotorPacket()
         packet.motor_id = self.motor_id
         packet.negative = 1 if speed < 0 else 0
         packet.speed = int(abs(self._scale_speed(speed)) * 31)
 
         self.connection.write(bytes([packet.as_byte]))
+        #self._logger.debug("Transmitted")
 
     def _scale_speed(self, speed):
         """

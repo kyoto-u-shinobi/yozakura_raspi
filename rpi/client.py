@@ -195,7 +195,9 @@ class Client(object):
 
         while True:
             try:
+                #self._logger.debug("Requesting speeds.")
                 speeds = self._request_speeds()
+                #self._logger.debug("Speeds: {}".format(speeds))
             except BadDataError as e:
                 self._logger.debug(e)
                 continue
@@ -296,13 +298,17 @@ class Client(object):
         try:
             mbed_data = self._serial_read_last("mbed").split()
             # mbed_data = self.serials["mbed"].readline().split()
+            #self._logger.debug("mbed data: {data}".format(data=mbed_data))
             float_data = [int(i, 16) / 0xFFFF for i in mbed_data]
-        except ValueError:
+            #self._logger.debug("float_data: {}".format(float_data))
+        except ValueError as e:
+            #self._logger.debug("ValueError: {}".format(e))
             self._logger.debug("Bad mbed flipper data")
             float_data = [None, None]
 
         adc_data = float_data[:-2]
         positions = float_data[-2:]
+        #self._logger.debug("Positions: {:4.2f} {:4.2f}".format(positions[0], positions[1]))
 
         return adc_data, positions
 
