@@ -63,7 +63,7 @@ void DxReset() {
 
 void DxEnd() {
   DxGoHome();
-  while (lineaer->isMoving()) {}
+  while (linear->isMoving()) {}
   DxGoHome();
   while (pitch->isMoving() or yaw->isMoving()) {}
   dx_relay = 0;
