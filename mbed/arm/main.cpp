@@ -123,7 +123,7 @@ int main() {
         for (int i=0; i < 3; i++) {
           if (commands[i] == 1) {
             goals[i]++;
-          } else if (commands[i] == -1) {
+          } else if (commands[i] == 2) {
             goals[i]--;
           }
           servos[i]->SetGoal(goals[i]);
