@@ -19,11 +19,6 @@ Serial rpi(USBTX, USBRX);
 
 AnalogIn co2(p20);
 
-DigitalOut led_dx_read(LED1);
-DigitalOut led_dx_move(LED2);
-DigitalOut led_data_output(LED3);
-DigitalOut led_done(LED4);
-
 DigitalOut dx_low(p16);
 DigitalOut dx_relay(p18);
 
@@ -50,7 +45,6 @@ void DxGoHome() {
 }
 
 void DxInitialize() {
-  led_done=0;
   dx_low = 0;
   dx_relay = 1;
   
@@ -64,12 +58,10 @@ void DxInitialize() {
 void DxReset() {
   dx_relay = 0;
   wait_ms(10);
-  led_done=0;
-  dx_relay = 1;
+  DxInitialize();
 }
 
 void DxEnd() {
-  led_done = 1;
   DxGoHome();
   while (lineaer->isMoving()) {}
   DxGoHome();
@@ -109,7 +101,9 @@ int main() {
     
     switch (packet.b.mode) {
       case 0: {
-        led_dx_read = 1;
+        if (not dx_relay) {
+          break;
+        }
         for (int i=0; i < 3; i++) {
             positions[i] = servos[i]->GetPosition();
             if (i == 0) {
@@ -118,9 +112,7 @@ int main() {
               values[i] = servos[i]->GetCurrent();
             }
         }
-        led_dx_read = 0;
 
-        led_dx_move = 1;
         linear->SetTorqueLimit(1);  // Reset torque limit
         for (int i=0; i < 3; i++) {
           if (commands[i] == 1) {
@@ -130,51 +122,51 @@ int main() {
           }
           servos[i]->SetGoal(goals[i]);
         }
-        led_dx_move = 0;
 
-          for (int i=0; i < 2; i++) {
-            thermo_sensors[i].temp(thermo_data[i]);
+        for (int i=0; i < 2; i++) {
+          thermo_sensors[i].temp(thermo_data[i]);
+        }
+
+        co2_data = GetCO2();
+
+        // Send Dynamixel position
+        for (int i=0; i < 3; i++) {
+          rpi.printf("%4.1f ", positions[i]);
+        }
+
+        // Send Dynamixel values
+        for (int i=0; i < 3; i++) {
+          rpi.printf("%4.1f ", values[i]);
+        }
+
+        // Send thermo data
+        for (int i=0; i < 2; i++) {
+          for (int j=0; i < 16; i++) {
+            rpi.printf("%4.1f ", thermo_data[i][j]);
           }
+        }
 
-          co2_data = GetCO2();
-
-          led_data_output = 1;
-          // Send Dynamixel position
-          for (int i=0; i < 3; i++) {
-            rpi.printf("%4.1f ", positions[i]);
-          }
-
-          // Send Dynamixel values
-          for (int i=0; i < 3; i++) {
-            rpi.printf("%4.1f ", values[i]);
-          }
-
-              // Send thermo data
-          for (int i=0; i < 2; i++) {
-            for (int j=0; i < 16; i++) {
-              rpi.printf("%4.1f ", thermo_data[i][j]);
-            }
-          }
-
-          // Send CO2 data
-          rpi.printf("%4.1f", co2_data);
+        // Send CO2 data
+        rpi.printf("%4.1f", co2_data);
 
         // End transmission
-          rpi.printf("\n");
-          led_data_output = 0;
+        rpi.printf("\n");
         break;
       } case 1: {
-        DxGoHome();
+        if (dx_relay) {
+          DxGoHome();
+        }
         break;
       } case 2: {
         DxReset();
-        DxInitialize();
         break;
       } case 3: {
         if (packet.b.linear) {
-            rpi.printf("arm\n");
+          rpi.printf("arm\n");
         } else {
+          if (dx_relay) {
             DxEnd();
+          }
         }
         break;
       }
