@@ -11,7 +11,6 @@ import time
 from common.exceptions import NoMbedError, UnknownMbedError,\
     YozakuraTimeoutError
 from common.functions import interrupted
-from rpi.bitfields import MotorPacket
 
 
 def connect_to_mbeds():
@@ -62,12 +61,7 @@ def connect_to_mbeds():
 
 @interrupted(0.5)
 def _identify_mbed(ser):
-    # Set up special request.
-    id_request = MotorPacket()
-    id_request.motor_id = 3
-    id_request.negative = True
-    id_request.speed = 0
-
-    ser.write(bytes([id_request.as_byte]))
+    id_request = 0b00000111  # If received, mbed prints the name.
+    ser.write(bytes([id_request]))
     time.sleep(0.01);
     return ser.readline().decode().split("\n")
