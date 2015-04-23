@@ -36,7 +36,7 @@ MEMS thermo_sensors[] = { MEMS(p9, p10),
                           MEMS(p28, p27) };
 
 int minima[] = {100, 172, 360};
-int maxima[] = {720, 334, 360};
+int maxima[] = {300, 334, 360};
 float speeds[] = {0.1, 0.2, 0.2};
 int inits[] = {maxima[0], maxima[1], 0};
 int goals[] = {maxima[0], maxima[1], 0};
