@@ -92,8 +92,12 @@ int main() {
   DxGoHome();
   
   while (1) {
-    while (not rpi.readable()) {}
     packet.as_byte = rpi.getc();
+
+    for (int i = 0; i < 3; i++) {
+      positions[i] = -1;
+      values[i] = -1;
+    }
 
     commands[0] = packet.b.linear;
     commands[1] = packet.b.pitch;
@@ -123,35 +127,6 @@ int main() {
           }
           servos[i]->SetGoal(goals[i]);
         }
-
-        for (int i=0; i < 2; i++) {
-          thermo_sensors[i].temp(thermo_data[i]);
-        }
-
-        co2_data = GetCO2();
-
-        // Send Dynamixel position
-        for (int i=0; i < 3; i++) {
-          rpi.printf("%4.1f ", positions[i]);
-        }
-
-        // Send Dynamixel values
-        for (int i=0; i < 3; i++) {
-          rpi.printf("%4.1f ", values[i]);
-        }
-
-        // Send thermo data
-        for (int i=0; i < 2; i++) {
-          for (int j=0; i < 16; i++) {
-            rpi.printf("%4.1f ", thermo_data[i][j]);
-          }
-        }
-
-        // Send CO2 data
-        rpi.printf("%4.1f", co2_data);
-
-        // End transmission
-        rpi.printf("\n");
         break;
       } case 1: {
         if (dx_relay) {
@@ -172,5 +147,33 @@ int main() {
         break;
       }
     }
+    for (int i=0; i < 2; i++) {
+      thermo_sensors[i].temp(thermo_data[i]);
+    }
+    
+    co2_data = GetCO2();
+    
+    // Send Dynamixel position
+    for (int i=0; i < 3; i++) {
+      rpi.printf("%4.1f ", positions[i]);
+    }
+    
+    // Send Dynamixel values
+    for (int i=0; i < 3; i++) {
+      rpi.printf("%4.1f ", values[i]);
+    }
+    
+    // Send thermo data
+    for (int i=0; i < 2; i++) {
+      for (int j=0; i < 16; i++) {
+        rpi.printf("%4.1f ", thermo_data[i][j]);
+      }
+    }
+    
+    // Send CO2 data
+    rpi.printf("%4.1f", co2_data);
+    
+    // End transmission
+    rpi.printf("\n");
   }
 }
