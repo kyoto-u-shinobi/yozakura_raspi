@@ -112,13 +112,13 @@ int main() {
         linear->SetTorqueLimit(1);  // Reset torque limit
         for (int i=0; i < 3; i++) {
           positions[i] = servos[i]->GetPosition();
-          goals[i] = positions[i];
           if (i == 0) {
             values[i] = servos[i]->GetVolts();
           } else {
             values[i] = servos[i]->GetCurrent();
           }
           
+          goals[i] = positions[i];
           if (commands[i] == 1) {
             goals[i]++;
           } else if (commands[i] == 2) {
