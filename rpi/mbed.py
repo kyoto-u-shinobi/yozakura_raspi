@@ -38,6 +38,7 @@ def connect_to_mbeds():
     except serial.SerialException:
         if mbed_body is not None:
             logging.warning("Arm mbed is not attached!")
+            return mbed_arm, mbed_body
         else:
             raise NoMbedError  # Body mbed not attached.
     try:
