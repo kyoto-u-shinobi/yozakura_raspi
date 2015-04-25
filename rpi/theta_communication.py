@@ -98,40 +98,43 @@ def read_image(filename):
     return image
 
 
+def send_image(filename):
+    # In real application, sock would be self.request
+    sock.send(str.encode("theta"))
+    result = sock.recv(64)
+    if pickle.loads(result) == "ready":
+        sock.sendall(read_image(filename))
+
+
 def main():
     import time
     import pickle
     
-    t, p, q_out, q_err = theta_command(new_image=True, download=True, get_thumbnail=True)
-    i = 0
-    filename=None
-    took_picture = False
-    picture_type = None
-
-    while True:
+    thumbnail_queue = None
+    image_queue = None
+    
+    # Get image request from base station.
+    thumbnail_queue = download_thumbnail(retake=True, background=True)
+    
+    while True:  # Main client loop
+        # Handle images
         try:
-            output = q_out.get_nowait()
+            if thumbnail_queue:
+                thumbnail_done = thumbnail_queue.get_nowait()
+            elif image_queue:
+                image_done = image_queue.get_nowait()
         except queue.Empty:
             pass
         else:
-            if output == "Took picture":
-                took_picture = True
-            split_output = output.split()
-            if split_output[-1].endswith(".JPG"):
-                picture_type = split_output[-3]
-                filename = split_output[-1]
-            if output == "Done!":
-                break
-
-    print("Processed returned {}".format(p.returncode))
-    if took_picture:
-        print("Took a new picture.")
-    if output:
-        print("The {} was saved as {}".format(picture_type, filename))
-
-    with open(filename, "rb") as image:
-        with open("{}.pk".format(filename.split(".")[0]), "wb") as fout:
-            pickle.dump(image.read(), fout, protocol=2)
+            if thumbnail_done == "Done!":
+                image_queue = download_image(retake=False, background=True)  # Start high resolution download
+                thumbnail_done = thumbnail_queue = None
+                send_image(thumb_filename)
+            if image_done == "Done!":
+                image_done = image_queue = None
+                send_image(img_filename)
+        
+        # Do the reset of the stuff.
 
 
 if __name__ == "__main__":
