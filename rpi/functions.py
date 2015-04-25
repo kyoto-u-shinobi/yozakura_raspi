@@ -2,6 +2,7 @@ import queue
 import subprocess
 import threading
 
+
 thumb_filename = "theta_thumb.jpg"
 img_filename = "theta_img.jpg"
 
@@ -33,7 +34,7 @@ def theta_command(new_image=False, download=False, get_thumbnail=False, filename
             commands.append("image")
         commands.append(filename if filename is not None else "auto")
 
-    p = subprocess.Popen(["python2", "ricoh.py"] + commands,
+    p = subprocess.Popen(["python2", "theta.py"] + commands,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          bufsize=1, close_fds=True)
 
