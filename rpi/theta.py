@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: UTF-8
 
+from __future__ import print_function
 import socket
 import struct
 import sys
@@ -39,13 +40,12 @@ PTP_EC_DevicePropChanged = 0x4006
 PTP_EC_StoreFull         = 0x400a
 PTP_EC_CaptureComplete   = 0x400d 
 
+
 class ThetaError(Exception):
     pass
 
 
-#==============================================================================
 class PTP_IP(object):
-    # -------------------------------------------------------------------------
     def __init__(self, host, name, GUID):
         '''Initialize'''
         self.host = host
@@ -55,7 +55,6 @@ class PTP_IP(object):
         self.command_sock = None
         self.event_sock = None
 
-    # -------------------------------------------------------------------------
     def _open_connection(self):
         # Init_Command
         self.command_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -64,17 +63,17 @@ class PTP_IP(object):
         try:
             self.command_sock.connect((self.host, self.port))
         except (OSError, socket.error, socket.timeout):
-            #print 'Connection failed'
+            print('Connection failed', file=sys.stderr)
             return 0
 
         self._send_init_command_request(self.command_sock)
         result, self.session_id = self._get_session_id(self.command_sock)
 
         if not result:
-            print 'InitCommandRequest failed'
+            print('InitCommandRequest failed', file=sys.stderr)
             return 0
 
-        #print '(session_id = %d)' % self.session_id
+        #print('(session_id = %d)' % self.session_id
 
         # Init_Event
         self.event_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -83,21 +82,20 @@ class PTP_IP(object):
         try:
             self.event_sock.connect((self.host, self.port))
         except (OSError, socket.error, socket.timeout) as e:
-            print e
-            print 'Connection failed'
+            print(e, file=sys.stderr)
+            print('Connection failed', file=sys.stderr)
             return 0
 
         self._send_init_event_request(self.event_sock, self.session_id)
         result = self._wait_init_event_ack(self.event_sock)
         if not result:
-            print 'InitEvetRequest failed'
+            print('InitEvetRequest failed', file=sys.stderr)
             return 0
 
         self.transaction_id = 0
 
         return self.session_id
 
-    # -------------------------------------------------------------------------
     def _close_connection(self):
         if self.command_sock is not None:
             self.command_sock.shutdown(socket.SHUT_RDWR)
@@ -109,148 +107,136 @@ class PTP_IP(object):
             self.event_sock.close()
             self.event_sock = None
 
-    # -------------------------------------------------------------------------
     def _get_device_info(self):
-        #print 'PTP_OC_GetDeviceInfo'
+        #print('PTP_OC_GetDeviceInfo'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetDeviceInfo)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
 
-    # -------------------------------------------------------------------------
     def _open_session(self):
-        #print 'PTP_OC_OpenSession'
+        #print('PTP_OC_OpenSession'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_OpenSession, self.session_id)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return 0
         return 1
 
-    # -------------------------------------------------------------------------
     def _close_session(self):
-        #print 'PTP_OC_CloseSession'
+        #print('PTP_OC_CloseSession'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_CloseSession)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
 
-    # -------------------------------------------------------------------------
     def _get_storage_ids(self):
-        #print 'PTP_OC_GetStorageIDs'
+        #print('PTP_OC_GetStorageIDs'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetStorageIDs)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return []
         return self._unpack_int32_array(payload)
 
-    # -------------------------------------------------------------------------
     def _get_storage_info(self, storage_id):
-        #print 'PTP_OC_GetStorageInfo'
+        #print('PTP_OC_GetStorageInfo'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetStorageInfo, storage_id)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
 
-    # -------------------------------------------------------------------------
     def _get_num_objects(self, storage_id, obj_format = 0, parent_obj = 0):
-        #print 'PTP_OC_GetNumObjects'
+        #print('PTP_OC_GetNumObjects'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetNumObjects,
                                     storage_id, obj_format, parent_obj)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return 0
         return args[0]
 
-    # -------------------------------------------------------------------------
     def _get_object_handles(self, storage_id, obj_format = 0, parent_obj = 0):
-        #print 'PTP_OC_GetObjectHandles'
+        #print('PTP_OC_GetObjectHandles'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetObjectHandles,
                                     storage_id, obj_format, parent_obj)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return []
         return self._unpack_int32_array(payload)
 
-    # -------------------------------------------------------------------------
     def _get_object_info(self, obj_handle):
-        #print 'PTP_OC_GetObjectInfo'
+        #print('PTP_OC_GetObjectInfo'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetObjectInfo, obj_handle)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return []
         # return payload
         return self._unpack_object_info(payload)
 
-    # -------------------------------------------------------------------------
     def _get_object(self, obj_handle):
-        #print 'PTP_OC_GetObject'
+        #print('PTP_OC_GetObject'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetObject, obj_handle)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return []
         return payload
 
-    # -------------------------------------------------------------------------
     def _get_thumb(self, obj_handle):
-        #print 'PTP_OC_GetThumb'
+        #print('PTP_OC_GetThumb'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_GetThumb, obj_handle)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if result != PTP_RC_OK:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return []
         return payload
 
-    # -------------------------------------------------------------------------
     def _set_device_prop_value(self, prop_id, val):
-        #print 'PTP_OC_SetDevicePropValue'
+        #print('PTP_OC_SetDevicePropValue'
         # payload = self._pack_int16(val)
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     val, PTP_OC_SetDevicePropValue, prop_id)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if not result:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return 0
         return 1
 
-    # -------------------------------------------------------------------------
     def _initiate_capture(self):
-        #print 'Send PTP_OC_InitiateCapture'
+        #print('Send PTP_OC_InitiateCapture'
         self._send_ptp_command_request(self.command_sock, self.transaction_id,
                                     '', PTP_OC_InitiateCapture, 0, 0)
         self.transaction_id += 1
         result, args, payload = self._wait_ptp_command_response(self.command_sock)
         if not result:
-            print 'Failed'
+            print('Failed', file=sys.stderr)
             return 0
 
-        #print 'Wait PTP_EC_CaptureComplete'
+        #print('Wait PTP_EC_CaptureComplete'
         handle = 0
         for loop in range(0, 20):
             ptp_event, args = self._wait_ptp_event(self.event_sock)
@@ -261,9 +247,8 @@ class PTP_IP(object):
 
         return handle
 
-    # -------------------------------------------------------------------------
     def _send_init_command_request(self, sock):
-        #print 'Send InitCommandRequest'
+        #print('Send InitCommandRequest'
         payload = ''
         payload += self._pack_guid()
         payload += self._pack_string(self.name)
@@ -271,12 +256,11 @@ class PTP_IP(object):
 
         self._send_command(sock, 1, payload)
 
-    # -------------------------------------------------------------------------
     def _get_session_id(self, sock):
-        #print 'Wait InitCommandAck'
+        #print('Wait InitCommandAck'
         cmd_id, payload = self._receive_response(sock)
         if cmd_id != 2:
-            print 'failed'
+            print('failed', file=sys.stderr)
             return 0, 0
 
         session_id = self._unpack_int32(payload[0:4])
@@ -284,30 +268,27 @@ class PTP_IP(object):
         target_name = self._unpack_string(payload[20:-4])
         # and unknown 4 bytes
 
-        #print 'Target GUID : %s' % target_GUID
-        #print 'Target Name : %s' % target_name
+        #print('Target GUID : %s' % target_GUID
+        #print('Target Name : %s' % target_name
 
         return 1, session_id
 
-    # -------------------------------------------------------------------------
     def _send_init_event_request(self, sock, session_id):
-        #print 'Send InitEventRequest'
+        #print('Send InitEventRequest'
         payload = ''
         payload += self._pack_int32(session_id)
 
         self._send_command(sock, 3, payload)
 
-    # -------------------------------------------------------------------------
     def _wait_init_event_ack(self, sock):
-        #print 'Wait InitEventAck'
+        #print('Wait InitEventAck'
         # sock.settimeout(10)
         cmd_id, payload = self._receive_response(sock)
         if cmd_id != 4:
-            print 'failed'
+            print('failed', file=sys.stderr)
             return 0
         return 1
 
-    # -------------------------------------------------------------------------
     def _send_ptp_command_request(self, sock, transaction_id,
                                   ptp_payload, ptp_cmd, *args, **kwargs):
         # Cmd_Request
@@ -344,7 +325,6 @@ class PTP_IP(object):
             index = next_index
             next_index += 200
 
-    # -------------------------------------------------------------------------
     def _wait_ptp_command_response(self, sock):
         cmd_id, payload = self._receive_response(sock)
         ptp_payload = ''
@@ -364,7 +344,7 @@ class PTP_IP(object):
                 if len(ptp_payload) >= ptp_payload_len or cmd_id == 12:
                     break
                 if DEBUG:
-                    print '.'
+                    print('.')
             # Cmd_Response
             cmd_id, payload = self._receive_response(sock)
 
@@ -379,15 +359,14 @@ class PTP_IP(object):
             index += 4
 
         if DEBUG:
-            print 'PTP Response: 0x%04X' % ptp_res
+            print('PTP Response: 0x%04X' % ptp_res)
         if DEBUG2:
             self._print_args(ptp_args)
-            print '[Payl]',
+            print('[Payl]', end=" ")
             self._print_packet(ptp_payload)
 
         return ptp_res, ptp_args, ptp_payload
 
-    # -------------------------------------------------------------------------
     def _wait_ptp_event(self, sock):
         sock.settimeout(0.5)
         cmd_id, payload = self._receive_response(sock)
@@ -405,7 +384,6 @@ class PTP_IP(object):
 
         return ptp_event, ptp_args
 
-    # -------------------------------------------------------------------------
     def _send_command(self, sock, cmd_id, payload):
         packet = ''
         packet += self._pack_int32(len(payload) + 8)
@@ -413,12 +391,11 @@ class PTP_IP(object):
         packet += payload
 
         if DEBUG2:
-            print '[SEND]',
+            print('[SEND]', end=" ")
             self._print_packet(packet)
 
         sock.send(packet)
 
-    # -------------------------------------------------------------------------
     def _receive_response(self, sock):
         packet = ''
         # packet length
@@ -428,13 +405,13 @@ class PTP_IP(object):
             pass
         except:
             if DEBUG:
-                print '.' # recv timeout
+                print('.') # recv timeout
             return -1, None
         if recv_data is None or len(recv_data) != 4:
             return 0, None
         packet_len = self._unpack_int32(recv_data)
         if DEBUG2:
-            print 'recv packet len = %d' % packet_len
+            print('recv packet len = %d' % packet_len)
         if packet_len < 8:
             return 0, None
         packet += recv_data
@@ -446,13 +423,13 @@ class PTP_IP(object):
             pass
         except:
             if DEBUG:
-                print 'recv timeout, len=%d' % packet_len
+                print('recv timeout, len=%d' % packet_len)
             return -1, None
         if recv_data is None or len(recv_data) != 4:
             return 0, None
         cmd_id = self._unpack_int32(recv_data)
         if DEBUG2:
-            print 'recv cmd id = %d' % cmd_id
+            print('recv cmd id = %d' % cmd_id)
         packet += recv_data
 
         # payload
@@ -464,38 +441,35 @@ class PTP_IP(object):
                 recv_data = sock.recv(packet_len)
             except:
                 if DEBUG:
-                    print 'recv timeout, len=%d, cmd=%d' % (packet_len + 8,
-                                                            cmd_id)
+                    print('recv timeout, len=%d, cmd=%d' % (packet_len + 8,
+                                                            cmd_id))
                     return -1, None
             if recv_data is None or len(recv_data) != packet_len:
                 return 0, None
             packet += recv_data
 
         if DEBUG2:
-            print '[RECV]',
+            print('[RECV]', end=" ")
             self._print_packet(packet)
 
         return cmd_id, recv_data
 
-    # -------------------------------------------------------------------------
     def _print_packet(self, packet):
         tab_index = 1
         for ch in packet:
-            print '%02X' % ord(ch),
+            print('%02X' % ord(ch), end=" ")
             if (tab_index % 8) == 0:
-                print '\n      ',
+                print('\n      ', end=" ")
             tab_index += 1
-        print ''
+        print('')
 
-    # -------------------------------------------------------------------------
     def _print_args(self, args):
-        print '%d ARGS' % len(args)
+        print('%d ARGS' % len(args))
         index = 0
         for arg in args:
-            print '[ARGS %d] 0x%08X' % (index, arg)
+            print('[ARGS %d] 0x%08X' % (index, arg))
             index += 1
 
-    # -------------------------------------------------------------------------
     def _pack_guid(self):
         data = ''
         for val in self.GUID.split('-'):
@@ -505,7 +479,6 @@ class PTP_IP(object):
                 index += 2
         return data
 
-    # -------------------------------------------------------------------------
     def _unpack_guid(self, packet):
         guid = ''
         index = 0
@@ -516,7 +489,6 @@ class PTP_IP(object):
             index += 1
         return guid
 
-    # -------------------------------------------------------------------------
     def _pack_string(self, str):
         data = ''
         for ch in str:
@@ -526,7 +498,6 @@ class PTP_IP(object):
         data += '\x00'
         return data
 
-    # -------------------------------------------------------------------------
     def _unpack_string(self, packet):
         string = ''
         index = 0
@@ -536,25 +507,20 @@ class PTP_IP(object):
             index += 1
         return string
 
-    # -------------------------------------------------------------------------
     def _unpack_int32(self, payload):
         return struct.unpack('<I', payload)[0]
 
-    # -------------------------------------------------------------------------
     def _pack_int32(self, val):
         return struct.pack('<I', val)
 
-    # -------------------------------------------------------------------------
     def _unpack_int16(self, payload):
         return struct.unpack('<H', payload)[0]
 
-    # -------------------------------------------------------------------------
     def _pack_int16(self, val):
         if val < 0:
             val = 0x10000 + val
         return struct.pack('<H', val)
 
-    # -------------------------------------------------------------------------
     def _unpack_int32_array(self, payload):
         num_items = self._unpack_int32(payload[0:4])
         if num_items == 0 or (num_items * 4) > (len(payload) - 4):
@@ -566,7 +532,6 @@ class PTP_IP(object):
             index += 4
         return items
 
-    # -------------------------------------------------------------------------
     def _unpack_ptp_string(self, payload):
         length = ord(payload[0])
         if length == 0:
@@ -574,7 +539,6 @@ class PTP_IP(object):
         end = (length * 2 - 1)
         return self._unpack_string(payload[1:end])
 
-    # -------------------------------------------------------------------------
     def _unpack_object_info(self, payload):
         info = {}
         info['StorageID'] = self._unpack_int32(payload[0:4])
@@ -602,41 +566,33 @@ class PTP_IP(object):
         info['Keywords'] = self._unpack_ptp_string(payload[index:])
         return info
 
-#==============================================================================
 class Theta360(PTP_IP):
-    # -------------------------------------------------------------------------
     def __init__(self):
         '''Initialize'''
         PTP_IP.__init__(self, '192.168.1.1',
                         'THETA', '8a7ab04f-ebda-4f33-8649-8bf8c1cdc838')
 
-    # -------------------------------------------------------------------------
     def start(self):
         return self._open_connection() and self._open_session()
 
-    # -------------------------------------------------------------------------
     def close(self):
         self._close_session()
         self._close_connection()
 
-    # -------------------------------------------------------------------------
     # set EV shift
     # EV shift: 2000,1700,1300,1000,700,300,0,-300,-700,-1000,-1300,-1700,-2000
     def set_ev_shift(self, ev_shift):
         self._set_device_prop_value(0x5010, self._pack_int16(ev_shift))
 
-    # -------------------------------------------------------------------------
     def shutter(self):
         self._initiate_capture()
         self.prepare()
 
-    # -------------------------------------------------------------------------
     def prepare(self):
         ids = self._get_storage_ids()
         if ids:
             self._handles = self._get_object_handles(ids[0])
 
-    # -------------------------------------------------------------------------
     @property
     def num_files(self):
         ids = self._get_storage_ids()
@@ -645,30 +601,26 @@ class Theta360(PTP_IP):
         else:
             return 0
 
-    # -------------------------------------------------------------------------
     @property
     def info(self):
         info = self._get_object_info(self._handles[-1])
         if DEBUG:
-            print 'filename: %s' % info['Filename']
-            print 'object format: 0x%04X' % info['ObjectFormat']
-            print 'object size: %d' % info['ObjectCompressedSize']
-            print 'thumbnail size: %d' % info['ThumbCompressedSize']
-            print 'seq. no.: %d' % info['SequenceNumber']
-            print 'capture date: %s' % info['CaputureDate']
+            print('filename: %s' % info['Filename'])
+            print('object format: 0x%04X' % info['ObjectFormat'])
+            print('object size: %d' % info['ObjectCompressedSize'])
+            print('thumbnail size: %d' % info['ThumbCompressedSize'])
+            print('seq. no.: %d' % info['SequenceNumber'])
+            print('capture date: %s' % info['CaputureDate'])
         return info
 
-    # -------------------------------------------------------------------------
     @property
     def thumbnail(self):
         return self._get_thumb(self._handles[-1])
 
-    # -------------------------------------------------------------------------
     @property
     def image(self):
         return self._get_object(self._handles[-1])
 
-    # -------------------------------------------------------------------------
     def write_local(self, filename, image):
         with open(filename, 'wb') as f:
             f.write(image)
@@ -686,17 +638,32 @@ class Theta360(PTP_IP):
 # Sample: shutter & download image to PC
 if __name__ == '__main__':
     args = sys.argv[1:]
+    #print(args)
+
     with Theta360() as theta:
         if "shutter" in args:
+            #print("Taking picture")
             theta.shutter()
+            #print("Took picture")
 
         # Download image
         if "download" in args:
+            #print("Will download", end=" ")
             if "thumb" in args:
                 target = theta.thumbnail
+                #print("the latest thumbnail", end=" ")
             elif "image" in args:
                 target = theta.image
+                #print("the latest image", end=" ")
 
-            filename = theta.info['Filename']
+            if "auto" in args:
+                filename = theta.info['Filename']
+            else:
+                filename = args[-1]
+            #print("to {}".format(filename))
+            print(filename)
+
             theta.write_local(filename, target)
-            print '%s' % filename
+            #print("Downloaded")
+
+    print("Done!")
