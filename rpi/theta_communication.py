@@ -47,9 +47,12 @@ def theta_command(new_image=False, download=False, get_thumbnail=False, filename
     return t, p, q_out, q_err
 
 
-def take_picture():
+def take_picture(background=False):
     t, p, q_out, q_err = theta_command(new_image=True, download=False)
 
+    if background:
+        return q_out
+        
     while output != "Done!":
         try:
             output = q_out.get_nowait()
@@ -57,12 +60,15 @@ def take_picture():
             pass
 
 
-def download_thumbnail(retake=False):
+def download_thumbnail(retake=False, background=False):
     filename = thumb_filename
     output = None
 
     t, p, q_out, q_err = theta_command(new_image=retake, download=True, get_thumbnail=True, filename=filename)
 
+    if background:
+        return q_out
+        
     while output != "Done!":
         try:
             output = q_out.get_nowait()
@@ -70,11 +76,14 @@ def download_thumbnail(retake=False):
             pass
 
 
-def download_image(retake=False):
+def download_image(retake=False, background=False):
     filename = img_filename
     output = None
 
     t, p, q_out, q_err = theta_command(new_image=retake, download=True, get_thumbnail=False, filename=filename)
+
+    if background:
+        return q_out
 
     while output != "Done!":
         try:
