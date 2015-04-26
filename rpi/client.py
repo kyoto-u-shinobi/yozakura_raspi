@@ -178,11 +178,11 @@ class Client(object):
             If there are no serial devices registered
 
         """
-        if len(self.motors < 4):
+        if len(self.motors) < 4:
             self._logger.critical("Insufficient motors registered!")
             raise MotorCountError(len(self.motors))
 
-        if len(self.serials < 2):
+        if len(self.serials) < 2:
             self._logger.critical("Insufficient serial devices registered!")
             raise NoSerialsError
 
@@ -190,6 +190,7 @@ class Client(object):
 
         while True:
             try:
+                print('request')
                 speeds, arms = self._request_speeds()
             except BadDataError as e:
                 self._logger.debug(e)
@@ -220,7 +221,8 @@ class Client(object):
             
             arm_data = self._get_mbed_arm_data()
 
-            self._send_data(positions, current_data, imu_data, *arm_data)
+#            self._send_data(positions, current_data, imu_data, *arm_data)
+            self._send_data(positions, current_data, imu_data)
 
     def _handle_timeout(self):
         """Turn off motors in case of a lost connection."""
@@ -289,9 +291,9 @@ class Client(object):
             mode, linear, pitch, yaw = [2 if i == -1 else i for i in arms]
             packet = ArmPacket()
             packet.mode = mode
-            packet.linear = linear
-            packet.pitch = pitch
-            packet.yaw = yaw
+            packet.linear = int(linear)
+            packet.pitch = int(pitch)
+            packet.yaw = int(yaw)
             
             self.serials["mbed_arm"].write(bytes([packet.as_byte]))
 
@@ -441,7 +443,7 @@ class Client(object):
                 imu_data.append([None, None, None])
         return imu_data
 
-    def _send_data(self, positions, current_data, imu_data, protocol=2):
+    def _send_data(self, positions, current_data, imu_data, arm_data, protocol=2):
         """
         Send data via UDP.
 

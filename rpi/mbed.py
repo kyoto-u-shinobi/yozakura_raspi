@@ -24,7 +24,6 @@ def connect_to_mbeds():
     except YozakuraTimeoutError:
         mbed_arm = mbed
         arm_at_zero = True
-
     else:
         if reply == "body":
             mbed_body = mbed
@@ -34,12 +33,12 @@ def connect_to_mbeds():
 
     if arm_at_zero:
         try:
-            mbed_body = serial.Serial("/dev/ttyACM1", baudarate=38400)
+            mbed_body = serial.Serial("/dev/ttyACM1", baudrate=38400)
         except serial.SerialException:
             raise NoMbedError  # Body mbed not attached.
     else:
         try:
-            mbed_arm = serial.Serial("/dev/ttyACM1", baudarate=38400)
+            mbed_arm = serial.Serial("/dev/ttyACM1", baudrate=38400)
         except serial.SerialException:
             logging.warning("Arm mbed is not attached!")
             mbed_arm = None
