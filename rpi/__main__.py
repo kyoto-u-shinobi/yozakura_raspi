@@ -57,7 +57,8 @@ def main():
         logging.info("Shutting down...")
         Motor.shutdown_all()
         logging.debug("Shutting down connection with mbed")
-        mbed_arm.close()
+        if not mbed_arm:
+            mbed_arm.close()
         mbed_body.close()
         client.shutdown()
 

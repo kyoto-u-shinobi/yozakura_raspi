@@ -97,20 +97,14 @@ class Dynamixel {
 
 public:
 
-    /** Create a Dynamixel servo object connected to the specified serial port, with the specified ID
-     *
-     * @param pin tx pin
-     * @param pin rx pin 
-     * @param int ID, the Bus ID of the servo 1-255 
-     */
-    Dynamixel(PinName tx, PinName rx, int ID);
+
 
     /** Set the mode of the servo
      * @param mode
      *    0 = Positional, default
      *    1 = Continuous rotation
      */
-    virtual int SetMode(int mode);
+    virtual int SetMode(int mode) {return 0;}
 
     /** Set goal angle in integer degrees, in positional mode
      *
@@ -120,7 +114,7 @@ public:
      *    flags[1] = register, activate with a broadcast trigger
      *
      */
-    virtual int SetGoal(int degrees, int flags = 0);
+    virtual int SetGoal(int degrees, int flags = 0) {return 0;}
 
 
     /** Set the speed of the servo in continuous rotation mode
@@ -129,20 +123,20 @@ public:
      *   -1.0 = full speed counter clock wise
      *    1.0 = full speed clock wise
      */
-    virtual int SetCRSpeed(float speed);
+    virtual int SetCRSpeed(float speed) {return 0;}
 
 
     /** Set the clockwise limit of the servo
      *
      * @param degrees, 0-300
      */
-    virtual int SetCWLimit(int degrees);
+    virtual int SetCWLimit(int degrees) {return 0;}
     
     /** Set the counter-clockwise limit of the servo
      *
      * @param degrees, 0-300
      */
-    virtual int SetCCWLimit(int degrees);
+    virtual int SetCCWLimit(int degrees) {return 0;}
 
     // Change the ID
 
@@ -154,50 +148,79 @@ public:
      * If a servo ID is not know, the broadcast address of 0 can be used for CurrentID.
      * In this situation, only one servo should be connected to the bus
      */
-    virtual int SetID(int CurrentID, int NewID);
+    virtual int SetID(int CurrentID, int NewID) {return 0;}
 
 
     /** Poll to see if the servo is moving
      *
      * @returns true is the servo is moving
      */
-    virtual int isMoving(void);
+    virtual int isMoving(void) {return 0;}
 
     /** Send the broadcast "trigger" command, to activate any outstanding registered commands
      */
-    virtual void trigger(void);
+    virtual void trigger(void) {}
 
     /** Read the current angle of the servo
      *
      * @returns float in the range 0.0-300.0
      */
-    virtual float GetPosition();
+    virtual float GetPosition() {return 0;}
 
     /** Read the temperature of the servo
      *
      * @returns float temperature 
      */
-    virtual float GetTemp(void);
+    virtual float GetTemp(void) {return 0;}
 
     /** Read the supply voltage of the servo
      *
      * @returns float voltage
      */
-    virtual float GetVolts(void);
+    virtual float GetVolts(void) {return 0;}
+    virtual float GetCurrent(void) {return 0;}
     
-    virtual int TorqueEnable(int mode);
+    virtual int TorqueEnable(int mode) {return 0;}
     
-    virtual int SetTorqueLimit(float torque_limit);
+    virtual int SetTorqueLimit(float torque_limit) {return 0;}
 
 protected :
     int _ID;
 
-    virtual int read(int ID, int start, int length, char* data);
-    virtual int write(int ID, int start, int length, char* data, int flag=0);
+    virtual int read(int ID, int start, int length, char* data) {return 0;}
+    virtual int write(int ID, int start, int length, char* data, int flag=0) {return 0;}
 
 };
 
 class AX12 : public Dynamixel {
+ public:
+  /** Create a Dynamixel servo object connected to the specified serial port, with the specified ID
+  *
+  * @param pin tx pin
+  * @param pin rx pin 
+  * @param int ID, the Bus ID of the servo 1-255 
+  */
+  AX12(PinName tx, PinName rx, int ID);
+  
+  virtual int SetMode(int mode);
+  virtual int SetGoal(int degrees, int flags = 0);
+  virtual int SetCRSpeed(float speed);
+  virtual int SetCWLimit(int degrees);
+  virtual int SetCCWLimit(int degrees);
+  virtual int SetID(int CurrentID, int NewID);
+  virtual int isMoving(void);
+  virtual void trigger(void);
+  virtual float GetPosition();
+  virtual float GetTemp(void);
+  virtual float GetVolts(void);
+  virtual int TorqueEnable(int mode);
+  virtual int SetTorqueLimit(float torque_limit);
+  virtual float GetCurrent(void);
+ 
+ protected:
+  virtual int read(int ID, int start, int length, char* data);
+  virtual int write(int ID, int start, int length, char* data, int flag=0);
+ 
  private:
   SerialHalfDuplex _ax12;
 };
@@ -208,10 +231,36 @@ class MX28 : public Dynamixel {
    *
    * @returns float current
    */
-  float GetCurrent(void);
+  MX28(PinName tx, PinName rx, int ID);
+  
+  virtual int SetMode(int mode);
+  virtual int SetGoal(int degrees, int flags = 0);
+  virtual int SetCRSpeed(float speed);
+  virtual int SetCWLimit(int degrees);
+  virtual int SetCCWLimit(int degrees);
+  virtual int SetID(int CurrentID, int NewID);
+  virtual int isMoving(void);
+  virtual void trigger(void);
+  virtual float GetPosition();
+  virtual float GetTemp(void);
+  virtual float GetVolts(void);
+  virtual int TorqueEnable(int mode);
+  virtual int SetTorqueLimit(float torque_limit);
+  
+  /** Create a Dynamixel servo object connected to the specified serial port, with the specified ID
+  *
+  * @param pin tx pin
+  * @param pin rx pin 
+  * @param int ID, the Bus ID of the servo 1-255 
+  */
+  virtual float GetCurrent(void);
 
+ protected:
+  virtual int read(int ID, int start, int length, char* data);
+  virtual int write(int ID, int start, int length, char* data, int flag=0);
+ 
  private:
   SerialHalfDuplex _mx28;
-}
+};
 
 #endif

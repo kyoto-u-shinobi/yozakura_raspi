@@ -208,7 +208,7 @@ class Client(object):
                 self._timed_out = False
 
             adc_data, positions = self._get_mbed_body_data()
-            self._drive_motors(speeds, positions)
+            self._drive_motors(speeds)
             self._command_arm(arms)
 
             current_data = self._get_current_data("left_motor_current",
@@ -256,7 +256,7 @@ class Client(object):
 
         return speeds, arms
 
-    def _drive_motors(self, speeds, positions):
+    def _drive_motors(self, speeds):
         """
         Drive all the motors.
 
@@ -264,18 +264,10 @@ class Client(object):
         ----------
         speeds : SpeedCmd
             The speeds with which to drive the four motors.
-        positions : FlipperPositions
-            The current positions of the left and right flippers.
 
         """
-        lwheel, rwheel, lflipper, rflipper = speeds
-
-        self.motors["left_wheel_motor"].drive(lwheel)
-        self.motors["right_wheel_motor"].drive(rwheel)
-
-        # TODO(masasin): Hold position if input is 0.
-        self.motors["left_flipper_motor"].drive(lflipper)
-        self.motors["right_flipper_motor"].drive(rflipper)
+        for motor, speed in zip(self.motors, speeds):
+            motor.drive(speed)
     
     def _command_arm(self, arms):
         """
@@ -317,7 +309,7 @@ class Client(object):
 
         """
         try:
-            mbed_body_data = self._serial_read_last("mbed_body").split()
+            mbed_body_data = self.serials["mbed_body"].readline().decode().split()
             float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
         except ValueError:
             self._logger.debug("Bad mbed flipper data")
@@ -349,18 +341,18 @@ class Client(object):
 
         """
         try:
-            mbed_arm_data = self._serial_read_last("mbed_arm").split()
+            mbed_arm_data = self.serials["mbed_arm"].readline().decode().split()
             float_arm_data = [float(i) for i in mbed_arm_data]
         except (KeyError, ValueError):
             if "mbed_arm" in self.serials:
                 self._logger.debug("Bad mbed sensor data")
             float_arm_data = [None for _ in range(39)]
 
-        positions = float_arm_data[0:3]
-        values = float_arm_data[3:6]
-        servo_iv = [[values[0], None],
-                    [values[0], values[1]],
-                    [values[0], values[2]]]
+        positions = [None if i == -1 else i for i in float_arm_data[0:3]]
+        values = [None if i == -1 else i for i in float_arm_data[3:6]]
+        servo_iv = [[None, values[0]],
+                    [values[1], values[0]],
+                    [values[2], values[0]]]
 
         thermo_sensor_1 = float_arm_data[6:22]
         thermo_sensor_2 = float_arm_data[22:38]
@@ -370,28 +362,6 @@ class Client(object):
 
         return positions, servo_iv, thermo_sensors, co2_sensor
 
-
-    def _serial_read_last(self, name):
-        """
-        Read the last line from a serial device's buffer.
-
-        Parameters
-        ----------
-        name : str
-            The name of the serial device to be read.
-
-        Returns
-        -------
-        str
-            The last line from the serial device's buffer.
-
-        """
-        buffer_string = ""
-        dev = self.serials[name]
-        while True:
-            buffer_string += dev.read(dev.inWaiting()).decode()
-            if "\n" in buffer_string:
-                return buffer_string.split("\n")[-2]
 
     def _get_current_data(self, *current_sensors):
         """
