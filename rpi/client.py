@@ -217,11 +217,6 @@ class Client(object):
                 self._timed_out = False
 
             adc_data, positions = self._get_mbed_body_data()
-            #try:
-                #print("{:5.3f}  {:5.3f}".format(positions[0], positions[1]), end="\r")
-            #except TypeError:
-                #print(positions, end="\r")
-            #print(speeds, positions)
             self._drive_motors(speeds, positions)
             self._command_arm(arms)
 
@@ -231,11 +226,7 @@ class Client(object):
                                                   "right_flipper_current")
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
-            
             arm_data = self._get_mbed_arm_data()
-
-            #print(positions, current_data, imu_data, arm_data)
-            #print(imu_data, end="\r")
             self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
@@ -327,11 +318,7 @@ class Client(object):
         """
         self._logger.debug("Requesting mbed body data")
         try:
-            #ser = self.serials["mbed_body"]
-            #mbed_body_data = ser.read(ser.inWaiting()).decode().split("\n")[-2].split()
-            #mbed_body_data = self.serials["mbed_body"].readline().decode().split()
             mbed_body_data = self.serials["mbed_body"].data
-            #mbed_body_data = self._read_mbed("mbed_body")
             float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
         except (IndexError, ValueError, YozakuraTimeoutError):
             self._logger.debug("Bad mbed flipper data")
@@ -369,8 +356,7 @@ class Client(object):
         if "mbed_arm" in self.serials:
             self._logger.debug("mbed connected")
             try:
-                #mbed_arm_data = readline()
-                mbed_arm_data = self._read_mbed("mbed_arm")[2:]
+                mbed_arm_data = self.serials["mbed_arm"].data
                 if len(mbed_arm_data) != 39:
                     raise IndexError("Not enough")
                 float_arm_data = [float(i) for i in mbed_arm_data]
@@ -378,6 +364,7 @@ class Client(object):
                 self._logger.debug("Bad mbed sensor data")
                 float_arm_data = [None for _ in range(39)]
         else:
+            print("Arm mbed not in serials")
             float_arm_data = [None for _ in range(39)]
 
         positions = [None if i == -1 else i for i in float_arm_data[0:3]]
@@ -390,11 +377,6 @@ class Client(object):
         co2_sensor = float_arm_data[38]
 
         return positions, servo_iv, thermo_sensors, co2_sensor
-
-
-    @interrupted(0.5)
-    def _read_mbed(self, mbed):
-        return self.serials[mbed].readline().decode().split()
 
 
     def _get_current_data(self, *current_sensors):
@@ -419,7 +401,7 @@ class Client(object):
         for sensor in current_sensors:
             try:
                 current_data.append(self.current_sensors[sensor].iv)
-            except KeyError:
+            except (KeyError, OSError):
                 current_data.append([None, None])
         return current_data
 
@@ -445,7 +427,7 @@ class Client(object):
         for imu in imus:
             try:
                 imu_data.append(self.imus[imu].rpy)
-            except KeyError:
+            except (KeyError, OSError):
                 imu_data.append([None, None, None])
         self._logger.debug("Got imu data")
         return imu_data

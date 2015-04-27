@@ -4,7 +4,7 @@ import logging
 
 import serial
 
-from common.exceptions import NoConnectionError
+from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError
 from common.functions import get_ip_address
 from rpi.client import Client
 from rpi.devices import CurrentSensor, IMU
@@ -34,17 +34,27 @@ def main():
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.2)]
 
     # logging.debug("Initializing current sensors")
-    current_sensors = [CurrentSensor(0x40, name="left_motor_current"),
+    current_sensors = [
+                       CurrentSensor(0x40, name="left_motor_current"),
                        CurrentSensor(0x41, name="right_motor_current"),
                        CurrentSensor(0x42, name="left_flipper_current"),
-                       CurrentSensor(0x43, name="right_flipper_current")]
+                       #CurrentSensor(0x43, name="right_flipper_current")
+                       ]
 
     # logging.debug("Initializing IMUs")
-    imus = [IMU(name="front_imu", address=0x68),
-            IMU(name="rear_imu", address=0x69)]
+    imus = [
+            IMU(name="front_imu", address=0x68),
+            IMU(name="rear_imu", address=0x69)
+           ]
 
     logging.debug("Connecting to mbeds")
-    mbed_arm, mbed_body = connect_to_mbeds()
+    try:
+        mbed_arm, mbed_body = connect_to_mbeds()
+    except (NoMbedError, UnknownMbedError, YozakuraTimeoutError) as e:
+        logging.critical(e)
+        Motor.shutdown_all()
+        client.shutdown()
+        return
 
     logging.debug("Registering peripherals to client")
     if mbed_arm is not None:

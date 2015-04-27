@@ -303,7 +303,10 @@ class Motor(object):
     def shutdown(self):
         """Shut down and deregister the motor."""
         self._logger.debug("Shutting down motor")
-        self.drive(0)
+        try:
+            self.drive(0)
+        except NoDriversError:
+            pass
         self._logger.info("Motor shut down")
 
     @classmethod
