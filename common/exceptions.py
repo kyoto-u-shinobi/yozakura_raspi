@@ -49,6 +49,11 @@ class BadDataError(YozakuraException):
     """
 
 
+class NoConnectionError(YozakuraException):
+    """Raised when the base station is not connected."""
+    msg = "Base station is not connected!"
+
+
 class UnknownMbedError(YozakuraException):
     """Raised when the raspberry pi connects to an unknown mbed."""
     msg = "An mbed cannot be identified!"

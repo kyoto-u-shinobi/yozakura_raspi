@@ -274,6 +274,7 @@ class CurrentSensor(Device):
         if signed:
             if data > 2**15 - 1:
                 return data - 2**16
+
         return data
 
     def _write_register(self, register, data):
@@ -657,6 +658,9 @@ class IMU(Device):
             The roll, pitch, and yaw readings of the IMU, in radians.
 
         """
-        while True:  # Wait until new data is ready.
-            if self._imu.IMURead():
-                return self._imu.getFusionData()
+        while self._imu.IMURead():
+            data = self._imu.getIMUData()
+        if data["fusionPoseValid"]:
+            return data["fusionPose"]
+        else:
+            return [None, None, None]

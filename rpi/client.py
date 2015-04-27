@@ -14,12 +14,15 @@ In addition, front and rear body pose is returned via I2C-connected IMUs.
 All external sensor data is sent back to the base station via UDP.
 
 """
+from collections import OrderedDict
 import logging
 import pickle
 import socket
+import time
 
 from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
-    NoSerialsError
+    NoSerialsError, YozakuraTimeoutError, NoConnectionError
+from common.functions import interrupted
 from rpi.bitfields import ArmPacket
 
 
@@ -65,7 +68,10 @@ class Client(object):
                                          .format(ip=client_address))
         self._logger.debug("Creating client")
         self.request = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.request.connect(server_address)
+        try:
+            self.request.connect(server_address)
+        except ConnectionRefusedError:
+            raise NoConnectionError("Base station is not connected!")
         self._logger.info("Connected to {server}:{port}"
                           .format(server=server_address[0],
                                   port=server_address[1]))
@@ -74,7 +80,7 @@ class Client(object):
 
         self.server_address = server_address
         self._sensors_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.motors = {}
+        self.motors = OrderedDict()
         self.serials = {}
         self.current_sensors = {}
         self.imus = {}
@@ -182,15 +188,16 @@ class Client(object):
             self._logger.critical("Insufficient motors registered!")
             raise MotorCountError(len(self.motors))
 
-        if len(self.serials) < 2:
-            self._logger.critical("Insufficient serial devices registered!")
-            raise NoSerialsError
+        if len(self.serials) == 0:
+            raise NoSerialsError("No mbeds are attached.")
+
+        if "mbed_body" not in self.serials:
+            raise NoSerialsError("Body mbed not attached.")
 
         self._logger.info("Client started")
 
         while True:
             try:
-                print('request')
                 speeds, arms = self._request_speeds()
             except BadDataError as e:
                 self._logger.debug(e)
@@ -201,28 +208,35 @@ class Client(object):
                 continue
             except BrokenPipeError:
                 self._logger.critical("Base station turned off!")
-                raise SystemExit("Base station turned off!")
+                raise NoConnectionError("Base station turned off!")
+            else:
+                self._logger.debug("Received speeds")
 
             if self._timed_out:
                 self._logger.info("Connection returned")
                 self._timed_out = False
 
             adc_data, positions = self._get_mbed_body_data()
-            self._drive_motors(speeds)
+            #try:
+                #print("{:5.3f}  {:5.3f}".format(positions[0], positions[1]), end="\r")
+            #except TypeError:
+                #print(positions, end="\r")
+            #print(speeds, positions)
+            self._drive_motors(speeds, positions)
             self._command_arm(arms)
 
             current_data = self._get_current_data("left_motor_current",
                                                   "right_motor_current",
                                                   "left_flipper_current",
-                                                  "right_flipper_current",
-                                                  "motor_current")
+                                                  "right_flipper_current")
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
             
             arm_data = self._get_mbed_arm_data()
 
-#            self._send_data(positions, current_data, imu_data, *arm_data)
-            self._send_data(positions, current_data, imu_data)
+            #print(positions, current_data, imu_data, arm_data)
+            #print(imu_data, end="\r")
+            self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
         """Turn off motors in case of a lost connection."""
@@ -244,8 +258,9 @@ class Client(object):
             A list of commands for the arm servos.
 
         """
+        self._logger.debug("Requesting speeds")
         self.request.send(str.encode("speeds"))
-        result = self.request.recv(64)
+        result = self.request.recv(128)
         if not result:
             raise BadDataError("No speed data")
 
@@ -256,7 +271,7 @@ class Client(object):
 
         return speeds, arms
 
-    def _drive_motors(self, speeds):
+    def _drive_motors(self, speeds, positions):
         """
         Drive all the motors.
 
@@ -266,7 +281,8 @@ class Client(object):
             The speeds with which to drive the four motors.
 
         """
-        for motor, speed in zip(self.motors, speeds):
+        self._logger.debug("Driving motors")
+        for motor, speed in zip(self.motors.values(), speeds):
             motor.drive(speed)
     
     def _command_arm(self, arms):
@@ -279,6 +295,7 @@ class Client(object):
             A list of commands for the arm servos.
         
         """
+        self._logger.debug("Commanding arm")
         if "mbed_arm" in self.serials:
             mode, linear, pitch, yaw = [2 if i == -1 else i for i in arms]
             packet = ArmPacket()
@@ -286,7 +303,7 @@ class Client(object):
             packet.linear = int(linear)
             packet.pitch = int(pitch)
             packet.yaw = int(yaw)
-            
+
             self.serials["mbed_arm"].write(bytes([packet.as_byte]))
 
     def _get_mbed_body_data(self):
@@ -308,15 +325,23 @@ class Client(object):
             invalid data was obtained.
 
         """
+        self._logger.debug("Requesting mbed body data")
         try:
-            mbed_body_data = self.serials["mbed_body"].readline().decode().split()
+            #ser = self.serials["mbed_body"]
+            #mbed_body_data = ser.read(ser.inWaiting()).decode().split("\n")[-2].split()
+            #mbed_body_data = self.serials["mbed_body"].readline().decode().split()
+            mbed_body_data = self.serials["mbed_body"].data
+            #mbed_body_data = self._read_mbed("mbed_body")
             float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
-        except ValueError:
+        except (IndexError, ValueError, YozakuraTimeoutError):
             self._logger.debug("Bad mbed flipper data")
             float_body_data = [None, None]
+        else:
+            self._logger.debug("Received mbed body data")
 
         adc_data = float_body_data[:-2]
         positions = float_body_data[-2:]
+        self._logger.debug("Positions: {}".format(positions))
 
         return adc_data, positions
 
@@ -340,19 +365,23 @@ class Client(object):
             The voltage of the carbon dioxide sensor.
 
         """
-        try:
-            mbed_arm_data = self.serials["mbed_arm"].readline().decode().split()
-            float_arm_data = [float(i) for i in mbed_arm_data]
-        except (KeyError, ValueError):
-            if "mbed_arm" in self.serials:
+        self._logger.debug("Getting arm data")
+        if "mbed_arm" in self.serials:
+            self._logger.debug("mbed connected")
+            try:
+                #mbed_arm_data = readline()
+                mbed_arm_data = self._read_mbed("mbed_arm")[2:]
+                if len(mbed_arm_data) != 39:
+                    raise IndexError("Not enough")
+                float_arm_data = [float(i) for i in mbed_arm_data]
+            except (IndexError, ValueError, YozakuraTimeoutError):
                 self._logger.debug("Bad mbed sensor data")
+                float_arm_data = [None for _ in range(39)]
+        else:
             float_arm_data = [None for _ in range(39)]
 
         positions = [None if i == -1 else i for i in float_arm_data[0:3]]
-        values = [None if i == -1 else i for i in float_arm_data[3:6]]
-        servo_iv = [[None, values[0]],
-                    [values[1], values[0]],
-                    [values[2], values[0]]]
+        servo_iv = [None if i == -1 else i for i in float_arm_data[3:6]]
 
         thermo_sensor_1 = float_arm_data[6:22]
         thermo_sensor_2 = float_arm_data[22:38]
@@ -361,6 +390,11 @@ class Client(object):
         co2_sensor = float_arm_data[38]
 
         return positions, servo_iv, thermo_sensors, co2_sensor
+
+
+    @interrupted(0.5)
+    def _read_mbed(self, mbed):
+        return self.serials[mbed].readline().decode().split()
 
 
     def _get_current_data(self, *current_sensors):
@@ -380,6 +414,7 @@ class Client(object):
             to ``[None, None, None]`` by default.
 
         """
+        self._logger.debug("Getting current data")
         current_data = []
         for sensor in current_sensors:
             try:
@@ -405,12 +440,14 @@ class Client(object):
             ``[None, None, None]`` by default.
 
         """
+        self._logger.debug("Getting imu data")
         imu_data = []
         for imu in imus:
             try:
                 imu_data.append(self.imus[imu].rpy)
             except KeyError:
                 imu_data.append([None, None, None])
+        self._logger.debug("Got imu data")
         return imu_data
 
     def _send_data(self, positions, current_data, imu_data, arm_data, protocol=2):
@@ -432,9 +469,11 @@ class Client(object):
             used, feel free to use whatever protocol verison is necessary.
 
         """
+        self._logger.debug("Sending data to base station")
         self._sensors_server.sendto(pickle.dumps((positions,
                                                   current_data,
-                                                  imu_data),
+                                                  imu_data,
+                                                  arm_data),
                                                  protocol=protocol),
                                     self.server_address)
 

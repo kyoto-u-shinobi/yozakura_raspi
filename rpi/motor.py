@@ -243,6 +243,7 @@ class Motor(object):
         packet.negative = True if speed < 0 else False
         packet.speed = int(abs(self._scale_speed(speed)) * 31)
 
+        #print(packet.motor_id, packet.negative, packet.speed)
         self.ser.write(bytes([packet.as_byte]))
 
     def _scale_speed(self, speed):
