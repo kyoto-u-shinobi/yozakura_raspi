@@ -248,7 +248,8 @@ class CurrentSensor(Device):
         super().__init__(address, name)
         self.pin_alert = None
         self.calibrate(10)  # 10 A max current.
-        self.set_configuration(avg=2, bus_ct=3, shunt_ct=3)
+        #self.set_configuration(avg=2, bus_ct=3, shunt_ct=3)
+        self.set_configuration()
 
     def _read_register(self, register, signed=True):
         """
@@ -659,6 +660,7 @@ class IMU(Device):
             The roll, pitch, and yaw readings of the IMU, in radians.
 
         """
+        data = self._imu.getIMUData()
         while self._imu.IMURead():
             data = self._imu.getIMUData()
         if data["fusionPoseValid"]:
