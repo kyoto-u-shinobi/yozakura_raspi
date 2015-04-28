@@ -29,12 +29,12 @@ class Mbed(serial.Serial):
     @property
     @interrupted(0.5)
     def data(self):
-        #try:
-            #return self.read(self.inWaiting()).decode().split("\n")[-2].split()
-        #except IndexError:
-            #return ""
         try:
-            return self.readline().decode().split()
+            return self.read(self.inWaiting()).decode().split("\n")[-2].split()
+        except IndexError:
+            return ""
+        #try:
+            #return self.readline().decode().split()
         except (OSError, TypeError):
             self._logger.warning("An error occured!")
             return [""]
@@ -43,7 +43,7 @@ class Mbed(serial.Serial):
     def identity(self):
         id_request = 0b00000111
         self.write(bytes([id_request]))
-        time.sleep(0.1)
+        time.sleep(1.0)
         try:
             return self.data[0]
         except IndexError:
@@ -86,14 +86,14 @@ def connect_to_mbeds():
                 logging.warning("Arm mbed is not attached!")
                 return mbed_arm, mbed_body
             else:
-                raise NoMbedError  # Body mbed not attached.
+                raise NoMbedError("Body mbed not attached")
         try:
             mbed.read(mbed.inWaiting())
             reply = mbed.identity
         except YozakuraTimeoutError:
             if mbed_arm is not None:
                 raise UnknownMbedError("Multiple arm mbeds are attached")
-            raise UnknownMbedError
+            raise UnknownMbedError("1 error")
         else:
             if reply == "arm":
                 if mbed_arm is not None:
@@ -106,7 +106,7 @@ def connect_to_mbeds():
             else:
                 if mbed_arm is not None:
                     raise UnknownMbedError("Multiple arm mbeds are attached")
-                raise UnknownMbedError
+                raise UnknownMbedError("2 error")
     except (NoMbedError, UnknownMbedError):
         try:
             mbed.close()
