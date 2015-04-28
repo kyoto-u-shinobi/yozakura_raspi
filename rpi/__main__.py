@@ -38,7 +38,7 @@ def main():
                        CurrentSensor(0x40, name="left_motor_current"),
                        CurrentSensor(0x41, name="right_motor_current"),
                        CurrentSensor(0x42, name="left_flipper_current"),
-                       #CurrentSensor(0x43, name="right_flipper_current")
+                       CurrentSensor(0x43, name="right_flipper_current")
                        ]
 
     # logging.debug("Initializing IMUs")
