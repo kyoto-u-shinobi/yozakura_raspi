@@ -247,7 +247,7 @@ class CurrentSensor(Device):
 
         super().__init__(address, name)
         self.pin_alert = None
-        self.calibrate(10)  # 10 A max current.
+        self.calibrate(40.96)  # 40.96 A max current.
         #self.set_configuration(avg=2, bus_ct=3, shunt_ct=3)
         self.set_configuration()
 
@@ -524,9 +524,9 @@ class CurrentSensor(Device):
         self._write_register("alert_reg", alerts.as_byte)
 
         if alert == "sol" or alert == "sul":
-            lsb = self.lsbs["shunt"]
+            lsb = self.lsbs["v_shunt"]
         elif alert == "bol" or alert == "bul":
-            lsb = self.lsbs["bus"]
+            lsb = self.lsbs["v_bus"]
         else:  # alert == "pol"
             lsb = self.lsbs["power"]
         self._write_register("alert_lim", limit / lsb)
@@ -585,11 +585,12 @@ class CurrentSensor(Device):
 
         """
         current = self.get_measurement("current")
-        power = self.get_measurement("power")
-        if current == 0:
-            voltage = 0
-        else:
-            voltage = power / current
+        # power = self.get_measurement("power")
+        # if current == 0:
+        #     voltage = 0
+        # else:
+        #     voltage = power / current
+        voltage = self.get_measurement("v_bus")
         return current, voltage
 
 
