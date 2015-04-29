@@ -148,7 +148,10 @@ class Client(object):
             The current sensor associated with the motor.
 
         """
-        self._logger.debug("Adding {name}".format(name=sensor))
+        try:
+            self._logger.debug("Adding {name}".format(name=sensor))
+        except AttributeError:
+            return
         self.current_sensors[sensor.name] = sensor
 
     def add_imu(self, imu):
@@ -161,7 +164,10 @@ class Client(object):
             The IMU to be added.
 
         """
-        self._logger.debug("Adding {name}".format(name=imu))
+        try:
+            self._logger.debug("Adding {name}".format(name=imu))
+        except AttributeError:
+            return
         self.imus[imu.name] = imu
 
     def run(self):
@@ -357,14 +363,15 @@ class Client(object):
             self._logger.debug("mbed connected")
             try:
                 mbed_arm_data = self.serials["mbed_arm"].data
+                #print(len(mbed_arm_data), mbed_arm_data)
                 if len(mbed_arm_data) != 39:
-                    raise IndexError("Not enough")
+                    raise IndexError("Too few items received")
                 float_arm_data = [float(i) for i in mbed_arm_data]
             except (IndexError, ValueError, YozakuraTimeoutError):
                 self._logger.debug("Bad mbed sensor data")
                 float_arm_data = [None for _ in range(39)]
         else:
-            print("Arm mbed not in serials")
+            self._logger.debug("Arm mbed not in serials")
             float_arm_data = [None for _ in range(39)]
 
         positions = [None if i == -1 else i for i in float_arm_data[0:3]]
