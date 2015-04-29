@@ -8,7 +8,7 @@ from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, 
 from common.functions import get_ip_address
 from rpi.client import Client
 from rpi.devices import CurrentSensor, IMU
-from rpi.mbed import connect_to_mbeds, Mbed, _identify_mbed
+from rpi.mbed import connect_to_mbeds
 from rpi.motor import Motor
 
 
@@ -28,10 +28,10 @@ def main():
         return
 
     logging.debug("Initializing motors")
-    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.2),
-              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.2),
-              Motor("left_flipper_motor", 22, 24, 7, max_speed=0.2),
-              Motor("right_flipper_motor", 19, 21, 7, max_speed=0.2)]
+    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.4),
+              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
+              Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
+              Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
 
     # logging.debug("Initializing current sensors")
     current_sensors = [
