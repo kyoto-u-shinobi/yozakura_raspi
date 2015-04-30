@@ -21,7 +21,7 @@ import socket
 import time
 
 from common.exceptions import BadDataError, NoDriversError, MotorCountError,\
-    NoSerialsError, YozakuraTimeoutError, NoConnectionError
+    NoSerialsError, YozakuraTimeoutError, NoConnectionError, DynamixelError
 from common.functions import interrupted
 from rpi.bitfields import ArmPacket
 
@@ -84,6 +84,7 @@ class Client(object):
         self.serials = {}
         self.current_sensors = {}
         self.imus = {}
+        self.arm = None
 
         self._timed_out = False
 
@@ -101,6 +102,10 @@ class Client(object):
         """
         self._logger.debug("Adding {name}".format(name=name))
         self.serials[name] = ser
+    
+    def add_arm(self, arm):
+        self._logger.debug("Adding {name}".format(name=arm)
+        self.arm = arm
 
     def add_motor(self, motor, ser=None, pwm_pins=None):
         """
@@ -199,12 +204,15 @@ class Client(object):
 
         if "mbed_body" not in self.serials:
             raise NoSerialsError("Body mbed not attached.")
+        
+        if self.arm is None:
+            self._logger.warning("Arm is not connected!")
 
         self._logger.info("Client started")
 
         while True:
             try:
-                speeds, arms = self._request_speeds()
+                speeds, arm_commands = self._request_speeds()
             except BadDataError as e:
                 self._logger.debug(e)
                 continue
@@ -224,7 +232,7 @@ class Client(object):
 
             adc_data, positions = self._get_mbed_body_data()
             self._drive_motors(speeds, positions)
-            self._command_arm(arms)
+            self._command_arm(arm_commands)
 
             current_data = self._get_current_data("left_motor_current",
                                                   "right_motor_current",
@@ -262,11 +270,11 @@ class Client(object):
             raise BadDataError("No speed data")
 
         try:
-            speeds, arms = pickle.loads(result)
+            speeds, arm_commands = pickle.loads(result)
         except (pickle.UnpicklingError, EOFError):
             raise BadDataError("Invalid speed data")
 
-        return speeds, arms
+        return speeds, arm_commands
 
     def _drive_motors(self, speeds, positions):
         """
@@ -282,7 +290,7 @@ class Client(object):
         for motor, speed in zip(self.motors.values(), speeds):
             motor.drive(speed)
     
-    def _command_arm(self, arms):
+    def _command_arm(self, commands):
         """
         Command the arm.
         
@@ -293,15 +301,12 @@ class Client(object):
         
         """
         self._logger.debug("Commanding arm")
-        if "mbed_arm" in self.serials:
-            mode, linear, pitch, yaw = [2 if i == -1 else i for i in arms]
-            packet = ArmPacket()
-            packet.mode = mode
-            packet.linear = int(linear)
-            packet.pitch = int(pitch)
-            packet.yaw = int(yaw)
-
-            self.serials["mbed_arm"].write(bytes([packet.as_byte]))
+        if self.arm is not None:
+            mode, linear, pitch, yaw = [2 if i == -1 else i for i in commands]
+            try:
+                self.arm.handle_commands(commands)
+            except DynamixelError as e:
+                self._logger.warning(e)
 
     def _get_mbed_body_data(self):
         """
@@ -359,29 +364,32 @@ class Client(object):
 
         """
         self._logger.debug("Getting arm data")
+        if self.arm is not None:
+            positions, servo_iv = self.arm.get_data
+        else:
+            self._logger.debug("Arm is not connected")
+            positions = servo_iv = [None, None, None]
+            
         if "mbed_arm" in self.serials:
             self._logger.debug("mbed connected")
             try:
                 mbed_arm_data = self.serials["mbed_arm"].data
                 #print(len(mbed_arm_data), mbed_arm_data)
-                if len(mbed_arm_data) != 39:
+                if len(mbed_arm_data) != 33:
                     raise IndexError("Too few items received")
                 float_arm_data = [float(i) for i in mbed_arm_data]
             except (IndexError, ValueError, YozakuraTimeoutError):
                 self._logger.debug("Bad mbed sensor data")
-                float_arm_data = [None for _ in range(39)]
+                float_arm_data = [None for _ in range(33)]
         else:
             self._logger.debug("Arm mbed not in serials")
-            float_arm_data = [None for _ in range(39)]
+            float_arm_data = [None for _ in range(33)]
 
-        positions = [None if i == -1 else i for i in float_arm_data[0:3]]
-        servo_iv = [None if i == -1 else i for i in float_arm_data[3:6]]
-
-        thermo_sensor_1 = float_arm_data[6:22]
-        thermo_sensor_2 = float_arm_data[22:38]
+        thermo_sensor_1 = float_arm_data[0:16]
+        thermo_sensor_2 = float_arm_data[16:32]
         thermo_sensors = [thermo_sensor_1, thermo_sensor_2]
         
-        co2_sensor = float_arm_data[38]
+        co2_sensor = float_arm_data[32]
 
         return positions, servo_iv, thermo_sensors, co2_sensor
 
