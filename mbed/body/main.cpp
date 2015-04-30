@@ -1,8 +1,11 @@
 // (C) 2015 Kyoto University Mechatronics Laboratory
 // Released under the GNU General Public License, version 3
 #include "mbed.h"
+#include <cmath>
 
-Serial rpi(USBTX, USBRX); // USB port acts as a serial connection with rpi.
+
+Serial rpi(USBTX, USBRX);  // USB port acts as a serial connection with rpi.
+
 
 // A bitfield representing the motor packet received from the rpi.
 //
@@ -65,7 +68,7 @@ class Motor {
     } else {
       dir_ = speed < 0 ? 0 : 1;
     }
-    pwm_ = abs(speed);
+    pwm_ = std::abs(speed);
   }
 
  private:
@@ -78,20 +81,15 @@ class Motor {
 int main() {
   // The four motors are in an array. The raspberry pi expects this order; do
   // not change it without changing the code for the RPi as well.
-  Motor motors[4] = { Motor(p26, p27, false),     // Left wheels
-                      Motor(p25, p28, true),      // Right wheels
-                      Motor(p24, p29, true),      // Left flipper
-                      Motor(p23, p30, false) };   // Right flipper
+  Motor motors[4] = { Motor(p26, p27, false),    // Left wheels
+                      Motor(p25, p28, true),     // Right wheels
+                      Motor(p24, p29, true),     // Left flipper
+                      Motor(p23, p30, false) };  // Right flipper
 
-  AnalogIn adcs[6] = { p15, p16, p17, p18,   // Unused
-                       p19,                  // Left flipper position
-                       p20 };                // Right flipper position
+  AnalogIn positions[2] = { p19,    // Left flipper position
+                            p20 };  // Right flipper position
 
-  int n_adc = 2; // Number of ADC Channels in use. Max is 6.
-  uint16_t adc_results[n_adc];
-  for (int i = 0; i < n_adc; i++) {
-    adc_results[i] = 0; // Zero the results.
-  }
+  uint16_t adc_results[2] = {0};
 
   union MotorPacket packet;
   int sign;
@@ -99,25 +97,25 @@ int main() {
   rpi.baud(38400);  // Match this in the RPi settings.
 
   while (1) {
-    // Get packet from RPi.
-    packet.as_byte = rpi.getc();
+    // Wait until packet received from the RPi.
+    while (not rpi.readable()) {}
+    while (rpi.readable()) {
+      packet.as_byte = rpi.getc();
+    }
 
     if (packet.b.motor_id == 3 and packet.b.negative and not packet.b.speed) {
       rpi.printf("body\n");
-    } else {
-      // Drive motor.
-      sign = packet.b.negative ? -1 : 1;
-      motors[packet.b.motor_id].Drive(sign * packet.b.speed / 31.0);
-
-      // Update flipper positions.
-      adc_results[n_adc - 2] = adcs[4].read_u16();  // Left flipper position
-      adc_results[n_adc - 1] = adcs[5].read_u16();  // Right flipper position
-
-      // Send data to RPi.
-      for (int i = 0; i < n_adc; i++) {
-        rpi.printf("%X ", adc_results[i]);
-      }
-      rpi.printf("\n");
+      continue;
     }
+    
+    // Drive motor.
+    sign = packet.b.negative ? -1 : 1;
+    motors[packet.b.motor_id].Drive(sign * packet.b.speed / 31.0);
+
+    // Send flipper positions to the RPi.
+    for (int i = 0; i < 2; i++) {
+      rpi.printf("%X ", positions[i].read_u16());
+    }
+    rpi.printf("\n");
   }
 }
