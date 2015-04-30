@@ -7,6 +7,7 @@ import serial
 
 from common.exceptions import DynamixelError
 
+
 class Dynamixel(object):
     class Response(object):
         def __init__(self, data):
@@ -120,6 +121,8 @@ class Dynamixel(object):
 
     def __init__(self, dx_id, dx_type="Dynamixel", name="Dynamixel",
                  port="/dev/ttyUSB0", baudrate=1000000, timeout=5):
+        self._logger = logging.getLogger("{dx_type}-{name}".format(dx_type=dx_type, name=name))
+        self._logger.debug("Initializing dynamixel")
         self._verify_id(dx_id)
         self.dx_type = dx_type
         self._dx_id = dx_id
@@ -134,6 +137,7 @@ class Dynamixel(object):
                 dx_id=dx_id))
 
         Dynamixel.dx_ids.append(dx_id)
+        self._logger.info("Dynamixel initialized")
 
     def _interact(self, packet):
         payload = [self._dx_id, len(packet)+1] + packet
