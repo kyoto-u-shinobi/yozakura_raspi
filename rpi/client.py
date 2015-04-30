@@ -302,7 +302,6 @@ class Client(object):
         """
         self._logger.debug("Commanding arm")
         if self.arm is not None:
-            mode, linear, pitch, yaw = [2 if i == -1 else i for i in commands]
             try:
                 self.arm.handle_commands(commands)
             except DynamixelError as e:
