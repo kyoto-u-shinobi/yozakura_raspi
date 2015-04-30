@@ -9,6 +9,7 @@ class Arm(object):
     def __init__(self):
         self._logger = logging.getLogger("Arm")
         self._logger.debug("Arm created")
+        self._positions = [None, None, None]
     
     def add_servo(self, servo, home_position=300, limits=(172, 300),
                   speed=100, upstep=1, downstep=1, multiturn=False):
@@ -20,7 +21,10 @@ class Arm(object):
                 servo.engage_multiturn_mode()
             else:
                 servo.limits = limits
+            
             servo.home_position = home_position
+            servo.upstep = upstep
+            servo.downstep = downstep
             
             self.servos.append(servo)
             self._logger.info("Servo added")
@@ -46,6 +50,36 @@ class Arm(object):
     def end(self):
         self._power_down()
     
+    def get_data(self):
+        self._positions = self._update_positions()
+        values = [self.servos[0].voltage] + [servo.current for servo in self.servos[1:]]
+        return self._positions, values
+    
+    def handle_commands(self, commands):
+        mode, *inputs = commands
+        
+        if mode == 0:
+            if self._positions = None:
+                self._positions = self._udpate_positions()
+            for servo, command, position in zip(self.servos, inputs, self._positions):
+                servo.torque_limit = 1023
+                if command == 0:
+                    servo.goal = position
+                elif command == 1:
+                    servo.goal = max(servo.cw_limit, position - servo.downstep)
+                elif command == -1:
+                    servo.goal = min(servo.ccw_limit, position + servo.upstep)
+                else:
+                    self._logger.error("Invalid command received: {cmd}".format(cmd=commands))
+        elif mode == 1:
+            self.go_home()
+        elif mode == 2:
+            self.reset()
+        elif mode == 3:
+            self.end()
+        else:
+            self._logger.error("Invalid command received: {cmd}".format(cmd=commands))
+    
     @property
     def is_moving(self):
         return any(servo.is_moving for servo in self.servos)
@@ -53,6 +87,9 @@ class Arm(object):
     def wait_until_stopped(self):
         while self.is_moving:
             pass
+    
+    def _udpate_positions(self):
+        return [servo.position for servo in self.servos]
     
     def _power_down(self):
         for servo in self.servos:
