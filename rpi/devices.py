@@ -646,6 +646,8 @@ class IMU(Device):
             return
         else:
             self._logger.info("IMU init succeeded")
+        
+        self._imu.setCompassEnable(False)  # Check to see if there are big fluctuations.
 
         self.poll_interval = self._imu.IMUGetPollInterval
         super().__init__(address, name)
