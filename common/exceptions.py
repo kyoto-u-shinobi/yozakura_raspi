@@ -220,3 +220,7 @@ class YozakuraTimeoutError(YozakuraException):
     Similar to TimeoutError.
 
     """
+
+
+class DynamixelError(YozakuraException):
+    """Raised when a Dynamixel's response contains an error."""
