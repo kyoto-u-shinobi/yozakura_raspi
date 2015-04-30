@@ -61,3 +61,9 @@ class Arm(object):
     def _power_up(self):
         for servo in self.servos:
             servo.torque_limit = 1023
+    
+    def __repr__(self):
+        return "{n}-servo arm".format(n=len(self.servos))
+    
+    def __str__(self):
+        return self.__repr__()
