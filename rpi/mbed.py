@@ -72,7 +72,8 @@ def connect_to_mbeds():
             elif reply == "body":
                 mbed_body = mbed
             else:
-                raise UnknownMbedError("The first mbed sent a bad reply")
+                logging.warning("Arm mbed is not attached")
+                #raise UnknownMbedError("The first mbed sent a bad reply")
 
         try:
             mbed = Mbed("/dev/ttyACM1", baudrate=38400)
@@ -107,7 +108,8 @@ def connect_to_mbeds():
             mbed_body.close()
         raise
 
-    mbed_arm._logger.name = "mbed-arm"
+    if mbed_arm is not None:
+        mbed_arm._logger.name = "mbed-arm"
     mbed_body._logger.name = "mbed-body"
     # mbed_arm._logger._transfer_size = 195
     # mbed_body._logger._transfer_size = 11

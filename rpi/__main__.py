@@ -28,8 +28,8 @@ def main():
         return
 
     logging.debug("Initializing motors")
-    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.4),
-              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
+    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.6),
+              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.6),
               Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
 
@@ -85,5 +85,34 @@ def main():
     logging.info("All done")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    # Create a extra level
+    logging.EXTRA = 5
+    logging.Logger.extra = lambda inst, msg, *args, **kwargs: inst.log(logging.EXTRA, msg, *args, **kwargs)
+    logging.extra = lambda msg, *args, **kwargs: logging.log(logging.EXTRA, msg, *args, **kwargs)
+
+    # Create a verbose level
+    logging.VERBOSE = 5
+    logging.Logger.verbose = lambda inst, msg, *args, **kwargs: inst.log(logging.VERBOSE, msg, *args, **kwargs)
+    logging.verbose = lambda msg, *args, **kwargs: logging.log(logging.VERBOSE, msg, *args, **kwargs)
+
+    # Log everything to file
+    logging.basicConfig(level=logging.EXTRA,
+            format="%(asctime)s %(levelname)-8s:%(name)-12s  %(message)s",
+            datefmt="%Y-%m-%d %H:%M",
+            filename="/tmp/rpi.log",
+            filemode="w")
+
+    # Add colour logging
+    logging.addLevelName(logging.WARNING, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
+    logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
+    logging.addLevelName(logging.CRITICAL, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
+
+
+    # Log import data to console
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(levelname)-8s:%(name)-12s %(message)s")
+    console.setFormatter(formatter)
+    logging.getLogger("").addHandler(console)
+
     main()

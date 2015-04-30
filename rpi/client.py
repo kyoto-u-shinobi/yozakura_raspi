@@ -279,6 +279,14 @@ class Client(object):
 
         """
         self._logger.debug("Driving motors")
+        # Stop when approaching potentiometer limits.
+        if positions[0] is not None and ((positions[0] <= 0.05 and speeds[2] == -1)
+                                      or (positions[0] >= 0.95 and speeds[2] == 1)):
+            speeds[2] = 0
+        if positions[1] is not None and ((positions[1] <= 0.05 and speeds[3] == 1)
+                                      or (positions[1] >= 0.95 and speeds[3] == -1)):
+            speeds[3] = 0
+
         for motor, speed in zip(self.motors.values(), speeds):
             motor.drive(speed)
     
@@ -334,7 +342,7 @@ class Client(object):
 
         adc_data = float_body_data[:-2]
         positions = float_body_data[-2:]
-        self._logger.debug("Positions: {}".format(positions))
+        self._logger.verbose("Positions: {}".format(positions))
 
         return adc_data, positions
 
@@ -363,6 +371,7 @@ class Client(object):
             self._logger.debug("mbed connected")
             try:
                 mbed_arm_data = self.serials["mbed_arm"].data
+                mbed_arm_data[0] = mbed_arm_data[0].rsplit(")")[1]
                 #print(len(mbed_arm_data), mbed_arm_data)
                 if len(mbed_arm_data) != 39:
                     raise IndexError("Too few items received")
@@ -436,6 +445,9 @@ class Client(object):
                 imu_data.append(self.imus[imu].rpy)
             except (KeyError, OSError):
                 imu_data.append([None, None, None])
+
+        self._logger.verbose("Front IMU data: {}".format(imu_data[0]))
+        self._logger.verbose(" Rear IMU data: {}".format(imu_data[1]))
         self._logger.debug("Got imu data")
         return imu_data
 

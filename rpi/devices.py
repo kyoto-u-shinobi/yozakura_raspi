@@ -647,6 +647,8 @@ class IMU(Device):
         else:
             self._logger.info("IMU init succeeded")
 
+        self._imu.setCompassEnable(False)
+
         self.poll_interval = self._imu.IMUGetPollInterval
         super().__init__(address, name)
 
@@ -665,6 +667,9 @@ class IMU(Device):
         while self._imu.IMURead():
             data = self._imu.getIMUData()
         if data["fusionPoseValid"]:
+            self._logger.extra("Acceleration: {}".format(data["accel"]))
+            self._logger.extra("        Gyro: {}".format(data["gyro"]))
+            self._logger.extra("     Compass: {}".format(data["compass"]))
             return data["fusionPose"]
         else:
             return [None, None, None]
