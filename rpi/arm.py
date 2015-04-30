@@ -2,9 +2,6 @@
 # Released under the GNU General Public License, version 3
 import logging
 
-from common.exceptions import DynamixelError
-from rpi.dynamixel import AX12, MX28
-
 
 class Arm(object):
     servos = []
