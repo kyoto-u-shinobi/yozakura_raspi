@@ -4,9 +4,11 @@ import logging
 
 import serial
 
-from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError
+from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError, DynamixelError
 from common.functions import get_ip_address
+from rpi.arm import Arm
 from rpi.client import Client
+from rpi.dynamixel import AX12, MX28
 from rpi.devices import CurrentSensor, IMU
 from rpi.mbed import connect_to_mbeds
 from rpi.motor import Motor
@@ -32,8 +34,20 @@ def main():
               Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
               Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
+    
+    logging.debug("Initializing arm")
+    arm = Arm()
+    linear = AX12(0)
+    pitch = MX28(1)
+    yaw = MX28(2)
+    servos = (linear, pitch, yaw)
+    
+    for servo in servos:
+        arm.add_servo(servo)
+    
+    arm.go_home_loop()
 
-    # logging.debug("Initializing current sensors")
+    logging.debug("Initializing current sensors")
     current_sensors = [
                        CurrentSensor(0x40, name="left_motor_current"),
                        CurrentSensor(0x41, name="right_motor_current"),
@@ -41,7 +55,7 @@ def main():
                        CurrentSensor(0x43, name="right_flipper_current")
                        ]
 
-    # logging.debug("Initializing IMUs")
+    logging.debug("Initializing IMUs")
     imus = [
             IMU(name="front_imu", address=0x68),
             IMU(name="rear_imu", address=0x69)
@@ -60,6 +74,7 @@ def main():
     if mbed_arm is not None:
         client.add_serial_device("mbed_arm", mbed_arm)
     client.add_serial_device("mbed_body", mbed_body)
+    client.add_arm(arm)
     for motor in motors:
         client.add_motor(motor, ser=mbed_body)
     for sensor in current_sensors:
