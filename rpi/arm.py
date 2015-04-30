@@ -8,6 +8,7 @@ class Arm(object):
     
     def __init__(self):
         self._logger = logging.getLogger("Arm")
+        self._logger.debug("Arm created")
     
     def add_servo(self, servo, home_position=300, limits=(172, 300),
                   speed=100, upstep=1, downstep=1, multiturn=False):
