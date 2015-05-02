@@ -99,6 +99,7 @@ class Motor(object):
 
     """
     gpio.setmode(gpio.BOARD)
+    gpio.setwarnings(False)
     motors = []
     _count = 0
 
@@ -135,7 +136,7 @@ class Motor(object):
 
         self._logger.debug("Registering motor")
         Motor.motors.append(self)
-        self._logger.info("Motor initialized")
+        self._logger.debug("Motor initialized")
         Motor._count += 1
 
     def _catch_fault(self, channel):
@@ -307,12 +308,12 @@ class Motor(object):
             self.drive(0)
         except NoDriversError:
             pass
-        self._logger.info("Motor shut down")
+        self._logger.debug("Motor shut down")
 
     @classmethod
     def shutdown_all(cls):
         """Shut down and deregister all motors."""
-        logging.info("Shutting down all motors")
+        logging.debug("Shutting down all motors")
         for motor in cls.motors:
             motor.shutdown()
         gpio.cleanup()

@@ -222,7 +222,7 @@ class Client(object):
                 self._logger.info("Connection returned")
                 self._timed_out = False
 
-            adc_data, positions = self._get_mbed_body_data()
+            positions = self._get_mbed_body_data()
             self._drive_motors(speeds, positions)
             self._command_arm(arms)
 
@@ -233,6 +233,7 @@ class Client(object):
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
             arm_data = self._get_mbed_arm_data()
+            print(arm_data[0])
             self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
@@ -333,18 +334,16 @@ class Client(object):
         self._logger.debug("Requesting mbed body data")
         try:
             mbed_body_data = self.serials["mbed_body"].data
-            float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
+            positions = [int(i, 16) / 0xFFFF for i in mbed_body_data]
         except (IndexError, ValueError, YozakuraTimeoutError):
             self._logger.debug("Bad mbed flipper data")
-            float_body_data = [None, None]
+            positions = [None, None]
         else:
             self._logger.debug("Received mbed body data")
 
-        adc_data = float_body_data[:-2]
-        positions = float_body_data[-2:]
         self._logger.verbose("Positions: {}".format(positions))
 
-        return adc_data, positions
+        return positions
 
     def _get_mbed_arm_data(self):
         """

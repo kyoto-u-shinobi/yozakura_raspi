@@ -4,9 +4,12 @@
 Functions for use with the mbeds.
 
 """
+import glob
 import logging
-import serial
+import shutil
 import time
+
+import serial
 
 from common.exceptions import NoMbedError, UnknownMbedError,\
     YozakuraTimeoutError
@@ -19,11 +22,10 @@ class Mbed(serial.Serial):
         self._logger = logging.getLogger("mbed")
 
     @property
-    @interrupted(0.5)
+    @interrupted(0.2)
     def data(self):
         try:
             data = self.read(self.inWaiting()).decode().split("\n")
-            #print(data)
             if not data[-1]:
                 return data[-2].split()
             else:
@@ -52,8 +54,21 @@ class Mbed(serial.Serial):
             self._logger.warning("OSError occured!")
             pass
 
+def _fix_port_numbers():
+    ports = glob.glob("/dev/ttyACM*")
+    port_numbers = [int(i.split("/dev/ttyACM")[1]) for i in ports]
+    extra_numbers = [n for n in port_numbers if n > 1]
+    for i in range(2):
+        if i not in port_numbers:
+            if extra_numbers:
+                shutil.move("/dev/ttyACM{}".format(extra_numbers.pop()),
+                            "/dev/ttyACM{}".format(i))
+    if extra_numbers:
+        logger.warning("ACM ports still active: {}".format(extra_numbers))
 
 def connect_to_mbeds():
+    _fix_port_numbers()
+
     mbed = mbed_arm = mbed_body = None
 
     try:
@@ -61,19 +76,15 @@ def connect_to_mbeds():
             mbed = Mbed("/dev/ttyACM0", baudrate=38400)
         except serial.SerialException:
             raise NoMbedError("No mbeds are connected")
-        try:
-            # mbed.read(mbed.inWaiting())
-            reply = mbed.identity
-        except YozakuraTimeoutError:
-            raise UnknownMbedError("The first mbed is not responding")
+        reply = mbed.identity
+        if reply == "arm":
+            mbed_arm = mbed
+        elif reply == "body":
+            mbed_body = mbed
+        elif reply == "none":
+            logging.warning("The first mbed did not reply")
         else:
-            if reply == "arm":
-                mbed_arm = mbed
-            elif reply == "body":
-                mbed_body = mbed
-            else:
-                #logging.warning("Arm mbed is not attached")
-                raise UnknownMbedError("The first mbed sent a bad reply")
+            raise UnknownMbedError("The first mbed sent a bad reply")
 
         try:
             mbed = Mbed("/dev/ttyACM1", baudrate=38400)
@@ -83,22 +94,22 @@ def connect_to_mbeds():
                 return mbed_arm, mbed_body
             else:
                 raise NoMbedError("Body mbed is not attached!")
-        try:  # Something is attached
-            # mbed.read(mbed.inWaiting())
-            reply = mbed.identity
-        except YozakuraTimeoutError:
-            raise UnknownMbedError("The second mbed is not responding")
-        else:
-            if reply == "arm":
-                if mbed_arm is not None:
-                    raise UnknownMbedError("Multiple arm mbeds are attached")
-                mbed_arm = mbed
-            elif reply == "body":
-                if mbed_body is not None:
-                    raise UnknownMbedError("Multiple body mbeds are attached")
-                mbed_body = mbed
+        reply = mbed.identity
+        if reply == "arm":
+            if mbed_arm is not None:
+                raise UnknownMbedError("Multiple arm mbeds are attached")
+            mbed_arm = mbed
+        elif reply == "body":
+            if mbed_body is not None:
+                raise UnknownMbedError("Multiple body mbeds are attached")
+            mbed_body = mbed
+        elif reply == "none":
+            if mbed_body is not None:
+                logging.warning("The second mbed did not reply. Is the arm on?")
             else:
-                raise UnknownMbedError("The second mbed sent a bad reply")
+                raise NoMbedError("Body mbed is not attached!")
+        else:
+            raise UnknownMbedError("The second mbed sent a bad reply")
     except (NoMbedError, UnknownMbedError):
         if mbed is not None:
             mbed.close()
@@ -110,8 +121,8 @@ def connect_to_mbeds():
 
     if mbed_arm is not None:
         mbed_arm._logger.name = "mbed-arm"
+        mbed_arm._logger.debug("mbed initialized")
     mbed_body._logger.name = "mbed-body"
-    # mbed_arm._logger._transfer_size = 195
-    # mbed_body._logger._transfer_size = 11
+    mbed_body._logger.debug("mbed initialized")
 
     return mbed_arm, mbed_body

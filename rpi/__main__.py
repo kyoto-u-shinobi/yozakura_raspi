@@ -27,27 +27,33 @@ def main():
         logging.critical(e)
         return
 
-    logging.debug("Initializing motors")
+    logging.info("Initializing motors")
     motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.4),
               Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
               Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
 
-    # logging.debug("Initializing current sensors")
-    current_sensors = [
-                       CurrentSensor(0x40, name="left_motor_current"),
-                       CurrentSensor(0x41, name="right_motor_current"),
-                       CurrentSensor(0x42, name="left_flipper_current"),
-                       CurrentSensor(0x43, name="right_flipper_current")
-                       ]
+    logging.info("Initializing current sensors")
+    current_sensors = []
+    for address, name in zip([0x40, 0x41, 0x42, 0x42], ["left_motor_current", "right_flipper_current", "left_flipper_current", "right_flipper_current"]):
+        try:
+            sensor = CurrentSensor(address=address, name=name)
+        except I2CSlotEmptyError as e:
+            logging.warning(e)
+        else:
+            current_sensors.append(sensor)
 
-    # logging.debug("Initializing IMUs")
-    imus = [
-            IMU(name="front_imu", address=0x69),
-            IMU(name="rear_imu", address=0x68)
-           ]
+    logging.info("Initializing IMUs")
+    imus = []
+    for address, name in zip([0x68, 0x69], ["rear_imu", "front_imu"]):
+        try:
+            imu = IMU(address=address, name=name)
+        except I2CSlotEmptyError as e:
+            logging.warning(e)
+        else:
+            imus.append(imu)
 
-    logging.debug("Connecting to mbeds")
+    logging.info("Connecting to mbeds")
     try:
         mbed_arm, mbed_body = connect_to_mbeds()
     except (NoMbedError, UnknownMbedError, YozakuraTimeoutError) as e:
@@ -56,7 +62,7 @@ def main():
         client.shutdown()
         return
 
-    logging.debug("Registering peripherals to client")
+    logging.info("Registering peripherals to client")
     if mbed_arm is not None:
         client.add_serial_device("mbed_arm", mbed_arm)
     client.add_serial_device("mbed_body", mbed_body)
@@ -69,8 +75,10 @@ def main():
 
     try:
         client.run()
-    except (KeyboardInterrupt, NoConnectionError):
+    except NoConnectionError:
         pass
+    except KeyboardInterrupt:
+        print()
     except SystemExit as e:
         logging.error("Received SystemExit: {e}".format(e=e))
     finally:
