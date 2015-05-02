@@ -28,8 +28,8 @@ def main():
         return
 
     logging.debug("Initializing motors")
-    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.6),
-              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.6),
+    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.4),
+              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
               Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
 
@@ -43,8 +43,8 @@ def main():
 
     # logging.debug("Initializing IMUs")
     imus = [
-            IMU(name="front_imu", address=0x68),
-            IMU(name="rear_imu", address=0x69)
+            IMU(name="front_imu", address=0x69),
+            IMU(name="rear_imu", address=0x68)
            ]
 
     logging.debug("Connecting to mbeds")
@@ -85,8 +85,8 @@ def main():
     logging.info("All done")
 
 if __name__ == "__main__":
-    # Create a extra level
-    logging.EXTRA = 5
+    # Create an extra level
+    logging.EXTRA = 4
     logging.Logger.extra = lambda inst, msg, *args, **kwargs: inst.log(logging.EXTRA, msg, *args, **kwargs)
     logging.extra = lambda msg, *args, **kwargs: logging.log(logging.EXTRA, msg, *args, **kwargs)
 
@@ -95,24 +95,31 @@ if __name__ == "__main__":
     logging.Logger.verbose = lambda inst, msg, *args, **kwargs: inst.log(logging.VERBOSE, msg, *args, **kwargs)
     logging.verbose = lambda msg, *args, **kwargs: logging.log(logging.VERBOSE, msg, *args, **kwargs)
 
+    format_string = "%(name)-30s : %(levelname)-8s  %(message)s"
+    date_format = "%Y-%m-%d %H:%M:%S "
     # Log everything to file
-    logging.basicConfig(level=logging.EXTRA,
-            format="%(asctime)s %(levelname)-8s:%(name)-12s  %(message)s",
-            datefmt="%Y-%m-%d %H:%M",
-            filename="/tmp/rpi.log",
-            filemode="w")
+    #logging.basicConfig(level=logging.EXTRA,
+            #format="%(asctime)s " + format_string,
+            #datefmt="%Y-%m-%d %H:%M:%S",
+            #filename="/tmp/rpi.log",
+            #filemode="w")
 
-    # Add colour logging
-    logging.addLevelName(logging.WARNING, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-    logging.addLevelName(logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
-    logging.addLevelName(logging.CRITICAL, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
-
+    logging.basicConfig(level=logging.INFO, format=format_string)
 
     # Log import data to console
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(levelname)-8s:%(name)-12s %(message)s")
-    console.setFormatter(formatter)
-    logging.getLogger("").addHandler(console)
+    #console = logging.StreamHandler()
+    #console.setLevel(logging.INFO)
+    #console.setFormatter(logging.Formatter(format_string))
+    #logging.getLogger("").addHandler(console)
+
+
+    # Log everything to file
+    #file_logger = logging.FileHandler("/tmp/rpi.log")
+    #file_logger.setLevel(logging.INFO)
+    #file_logger.setFormatter(logging.Formatter("%(asctime)s " + format_string))
+    #file_logger.datefmt = date_format
+    #logging.getLogger("").addHandler(file_logger)
+
+    #logging.basicConfig(level=logging.INFO, format="%(name)-30s:%(levelname)-8s  %(message)s")
 
     main()

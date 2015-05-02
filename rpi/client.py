@@ -371,7 +371,7 @@ class Client(object):
             self._logger.debug("mbed connected")
             try:
                 mbed_arm_data = self.serials["mbed_arm"].data
-                mbed_arm_data[0] = mbed_arm_data[0].rsplit(")")[1]
+                #mbed_arm_data[0] = mbed_arm_data[0].rsplit(")")[1]
                 #print(len(mbed_arm_data), mbed_arm_data)
                 if len(mbed_arm_data) != 39:
                     raise IndexError("Too few items received")
