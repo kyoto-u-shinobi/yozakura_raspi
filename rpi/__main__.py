@@ -35,7 +35,7 @@ def main():
 
     logging.info("Initializing current sensors")
     current_sensors = []
-    for address, name in zip([0x40, 0x41, 0x42, 0x42], ["left_motor_current", "right_flipper_current", "left_flipper_current", "right_flipper_current"]):
+    for address, name in zip([0x40, 0x41, 0x42, 0x42], ["left_wheel_current", "right_wheel_current", "left_flipper_current", "right_flipper_current"]):
         try:
             sensor = CurrentSensor(address=address, name=name)
         except I2CSlotEmptyError as e:
@@ -62,7 +62,7 @@ def main():
         client.shutdown()
         return
 
-    logging.info("Registering peripherals to client")
+    logging.debug("Registering peripherals to client")
     if mbed_arm is not None:
         client.add_serial_device("mbed_arm", mbed_arm)
     client.add_serial_device("mbed_body", mbed_body)

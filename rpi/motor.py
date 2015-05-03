@@ -146,7 +146,9 @@ class Motor(object):
         elif gpio.input(self.pin_fault_1):
             self._logger.warning("Overtemp detected!")
         elif gpio.input(self.pin_fault_2):
-            self._logger.critical("Short detected!")
+            self._logger.warning("Short detected!")
+            #for motor in Motor.motors:
+                #motor.reset_driver()
 
     def enable_serial(self, ser):
         """

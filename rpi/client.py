@@ -72,6 +72,8 @@ class Client(object):
             self.request.connect(server_address)
         except ConnectionRefusedError:
             raise NoConnectionError("Base station is not connected!")
+        except OSError:
+            raise NoConnectionError("Base station is on the wrong network!")
         self._logger.info("Connected to {server}:{port}"
                           .format(server=server_address[0],
                                   port=server_address[1]))
@@ -223,17 +225,18 @@ class Client(object):
                 self._timed_out = False
 
             positions = self._get_mbed_body_data()
+            #print(positions)
             self._drive_motors(speeds, positions)
             self._command_arm(arms)
 
-            current_data = self._get_current_data("left_motor_current",
-                                                  "right_motor_current",
+            current_data = self._get_current_data("left_wheel_current",
+                                                  "right_wheel_current",
                                                   "left_flipper_current",
                                                   "right_flipper_current")
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
             arm_data = self._get_mbed_arm_data()
-            print(arm_data[0])
+            #print(arm_data)
             self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
@@ -281,11 +284,14 @@ class Client(object):
         """
         self._logger.debug("Driving motors")
         # Stop when approaching potentiometer limits.
+        speeds = list(speeds)
         if positions[0] is not None and ((positions[0] <= 0.05 and speeds[2] == -1)
                                       or (positions[0] >= 0.95 and speeds[2] == 1)):
+            self._logger.warning("The left flipper is near its limit: {:5.3f}".format(positions[0]))
             speeds[2] = 0
         if positions[1] is not None and ((positions[1] <= 0.05 and speeds[3] == 1)
                                       or (positions[1] >= 0.95 and speeds[3] == -1)):
+            self._logger.warning("The right flipper is near its limit: {:5.3f}".format(positions[0]))
             speeds[3] = 0
 
         for motor, speed in zip(self.motors.values(), speeds):
