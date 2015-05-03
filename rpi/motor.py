@@ -99,6 +99,7 @@ class Motor(object):
 
     """
     gpio.setmode(gpio.BOARD)
+    gpio.setwarnings(False)
     motors = []
     _count = 0
 
@@ -135,7 +136,7 @@ class Motor(object):
 
         self._logger.debug("Registering motor")
         Motor.motors.append(self)
-        self._logger.info("Motor initialized")
+        self._logger.debug("Motor initialized")
         Motor._count += 1
 
     def _catch_fault(self, channel):
@@ -145,7 +146,9 @@ class Motor(object):
         elif gpio.input(self.pin_fault_1):
             self._logger.warning("Overtemp detected!")
         elif gpio.input(self.pin_fault_2):
-            self._logger.critical("Short detected!")
+            self._logger.warning("Short detected!")
+            # for motor in Motor.motors:
+                # motor.reset_driver()
 
     def enable_serial(self, ser):
         """
@@ -307,12 +310,12 @@ class Motor(object):
             self.drive(0)
         except NoDriversError:
             pass
-        self._logger.info("Motor shut down")
+        self._logger.debug("Motor shut down")
 
     @classmethod
     def shutdown_all(cls):
         """Shut down and deregister all motors."""
-        logging.info("Shutting down all motors")
+        logging.debug("Shutting down all motors")
         for motor in cls.motors:
             motor.shutdown()
         gpio.cleanup()

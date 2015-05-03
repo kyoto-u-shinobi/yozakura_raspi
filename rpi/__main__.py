@@ -4,7 +4,7 @@ import logging
 
 import serial
 
-from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError, DynamixelError
+from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError, I2CSlotEmptyError, DynamixelError
 from common.functions import get_ip_address
 from rpi.arm import Arm
 from rpi.client import Client
@@ -29,39 +29,36 @@ def main():
         logging.critical(e)
         return
 
-    logging.debug("Initializing motors")
+    logging.info("Initializing motors")
     motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.4),
               Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
               Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
-    
-    logging.debug("Initializing arm")
-    arm = Arm()
-    linear = AX12(0)
-    pitch = MX28(1)
-    yaw = MX28(2)
-    servos = (linear, pitch, yaw)
-    
-    for servo in servos:
-        arm.add_servo(servo)
-    
-    arm.go_home_loop()
 
-    logging.debug("Initializing current sensors")
-    current_sensors = [
-                       CurrentSensor(0x40, name="left_motor_current"),
-                       CurrentSensor(0x41, name="right_motor_current"),
-                       CurrentSensor(0x42, name="left_flipper_current"),
-                       CurrentSensor(0x43, name="right_flipper_current")
-                       ]
+    logging.info("Initializing current sensors")
+    current_sensors = []
+    for address, name in zip(range(0x40, 0x44), ["left_wheel_current",
+                                                 "right_wheel_current",
+                                                 "left_flipper_current",
+                                                 "right_flipper_current"]):
+        try:
+            sensor = CurrentSensor(address=address, name=name)
+        except I2CSlotEmptyError as e:
+            logging.warning(e)
+        else:
+            current_sensors.append(sensor)
 
-    logging.debug("Initializing IMUs")
-    imus = [
-            IMU(name="front_imu", address=0x68),
-            IMU(name="rear_imu", address=0x69)
-           ]
+    logging.info("Initializing IMUs")
+    imus=[]
+    for address, name in zip([0x68, 0x69], ["rear_imu", "front_imu"]):
+        try:
+            imu=IMU(address=address, name=name)
+        except I2CSlotEmptyError as e:
+            logging.warning(e)
+        else:
+            imus.append(imu)
 
-    logging.debug("Connecting to mbeds")
+    logging.info("Connecting to mbeds")
     try:
         mbed_arm, mbed_body = connect_to_mbeds()
     except (NoMbedError, UnknownMbedError, YozakuraTimeoutError) as e:
@@ -69,6 +66,32 @@ def main():
         Motor.shutdown_all()
         client.shutdown()
         return
+
+    logging.info("Initializing arm")
+    arm = Arm()
+    linear = pitch = yaw = None
+    try:
+        linear = AX12(0, name="linear")
+        pitch = MX28(1, name="pitch")
+        yaw = MX28(2, name="yaw")
+        servos = (linear, pitch, yaw)
+
+        arm.add_servo(linear, home_position=300, limits=(100, 300), speed=30, upstep=20, downstep=20, multiturn=False)
+        arm.add_servo(pitch, home_position=334, limits=(172, 334), speed=30, upstep=20, downstep=20, multiturn=False)
+        arm.add_servo(yaw, home_position=0, limits=(360, 360), speed=30, upstep=20, downstep=20, multiturn=True)
+    except DynamixelError as e:
+        logging.critical(e)
+        for servo in [linear, pitch, yaw]:
+            try:
+                servo.close()
+            except AttributeError:
+                pass
+        return
+    
+    for servo in servos:
+        arm.add_servo(servo)
+    
+    arm.go_home_loop()
 
     logging.debug("Registering peripherals to client")
     if mbed_arm is not None:
@@ -84,8 +107,10 @@ def main():
 
     try:
         client.run()
-    except (KeyboardInterrupt, NoConnectionError):
+    except NoConnectionError:
         pass
+    except KeyboardInterrupt:
+        print()
     except SystemExit as e:
         logging.error("Received SystemExit: {e}".format(e=e))
     finally:
@@ -95,10 +120,13 @@ def main():
         if mbed_arm is not None:
             mbed_arm.close()
         mbed_body.close()
+        logging.debug("Shutting down arm")
+        for servo in servos:
+            servo.close()
         client.shutdown()
 
     logging.info("All done")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(name)-30s : %(levelname)-8s %(message)s")
     main()

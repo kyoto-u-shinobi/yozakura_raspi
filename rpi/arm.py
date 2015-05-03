@@ -1,6 +1,7 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 import logging
+import time
 
 
 class Arm(object):
@@ -28,6 +29,8 @@ class Arm(object):
             
             self.servos.append(servo)
             self._logger.info("Servo added")
+            if len(self.servos) == 3:
+                self._positions = self._update_positions()
     
     def go_home(self):
         self._power_up()
@@ -51,18 +54,23 @@ class Arm(object):
         self._power_down()
     
     def get_data(self):
-        self._positions = self._update_positions()
+        #self._positions = self._update_positions()
         values = [self.servos[0].voltage] + [servo.current for servo in self.servos[1:]]
         return self._positions, values
     
     def handle_commands(self, commands):
+        print(commands)
+        if all(not i for i in commands):
+            return
         mode, *inputs = commands
+
+        self._positions = self._update_positions()
         
         if mode == 0:
-            if self._positions = None:
-                self._positions = self._udpate_positions()
             for servo, command, position in zip(self.servos, inputs, self._positions):
                 servo.torque_limit = 1023
+                if servo.name == "yaw":
+                    print("Yaw!")
                 if command == 0:
                     servo.goal = position
                 elif command == 1:
@@ -71,6 +79,8 @@ class Arm(object):
                     servo.goal = min(servo.ccw_limit, position + servo.upstep)
                 else:
                     self._logger.error("Invalid command received: {cmd}".format(cmd=commands))
+                if servo.name == "yaw":
+                    print(servo.goal)
         elif mode == 1:
             self.go_home()
         elif mode == 2:
@@ -88,7 +98,7 @@ class Arm(object):
         while self.is_moving:
             pass
     
-    def _udpate_positions(self):
+    def _update_positions(self):
         return [servo.position for servo in self.servos]
     
     def _power_down(self):

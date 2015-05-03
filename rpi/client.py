@@ -72,6 +72,8 @@ class Client(object):
             self.request.connect(server_address)
         except ConnectionRefusedError:
             raise NoConnectionError("Base station is not connected!")
+        except OSError:
+            raise NoConnectionError("Base station is on the wrong network!")
         self._logger.info("Connected to {server}:{port}"
                           .format(server=server_address[0],
                                   port=server_address[1]))
@@ -104,7 +106,7 @@ class Client(object):
         self.serials[name] = ser
     
     def add_arm(self, arm):
-        self._logger.debug("Adding {name}".format(name=arm)
+        self._logger.debug("Adding {name}".format(name=arm))
         self.arm = arm
 
     def add_motor(self, motor, ser=None, pwm_pins=None):
@@ -211,6 +213,7 @@ class Client(object):
         self._logger.info("Client started")
 
         while True:
+            print("Looped")
             try:
                 speeds, arm_commands = self._request_speeds()
             except BadDataError as e:
@@ -230,17 +233,18 @@ class Client(object):
                 self._logger.info("Connection returned")
                 self._timed_out = False
 
-            adc_data, positions = self._get_mbed_body_data()
+            positions = self._get_mbed_body_data()
             self._drive_motors(speeds, positions)
             self._command_arm(arm_commands)
 
-            current_data = self._get_current_data("left_motor_current",
-                                                  "right_motor_current",
+            current_data = self._get_current_data("left_wheel_current",
+                                                  "right_wheel_current",
                                                   "left_flipper_current",
                                                   "right_flipper_current")
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
             arm_data = self._get_mbed_arm_data()
+            #arm_data = None
             self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
@@ -287,6 +291,17 @@ class Client(object):
 
         """
         self._logger.debug("Driving motors")
+        # Stop when approaching potentiometer limits.
+        speeds = list(speeds)
+        if positions[0] is not None and ((positions[0] <= 0.05 and speeds[2] == -1)
+                                      or (positions[0] >= 0.95 and speeds[2] == 1)):
+            self._logger.warning("The left flipper is near its limit: {:5.3f}".format(positions[0]))
+            speeds[2] = 0
+        if positions[1] is not None and ((positions[1] <= 0.05 and speeds[3] == 1)
+                                      or (positions[1] >= 0.95 and speeds[3] == -1)):
+            self._logger.warning("The right flipper is near its limit: {:5.3f}".format(positions[0]))
+            speeds[3] = 0
+
         for motor, speed in zip(self.motors.values(), speeds):
             motor.drive(speed)
     
@@ -306,6 +321,7 @@ class Client(object):
                 self.arm.handle_commands(commands)
             except DynamixelError as e:
                 self._logger.warning(e)
+            pass
 
     def _get_mbed_body_data(self):
         """
@@ -329,18 +345,16 @@ class Client(object):
         self._logger.debug("Requesting mbed body data")
         try:
             mbed_body_data = self.serials["mbed_body"].data
-            float_body_data = [int(i, 16) / 0xFFFF for i in mbed_body_data]
+            positions = [int(i, 16) / 0xFFFF for i in mbed_body_data]
         except (IndexError, ValueError, YozakuraTimeoutError):
             self._logger.debug("Bad mbed flipper data")
-            float_body_data = [None, None]
+            positions = [None, None]
         else:
             self._logger.debug("Received mbed body data")
 
-        adc_data = float_body_data[:-2]
-        positions = float_body_data[-2:]
         self._logger.debug("Positions: {}".format(positions))
 
-        return adc_data, positions
+        return positions
 
     def _get_mbed_arm_data(self):
         """
@@ -364,7 +378,7 @@ class Client(object):
         """
         self._logger.debug("Getting arm data")
         if self.arm is not None:
-            positions, servo_iv = self.arm.get_data
+            positions, servo_iv = self.arm.get_data()
         else:
             self._logger.debug("Arm is not connected")
             positions = servo_iv = [None, None, None]

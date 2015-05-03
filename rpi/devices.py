@@ -636,7 +636,7 @@ class IMU(Device):
         else:
             address = self._settings.I2CAddress
 
-        self._logger = logging.getLogger("imu-{name}-{address}"
+        self._logger = logging.getLogger("i2c-{name}-{address}"
                                          .format(name=name,
                                                  address=hex(address)))
 
@@ -647,8 +647,6 @@ class IMU(Device):
         else:
             self._logger.info("IMU init succeeded")
         
-        self._imu.setCompassEnable(False)  # Check to see if there are big fluctuations.
-
         self.poll_interval = self._imu.IMUGetPollInterval
         super().__init__(address, name)
 

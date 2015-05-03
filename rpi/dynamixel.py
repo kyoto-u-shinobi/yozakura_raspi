@@ -129,7 +129,10 @@ class Dynamixel(object):
         self._dx_id = dx_id
         self.name = name
         self.port = port
-        self.ser = serial.Serial(self.port, baudrate=baudrate, timeout=timeout)
+        try:
+            self.ser = serial.Serial(self.port, baudrate=baudrate, timeout=timeout)
+        except serial.SerialException:
+            raise DynamixelError("No dynamixels are physically connected.")
 
         try:
             self.dx_id
@@ -144,7 +147,7 @@ class Dynamixel(object):
         payload = [self._dx_id, len(packet)+1] + packet
         to_write = [0xFF, 0xFF] + payload + [Dynamixel._checksum(payload)]
         self.ser.write(bytes(to_write))
-        time.sleep(0.05)
+        time.sleep(0.005)
 
         res = self.ser.read(self.ser.inWaiting())
         response = Dynamixel.Response([i for i in res])
