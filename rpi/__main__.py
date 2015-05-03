@@ -4,7 +4,7 @@ import logging
 
 import serial
 
-from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError
+from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError, I2CSlotEmptyError
 from common.functions import get_ip_address
 from rpi.client import Client
 from rpi.devices import CurrentSensor, IMU
