@@ -84,7 +84,7 @@ def connect_to_mbeds():
         elif reply == "none":
             logging.warning("The first mbed did not reply")
         else:
-            raise UnknownMbedError("The first mbed sent a bad reply")
+            raise UnknownMbedError("The first mbed sent a bad reply: {}".format(reply))
 
         try:
             mbed = Mbed("/dev/ttyACM1", baudrate=38400)
@@ -109,7 +109,7 @@ def connect_to_mbeds():
             else:
                 raise NoMbedError("Body mbed is not attached!")
         else:
-            raise UnknownMbedError("The second mbed sent a bad reply")
+            raise UnknownMbedError("The second mbed sent a bad reply: {}".format(reply))
     except (NoMbedError, UnknownMbedError):
         if mbed is not None:
             mbed.close()

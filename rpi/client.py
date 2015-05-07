@@ -225,7 +225,6 @@ class Client(object):
                 self._timed_out = False
 
             positions = self._get_mbed_body_data()
-            #print(positions)
             self._drive_motors(speeds, positions)
             self._command_arm(arms)
 
@@ -235,8 +234,7 @@ class Client(object):
                                                   "right_flipper_current")
 
             imu_data = self._get_imu_data("front_imu", "rear_imu")
-            arm_data = self._get_mbed_arm_data()
-            #print(arm_data)
+            arm_data = self._get_mbed_arm_data(ignore=True)
             self._send_data(positions, current_data, imu_data, arm_data)
 
     def _handle_timeout(self):
@@ -351,7 +349,7 @@ class Client(object):
 
         return positions
 
-    def _get_mbed_arm_data(self):
+    def _get_mbed_arm_data(self, ignore=False):
         """
         Get transmitted data from the arm mbed.
 
@@ -372,21 +370,24 @@ class Client(object):
 
         """
         self._logger.debug("Getting arm data")
-        if "mbed_arm" in self.serials:
-            self._logger.debug("mbed connected")
-            try:
-                mbed_arm_data = self.serials["mbed_arm"].data
-                #mbed_arm_data[0] = mbed_arm_data[0].rsplit(")")[1]
-                #print(len(mbed_arm_data), mbed_arm_data)
-                if len(mbed_arm_data) != 39:
-                    raise IndexError("Too few items received")
-                float_arm_data = [float(i) for i in mbed_arm_data]
-            except (IndexError, ValueError, YozakuraTimeoutError):
-                self._logger.debug("Bad mbed sensor data")
-                float_arm_data = [None for _ in range(39)]
+        if ignore:
+            float_arm_data = [None] * 39 
         else:
-            self._logger.debug("Arm mbed not in serials")
-            float_arm_data = [None for _ in range(39)]
+            if "mbed_arm" in self.serials:
+                self._logger.debug("mbed connected")
+                try:
+                    mbed_arm_data = self.serials["mbed_arm"].data
+                    #mbed_arm_data[0] = mbed_arm_data[0].rsplit(")")[1]
+                    #print(len(mbed_arm_data), mbed_arm_data)
+                    if len(mbed_arm_data) != 39:
+                        raise IndexError("Too few items received")
+                    float_arm_data = [float(i) for i in mbed_arm_data]
+                except (IndexError, ValueError, YozakuraTimeoutError):
+                    self._logger.debug("Bad mbed sensor data")
+                    float_arm_data = [None] * 39
+            else:
+                self._logger.debug("Arm mbed not in serials")
+                float_arm_data = [None] * 39
 
         positions = [None if i == -1 else i for i in float_arm_data[0:3]]
         servo_iv = [None if i == -1 else i for i in float_arm_data[3:6]]

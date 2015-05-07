@@ -28,8 +28,8 @@ def main():
         return
 
     logging.info("Initializing motors")
-    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.4),
-              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.4),
+    motors = [Motor("left_wheel_motor", 8, 10, 7, max_speed=0.8),
+              Motor("right_wheel_motor", 11, 13, 7, max_speed=0.8),
               Motor("left_flipper_motor", 22, 24, 7, max_speed=0.4),
               Motor("right_flipper_motor", 19, 21, 7, max_speed=0.4)]
 
