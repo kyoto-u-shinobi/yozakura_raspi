@@ -3,8 +3,8 @@
 """
 Exceptions used in the entire Yozakura project.
 
-Exceptions in Yozakura are only used when there is a fatal error that would be
-dangerous, or would cause the robot to be unable to move or carry out its tasks
+Exceptions in Yozakura are only used when there is a fatal error that could be
+dangerous, or could cause the robot to be unable to move or carry out its tasks
 properly.
 
 """
@@ -31,39 +31,34 @@ class YozakuraException(Exception):
     """
 
 
+# Basic errors
 class BadArgError(YozakuraException):
-    """
-    Raised when there is an invalid argument.
-
-    Similar to ValueError.
-
-    """
+    """Raised when there is an invalid argument."""
 
 
 class BadDataError(YozakuraException):
-    """
-    Raised when there is invalid data.
-
-    Similar to ValueError.
-
-    """
+    """Raised when invalid data is received."""
 
 
-class NoConnectionError(YozakuraException):
-    """Raised when the base station is not connected."""
-    msg = "Base station is not connected!"
+class YozakuraExit(YozakuraException, SystemExit):
+    """Raised when the program needs to end."""
 
 
-class UnknownMbedError(YozakuraException):
-    """Raised when the raspberry pi connects to an unknown mbed."""
-    msg = "An mbed cannot be identified!"
+class YozakuraRuntimeError(YozakuraException, RuntimeError):
+    """Raised when a runtime error occurs."""
 
 
-class NoMbedError(YozakuraException):
-    """Raised when the raspberry pi cannot connect to an mbed."""
-    msg = "An mbed is not connected!"
+class YozakuraTimeoutError(YozakuraException, TimeoutError):
+    """Raised when a Timeout occurs."""
 
 
+# IP address
+class UnknownIPError(YozakuraException):
+    """Raised when the local IP address is unknown."""
+    msg = "Could not find the local IP address."
+
+
+# Base station - controller
 class NoControllerError(YozakuraException):
     """Raised when there are no controllers connected to the base station."""
     msg = "There are no controllers attached!"
@@ -90,28 +85,24 @@ class UnknownControllerError(YozakuraException):
         super().__init__(message.format(make=make))
 
 
-class NoDriversError(YozakuraException):
-    """
-    Raised when a motor driver has no control method enabled.
-
-    For a ``Motor`` to be able to use PWM, it needs either the ``Serial``
-    connection to a microcontroller for hardware PWM (preferable if available),
-    or a list of Raspberry Pi GPIO pins in order to use software PWM.
-
-    Parameters
-    ----------
-    motor : Motor, optional
-        The motor which has no control methods. If it is provided, the error
-        message will specify the motor.
-
-    """
-    def __init__(self, motor=None):
-        message = "{motor} does not have any drivers enabled!"
-        if not motor:
-            motor = "This motor"
-        super().__init__(message.format(motor=motor))
+# RPi - Base station connection
+class NoConnectionError(YozakuraException):
+    """Raised when the base station is not connected."""
+    msg = "Base station is not connected!"
 
 
+# RPi - mbed connection
+class NoMbedError(YozakuraException):
+    """Raised when the raspberry pi cannot connect to an mbed."""
+    msg = "An mbed is not connected!"
+
+
+class UnknownMbedError(YozakuraException):
+    """Raised when the Raspberry Pi connects to an unknown mbed."""
+    msg = "An mbed cannot be identified!"
+
+
+# Motor errors
 class MotorCountError(YozakuraException):
     """
     Raised when not enough motors, or more than four motors are registered.
@@ -141,17 +132,29 @@ class MotorCountError(YozakuraException):
         super().__init__(message)
 
 
-class NoSerialsError(YozakuraException):
+class NoDriversError(YozakuraException):
     """
-    Raised when RPi client is run with both serial devices not registered.
+    Raised when a motor driver has no control method enabled.
 
-    The Raspberry Pi needs to use the microcontroller to obtain position data
-    from the two flippers of the robot, as well as sensor data from the arm.
+    For a ``Motor`` to be able to use PWM, it needs either the ``Serial``
+    connection to a microcontroller for hardware PWM (preferable if available),
+    or a list of Raspberry Pi GPIO pins in order to use software PWM.
+
+    Parameters
+    ----------
+    motor : Motor, optional
+        The motor which has no control methods. If it is provided, the error
+        message will specify the motor.
 
     """
-    msg = "Insufficient serial devices are registered!"
+    def __init__(self, motor=None):
+        message = "{motor} does not have any drivers enabled!"
+        if not motor:
+            motor = "This motor"
+        super().__init__(message.format(motor=motor))
 
 
+# I2C Errors
 class I2CSlotEmptyError(YozakuraException):
     """
     Raised when no device is found at a given address.
@@ -211,12 +214,3 @@ class NotCalibratedError(YozakuraException):
         if not device:
             device = "This device"
         super().__init__(message.format(dev=device))
-
-
-class YozakuraTimeoutError(YozakuraException):
-    """
-    Raised when a Timeout occurs.
-
-    Similar to TimeoutError.
-
-    """

@@ -2,18 +2,17 @@
 # Released under the GNU General Public License, version 3
 import logging
 
-import serial
-
-from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError, I2CSlotEmptyError
-from common.functions import get_ip_address
+from common.exceptions import YozakuraTimeoutError, NoConnectionError,\
+    NoMbedError, UnknownMbedError, I2CSlotEmptyError
+from common.functions import add_logging_level, get_ip_address
 from rpi.client import Client
 from rpi.devices import CurrentSensor, IMU
-from rpi.mbed import connect_to_mbeds
+from rpi.mbed import Mbed
 from rpi.motor import Motor
 
 
 def main():
-    client_address = get_ip_address(["eth0", "enp2s0", "wlan0"])
+    client_address = get_ip_address(["eth0", "enp2s0", "wlan0"])[0]
 
     # Connect to correct server based on local IP address.
     if client_address.startswith("192.168"):  # Contec
@@ -24,7 +23,8 @@ def main():
     try:
         client = Client(client_address, (opstn_address, 9999))
     except NoConnectionError as e:
-        logging.critical(e)
+        logging.critical(e.split("! ")[0])
+        logging.help(e.split("! ")[1])
         return
 
     logging.info("Initializing motors")
@@ -35,7 +35,10 @@ def main():
 
     logging.info("Initializing current sensors")
     current_sensors = []
-    for address, name in zip([0x40, 0x41, 0x42, 0x42], ["left_wheel_current", "right_wheel_current", "left_flipper_current", "right_flipper_current"]):
+    # TODO (masasin): Add alert pins.
+    for address, name in zip([0x40, 0x41, 0x42, 0x42],
+                             ["left_wheel_current", "right_wheel_current",
+                             "left_flipper_current", "right_flipper_current"]):
         try:
             sensor = CurrentSensor(address=address, name=name)
         except I2CSlotEmptyError as e:
@@ -55,7 +58,7 @@ def main():
 
     logging.info("Connecting to mbeds")
     try:
-        mbed_arm, mbed_body = connect_to_mbeds()
+        mbed_arm, mbed_body = Mbed.connect_to_mbeds()
     except (NoMbedError, UnknownMbedError, YozakuraTimeoutError) as e:
         logging.critical(e)
         Motor.shutdown_all()
@@ -78,13 +81,11 @@ def main():
     except NoConnectionError:
         pass
     except KeyboardInterrupt:
-        print()
-    except SystemExit as e:
-        logging.error("Received SystemExit: {e}".format(e=e))
+        print()  # Keep the console log aligned
     finally:
         logging.info("Shutting down...")
         Motor.shutdown_all()
-        logging.debug("Shutting down connection with mbed")
+        logging.debug("Shutting down connections with mbeds")
         if mbed_arm is not None:
             mbed_arm.close()
         mbed_body.close()
@@ -93,41 +94,28 @@ def main():
     logging.info("All done")
 
 if __name__ == "__main__":
-    # Create an extra level
-    logging.EXTRA = 4
-    logging.Logger.extra = lambda inst, msg, *args, **kwargs: inst.log(logging.EXTRA, msg, *args, **kwargs)
-    logging.extra = lambda msg, *args, **kwargs: logging.log(logging.EXTRA, msg, *args, **kwargs)
-
-    # Create a verbose level
-    logging.VERBOSE = 5
-    logging.Logger.verbose = lambda inst, msg, *args, **kwargs: inst.log(logging.VERBOSE, msg, *args, **kwargs)
-    logging.verbose = lambda msg, *args, **kwargs: logging.log(logging.VERBOSE, msg, *args, **kwargs)
-
     format_string = "%(name)-30s : %(levelname)-8s  %(message)s"
     date_format = "%Y-%m-%d %H:%M:%S "
-    # Log everything to file
-    #logging.basicConfig(level=logging.EXTRA,
-            #format="%(asctime)s " + format_string,
-            #datefmt="%Y-%m-%d %H:%M:%S",
-            #filename="/tmp/rpi.log",
-            #filemode="w")
+    add_logging_level("verbose", 5)
+    add_logging_level("help", 25)
 
-    logging.basicConfig(level=logging.INFO, format=format_string)
+    LOG_TO_FILE = False
 
-    # Log import data to console
-    #console = logging.StreamHandler()
-    #console.setLevel(logging.INFO)
-    #console.setFormatter(logging.Formatter(format_string))
-    #logging.getLogger("").addHandler(console)
+    if LOG_TO_FILE:
+        # Log everything to file
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(asctime)s " + format_string,
+                            datefmt=date_format,
+                            filename="/tmp/rpi.log",
+                            filemode="w")
 
+        # Log important data to console
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        console.setFormatter(logging.Formatter(format_string))
+        logging.getLogger("").addHandler(console)
+    else:
+        logging.basicConfig(level=logging.INFO, format=format_string)
 
-    # Log everything to file
-    #file_logger = logging.FileHandler("/tmp/rpi.log")
-    #file_logger.setLevel(logging.INFO)
-    #file_logger.setFormatter(logging.Formatter("%(asctime)s " + format_string))
-    #file_logger.datefmt = date_format
-    #logging.getLogger("").addHandler(file_logger)
-
-    #logging.basicConfig(level=logging.INFO, format="%(name)-30s:%(levelname)-8s  %(message)s")
-
+    # Run Yozakura
     main()

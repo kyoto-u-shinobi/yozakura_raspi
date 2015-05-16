@@ -67,14 +67,14 @@ import ctypes
 class ArmPacketBits(ctypes.LittleEndianStructure):
     """
     The bits for the packet sent to the arm mbed.
-    
+
     Note that the mbed's processor is little endian, which is why a
     ``LittleEndianStructure`` is used.
-    
+
     See Also
     --------
     ArmPacket
-    
+
     """
     _fields_ = [("mode", ctypes.c_uint8, 2),
                 ("linear", ctypes.c_uint8, 2),
