@@ -321,7 +321,7 @@ class Controller(object):
     Raises
     ------
     UnknownControllerError
-        If the mapping of the controller buttons is unknown.
+        The mapping of the controller buttons is unknown.
 
     """
     pygame.init()

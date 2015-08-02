@@ -116,7 +116,7 @@ class Handler(socketserver.BaseRequestHandler):
             except (AttributeError, EOFError, IndexError, TypeError) as e:
                 self._logger.debug("No or bad data received from robot: {e}"
                                    .format(e=e))
- 
+
     def _generate_reply(self, data):
         """
         Generate the necessary reply given a request string.
@@ -244,7 +244,7 @@ class Handler(socketserver.BaseRequestHandler):
                 lflipper = -1
             else:
                 lflipper = 0
-                
+
         else:  # Forward mode
             # Wheels
             if self.wheels_single_stick:
@@ -282,14 +282,14 @@ class Handler(socketserver.BaseRequestHandler):
                 rflipper = -1
             else:
                 rflipper = 0
-            
+
         # Arm
         if buttons.is_pressed("○"):
             linear = dpad.y
         else:
             pitch = dpad.y
             yaw = dpad.x
-        
+
         if buttons.is_pressed("start"):
             mode = 1
         elif buttons.is_pressed("select"):
@@ -380,7 +380,6 @@ class Handler(socketserver.BaseRequestHandler):
                            .format(i=check(rwheel[0]), v=check(rwheel[1])))
         self._logger.debug("lflip_current: {i} A  {v} V"
                            .format(i=check(lflip[0]), v=check(lflip[1])))
-                           .format(i=lflip[0], v=lflip[1]))
         self._logger.debug("rflip_current: {i} A  {v} V"
                            .format(i=check(rflip[0]), v=check(rflip[1])))
         self._logger.debug("front r: {r}  p: {p}  y: {y}"
@@ -401,8 +400,8 @@ class Handler(socketserver.BaseRequestHandler):
                                    y=check(servo_vii[2])))
         thermo_l_string = " ".join([check_t(i) for i in thermo_l])
         thermo_r_string = " ".join([check_t(i) for i in thermo_r])
-        self._logger.debug("thermo_l: [{l}]".format(thermo_l_string)) 
-        self._logger.debug("thermo_r: [{r}]".format(thermo_r_string)) 
+        self._logger.debug("thermo_l: [{l}]".format(thermo_l_string))
+        self._logger.debug("thermo_r: [{r}]".format(thermo_r_string))
         self._logger.debug("co2_sensor: {c}".format(c=check_c(co2_sensor)))
         self._logger.debug(20 * "=")
 

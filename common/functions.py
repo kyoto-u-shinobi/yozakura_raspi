@@ -149,7 +149,7 @@ def get_ip_address(interfaces):
     Raises
     ------
     UnknownIPError
-        If no interfaces give a valid IP address.
+        No interfaces give a valid IP address.
 
     References
     ----------

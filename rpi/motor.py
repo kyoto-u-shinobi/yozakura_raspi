@@ -58,10 +58,9 @@ class Motor(object):
     Raises
     ------
     BadArgError
-        Raised when bad inputs are made
+        Bad inputs are made.
     MotorCountError
-        Raised when a motor is added after all four motors have already been
-        registered
+        A motor is added after all four motors have already been registered.
 
     Attributes
     ----------

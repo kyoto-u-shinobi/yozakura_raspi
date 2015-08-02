@@ -41,8 +41,8 @@ resulting byte should contain ``0b01110000``, which has an ascii value of
 >>> packet.speed
 16
 
-Since the size of the fields were defined in ``MotorPacketBits`` above,
-we can set each portio individually without needing to perform bit
+Since the size of the fields were defined in ``_MotorPacketBits`` above,
+we can set each portion individually without needing to perform bit
 manipulation. What we did is the equivalent of:
 
 >>> motor_id = 1 << 6
@@ -64,7 +64,7 @@ import ctypes
 
 
 # Used by the arm mbed
-class ArmPacketBits(ctypes.LittleEndianStructure):
+class _ArmPacketBits(ctypes.LittleEndianStructure):
     """
     The bits for the packet sent to the arm mbed.
 
@@ -109,14 +109,14 @@ class ArmPacket(ctypes.Union):
     ``as_byte``.
 
     """
-    _fields_ = [("b", ArmPacketBits),
+    _fields_ = [("b", _ArmPacketBits),
                 ("as_byte", ctypes.c_uint8)]
 
     _anonymous_ = ("b")
 
 
 # Used in rpi.motors
-class MotorPacketBits(ctypes.LittleEndianStructure):
+class _MotorPacketBits(ctypes.LittleEndianStructure):
     """
     The bits for the packet sent to the motors.
 
@@ -158,14 +158,14 @@ class MotorPacket(ctypes.Union):
     ``as_byte``.
 
     """
-    _fields_ = [("b", MotorPacketBits),
+    _fields_ = [("b", _MotorPacketBits),
                 ("as_byte", ctypes.c_uint8)]
 
     _anonymous_ = ("b")
 
 
 # Used in rpi.devices.CurrentSensor
-class CurrentConfigurationBits(ctypes.Structure):
+class _CurrentConfigurationBits(ctypes.Structure):
     """
     The bits for the configuration register of the INA226 ``CurrentSensor``.
 
@@ -229,13 +229,13 @@ class CurrentConfiguration(ctypes.Union):
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
-    _fields_ = [("b", CurrentConfigurationBits),
+    _fields_ = [("b", _CurrentConfigurationBits),
                 ("as_byte", ctypes.c_uint16)]
 
     _anonymous_ = ("b")
 
 
-class CurrentAlertsFlags(ctypes.Structure):
+class _CurrentAlertsFlags(ctypes.Structure):
     """
     The bits for the Mask/Enable register of the INA226 ``CurrentSensor``.
 
@@ -313,7 +313,7 @@ class CurrentAlerts(ctypes.Union):
             http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
-    _fields_ = [("b", CurrentAlertsFlags),
+    _fields_ = [("b", _CurrentAlertsFlags),
                 ("as_byte", ctypes.c_uint16)]
 
     _anonymous_ = ("b")

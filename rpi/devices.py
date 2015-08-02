@@ -181,7 +181,7 @@ class CurrentSensor(I2CDevice):
     """
     Texas Instruments INA226 Current/Power Monitor. [#]_
 
-    .. note:: The current sensor must be calibrated before use.
+    .. warning:: The current sensor must be calibrated before use.
 
     Parameters
     ----------
@@ -343,7 +343,7 @@ class CurrentSensor(I2CDevice):
 
         See Also
         --------
-        CurrentConfiguration
+        bitfields.CurrentConfiguration
 
         References
         ----------
@@ -490,6 +490,7 @@ class CurrentSensor(I2CDevice):
 
         Only one alert function may be selected. The five possible alert
         functions are:
+
             sol : str
                 Shunt voltage over limit.
             sul : str
@@ -503,6 +504,7 @@ class CurrentSensor(I2CDevice):
 
         In addition, three bits can be used to set the Mask/Enable register's
         behaviour. The three flags are:
+
             cnvr : bool
                 Conversion ready
             apol : bool
