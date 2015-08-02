@@ -63,6 +63,58 @@ manipulation. What we did is the equivalent of:
 import ctypes
 
 
+# Used by the arm mbed
+class ArmPacketBits(ctypes.LittleEndianStructure):
+    """
+    The bits for the packet sent to the arm mbed.
+
+    Note that the mbed's processor is little endian, which is why a
+    ``LittleEndianStructure`` is used.
+
+    See Also
+    --------
+    ArmPacket
+
+    """
+    _fields_ = [("mode", ctypes.c_uint8, 2),
+                ("linear", ctypes.c_uint8, 2),
+                ("pitch", ctypes.c_uint8, 2),
+                ("yaw", ctypes.c_uint8, 2)]
+
+
+class ArmPacket(ctypes.Union):
+    """
+    The packet sent to the arm mbed.
+
+    When the Raspberry Pi is connected to the mbed, arm control information
+    is encoded as a single byte.
+
+    Using a union allows us to transmit the full byte to the mbed by using
+    ``packet.as_byte``, and ensures that it would be exactly eight bits long.
+
+    Attributes
+    ----------
+    mode : 2 bits
+        The control mode of the arm.
+    linear : 2 bits
+        The direction in which to move the linear extension servo of the arm.
+    pitch : 2 bits
+        The direction in which to move the pitch servo of the arm.
+    yaw : 2 bits
+        The direction in which to move the yaw servo of the arm.
+
+    Notes
+    -----
+    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
+    ``as_byte``.
+
+    """
+    _fields_ = [("b", ArmPacketBits),
+                ("as_byte", ctypes.c_uint8)]
+
+    _anonymous_ = ("b")
+
+
 # Used in rpi.motors
 class MotorPacketBits(ctypes.LittleEndianStructure):
     """
@@ -91,7 +143,7 @@ class MotorPacket(ctypes.Union):
     Using a union allows us to transmit the full byte to the mbed by using
     ``packet.as_byte``, and ensures that it would be exactly eight bits long.
 
-    Bit Fields
+    Attributes
     ----------
     motor_id : 2 bits
         The motor ID. Can range between 0 and 3.
@@ -136,7 +188,7 @@ class CurrentConfiguration(ctypes.Union):
 
     The current sensor used here is the Texas Instruments INA226 Current/Power
     Monitor. The configuration register details are shown on pages 18 and 19
-    of the datasheet. [1]_
+    of the datasheet. [#]_
 
     The Configuration Register settings control the operating modes for the
     INA226. This register controls the conversion time settings for both the
@@ -151,7 +203,7 @@ class CurrentConfiguration(ctypes.Union):
     on the new contents of the Configuration Register. This prevents any
     uncertainty in the conditions used for the next completed conversion.
 
-    Bit fields
+    Attributes
     ----------
     reset : bool
         Whether to reset.
@@ -173,7 +225,7 @@ class CurrentConfiguration(ctypes.Union):
 
     References
     ----------
-    .. [1] Texas Instruments, INA 226 datasheet.
+    .. [#] Texas Instruments, INA 226 datasheet.
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
@@ -198,7 +250,7 @@ class CurrentAlertsFlags(ctypes.Structure):
                 ("bus_ul", ctypes.c_uint16, 1),      # Bus undervolt
                 ("power_ol", ctypes.c_uint16, 1),    # Power over limit
                 ("conv_watch", ctypes.c_uint16, 1),  # Conversion ready
-                ("empty", ctypes.c_uint16, 5),
+                ("empty", ctypes.c_uint16, 5),       # Not used
                 ("alert_func", ctypes.c_uint16, 1),  # Alert function flag
                 ("conv_flag", ctypes.c_uint16, 1),   # Conversion ready flag
                 ("overflow", ctypes.c_uint16, 1),    # Math overflow flag
@@ -212,16 +264,15 @@ class CurrentAlerts(ctypes.Union):
 
     The current sensor used here is the Texas Instruments INA226 Current/Power
     Monitor. The Mask/Enable register details are shown on pages 21 and 22 of
-    the datasheet. [1]_
+    the datasheet. [#]_
 
     The Mask/Enable Register selects the function that is enabled to control
     the Alert pin, as well as how that pin functions. If multiple functions
     are enabled, the highest significant bit position Alert Function (D11-D15)
     takes priority and responds to the Alert Limit register.
 
-    Bit Fields
+    Attributes
     ----------
-
     shunt_ol : bool
         Whether to trigger an alert when the shunt voltage goes over the limit.
     shunt_ul : bool
@@ -258,7 +309,7 @@ class CurrentAlerts(ctypes.Union):
 
     References
     ----------
-    .. [1] Texas Instruments, INA226 datasheet.
+    .. [#] Texas Instruments, INA226 datasheet.
             http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """

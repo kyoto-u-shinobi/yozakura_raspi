@@ -7,11 +7,11 @@ Motors expect at least one control method, which can be either a serial port
 for microcontroller communication, or software PWM. Up to four motors can be
 used.
 
-The supported motor driver is the Pololu High-Power Motor Driver 18v15. [1]_
+The supported motor driver is the Pololu High-Power Motor Driver 18v15. [#]_
 
 References
 ----------
-.. [1] Pololu, High-Power Motor Driver 18v15 datasheet.
+.. [#] Pololu, High-Power Motor Driver 18v15 datasheet.
        https://www.pololu.com/product/755
 
 """
@@ -20,7 +20,7 @@ from time import sleep
 
 from RPi import GPIO as gpio
 
-from common.exceptions import BadArgError, NoDriversError, MotorCountError
+from common.exceptions import BadArgError, MotorCountError, NoDriversError
 from rpi.bitfields import MotorPacket
 
 
@@ -28,7 +28,7 @@ class Motor(object):
     """
     A class representing the motor drivers used on Yozakura.
 
-    The motor driver used is the Pololu High-Power Motor Driver 18v15. [1]_
+    The motor driver used is the Pololu High-Power Motor Driver 18v15. [#]_
 
     After the motor is initialized and registered, at least one control method
     must be added. These can be either a serial port connected to a
@@ -58,10 +58,10 @@ class Motor(object):
     Raises
     ------
     BadArgError
-        Raised when bad inputs are made.
-    TooManyMotorsError
+        Raised when bad inputs are made
+    MotorCountError
         Raised when a motor is added after all four motors have already been
-        registered.
+        registered
 
     Attributes
     ----------
@@ -79,7 +79,7 @@ class Motor(object):
         Whether a serial port is open, and hardware PWM is available.
     has_pwm : bool
         Whether software PWM is available.
-    connection : Serial
+    ser : Serial
         The serial port to be used for communication.
     pin_pwm : int
         The GPIO pin for motor PWM line.
@@ -94,11 +94,12 @@ class Motor(object):
 
     References
     ----------
-    .. [1] Pololu, High-Power Motor Driver 18v15 datasheet.
+    .. [#] Pololu, High-Power Motor Driver 18v15 datasheet.
            https://www.pololu.com/product/755
 
     """
     gpio.setmode(gpio.BOARD)
+    gpio.setwarnings(False)  # No warning when using the same pin for reset bus.
     motors = []
     _count = 0
 
@@ -107,9 +108,9 @@ class Motor(object):
         if Motor._count == 4:
             raise MotorCountError(Motor._count)
         if not 0 <= start_input <= 1:
-            raise BadArgError("start_input should be between 0 and 1.")
+            raise BadArgError("``start_input`` should be between 0 and 1.")
         if not 0 <= max_speed <= 1:
-            raise BadArgError("max_speed should be between 0 and 1.")
+            raise BadArgError("``max_speed`` should be between 0 and 1.")
 
         self._logger = logging.getLogger(name)
         self._logger.debug("Initializing motor")
@@ -135,7 +136,7 @@ class Motor(object):
 
         self._logger.debug("Registering motor")
         Motor.motors.append(self)
-        self._logger.info("Motor initialized")
+        self._logger.debug("Motor initialized")
         Motor._count += 1
 
     def _catch_fault(self, channel):
@@ -145,8 +146,10 @@ class Motor(object):
         elif gpio.input(self.pin_fault_1):
             self._logger.warning("Overtemp detected!")
         elif gpio.input(self.pin_fault_2):
-            self._logger.critical("Short detected!" +
-                                  "Motor driver has been latched until reset.")
+            self._logger.warning("Short detected!")
+            # Uncomment the following lines if you want to not stop at shorts.
+            # for motor in Motor.motors:
+            #     motor.reset_driver()
 
     def enable_serial(self, ser):
         """
@@ -161,10 +164,10 @@ class Motor(object):
             Communicates with the external hardware.
 
         """
-        self.connection = ser
+        self.ser = ser
         self.has_serial = True
 
-    def enable_pwm(self, pwm, direction, frequency=28000):
+    def enable_soft_pwm(self, pwm, direction, frequency=28000):
         """
         Allow software PWM to control the motor.
 
@@ -221,6 +224,31 @@ class Motor(object):
         else:
             raise NoDriversError(self)
 
+    def _scale_speed(self, speed):
+        """
+        Get the scaled speed according to input parameters.
+
+        Parameters
+        ----------
+        speed : float
+            A value from -1 to 1 indicating the requested speed.
+
+        Returns
+        -------
+        float
+            The scaled speed.
+
+        """
+        # Map [start_input:1] to [0:1]
+        if speed > 0:
+            scaled_speed = (speed * (1 - self.start_input)) + self.start_input
+        elif speed < 0:
+            scaled_speed = (speed * (1 - self.start_input)) - self.start_input
+
+        # Map [0:1] to [0:max_speed]
+        scaled_speed *= self.max_speed
+        return round(scaled_speed, 4)
+
     def _transmit(self, speed):
         """
         Send a byte through a serial connection.
@@ -241,36 +269,10 @@ class Motor(object):
         """
         packet = MotorPacket()
         packet.motor_id = self.motor_id
-        packet.negative = 1 if speed < 0 else 0
+        packet.negative = True if speed < 0 else False
         packet.speed = int(abs(self._scale_speed(speed)) * 31)
 
-        self.connection.write(bytes([packet.as_byte]))
-
-    def _scale_speed(self, speed):
-        """
-        Get the scaled speed according to input parameters.
-
-        Parameters
-        ----------
-        speed : float
-            A value from -1 to 1 indicating the requested speed.
-
-        Returns
-        -------
-        float
-            The scaled speed.
-
-        """
-        # Map [start_input:1] to [0:1]
-        if speed > 0:
-            speed = (speed * (1 - self.start_input)) + self.start_input
-        elif speed < 0:
-            speed = (speed * (1 - self.start_input)) - self.start_input
-
-        # Map [0:1] to [0:max_speed]
-        speed *= self.max_speed
-        speed = round(speed, 4)
-        return speed
+        self.ser.write(bytes([packet.as_byte]))
 
     def _pwm_drive(self, speed):
         """
@@ -286,44 +288,37 @@ class Motor(object):
             The speed is changed by changing the PWM duty cycle.
 
         """
-        speed = self._scale_speed(speed)
+        scaled_speed = self._scale_speed(speed)
 
-        gpio.output(self.pin_dir, gpio.LOW if speed < 0 else gpio.HIGH)
-        self._pwm.ChangeDutyCycle(abs(speed) * 100)
+        gpio.output(self.pin_dir, gpio.LOW if scaled_speed < 0 else gpio.HIGH)
+        self._pwm.ChangeDutyCycle(abs(scaled_speed) * 100)
 
     def reset_driver(self):
-        """
-        Reset the motor driver.
-
-        The motor driver is latched upon a short circuit until the reset flag
-        is brought to LOW temporarily.
-
-        """
+        """Reset the motor driver."""
         gpio.output(self.pin_reset, gpio.LOW)
         sleep(0.1)
         gpio.output(self.pin_reset, gpio.HIGH)
 
     def shutdown(self):
-        """Shut down and deregister the motor."""
+        """Shut down the motor."""
         self._logger.debug("Shutting down motor")
-        self._logger.debug("Stopping motor")
-        self.drive(0)
-
-        self._logger.debug("Deregistering motor")
-        Motor.motors.remove(self)
-        self._logger.info("Motor shut down")
+        try:
+            self.drive(0)
+        except NoDriversError:
+            self._logger.warning("No drivers available")
+        self._logger.debug("Motor shut down")
 
     @classmethod
     def shutdown_all(cls):
-        """Shut down and deregister all motors."""
-        logging.info("Shutting down all motors")
+        """Shut down all motors."""
+        logging.debug("Shutting down all motors")
         for motor in cls.motors:
             motor.shutdown()
         gpio.cleanup()
         logging.info("All motors shut down")
 
     def __repr__(self):
-        return "{name} (ID# {id})".format(name=self.name, id=self.motor_id)
+        return "{name} (ID# {m_id})".format(name=self.name, m_id=self.motor_id)
 
     def __str__(self):
         return self.name

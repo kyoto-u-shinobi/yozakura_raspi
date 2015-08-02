@@ -1,20 +1,21 @@
 # (C) 2015  Kyoto University Mechatronics Laboratory
 # Released under the GNU General Public License, version 3
 """
-Functions and classes for using I2C devices.
+Classes for using I2C devices.
 
-Provides functions to simplify work with I2C devices, as well as classes for
-each attached device. The following devices are currently supported:
+Provides a generic I2CDevice class to simplify work with I2C devices, as well as
+separate classes for each supported device. The following devices are currently
+supported:
 
-- Texas Instruments INA226 Current/Power Monitor [1]_
-- Invenense MPU-9150 9-axis MEMS MotionTracking Device [2]_
+- Texas Instruments INA226 Current/Power Monitor [#]_
+- Invenense MPU-9150 9-axis MEMS MotionTracking Device [#]_
 
 References
 ----------
-.. [1] Texas Instruments, INA 226 datasheet.
+.. [#] Texas Instruments, INA 226 datasheet.
        http://www.ti.com/lit/ds/symlink/ina226.pdf
 
-.. [2] Invensense, MPU-9150 Product Specification.
+.. [#] Invensense, MPU-9150 Product Specification.
        http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf
 
 """
@@ -27,29 +28,35 @@ from RPi import GPIO as gpio
 import RTIMU
 import smbus
 
-from common.exceptions import BadArgError, I2CSlotEmptyError,\
-    I2CSlotBusyError, NotCalibratedError
+from common.exceptions import BadArgError, YozakuraRuntimeError,\
+    I2CSlotEmptyError, I2CSlotBusyError, NotCalibratedError
 from rpi.bitfields import CurrentConfiguration, CurrentAlerts
 
 
-class Device(object):
+class I2CDevice(object):
     """
-    Parent class for all I2C devices. Provides registration and deregistration.
+    Parent class for all I2C devices.
+
+    Provides registration and deregistration.
 
     Parameters
     ----------
     address : int
-        The address of the i2c device.
+        The address of the I2C device.
     name : str
         The name of the device.
 
     Raises
     ------
+    YozakuraRuntimeError
+        Could not determine the Raspberry Pi version, and could thus not assign
+        the correct I2C bus.
     I2CSlotEmptyError
         No devices could be found at the specified address.
     I2CSlotBusyError
-        The address is valid, but another device has already been registered at
-        that address and has not been removed yet.
+        The address is valid, but is currently being used by another device; or,
+        another device has already been registered at that address and has not
+        been removed yet.
 
     Attributes
     ----------
@@ -60,7 +67,7 @@ class Device(object):
     devices : dict
         Contains all registered devices.
 
-        Dictionary format: {address (str): device (Device)}
+        Dictionary format: {address (str): device (I2CDevice)}
 
     """
     devices = {}
@@ -70,39 +77,49 @@ class Device(object):
         self._logger = logging.getLogger("i2c-{name}-{address}"
                                          .format(name=name,
                                                  address=hex(address)))
-        if Device._i2c_bus is None:
-            Device._i2c_bus = self._get_i2c_bus()  # /dev/i2c-0 or /dev/i2c-1
+        if I2CDevice._i2c_bus is None:
+            I2CDevice._i2c_bus = self._get_i2c_bus()  # /dev/i2c-0 or /dev/i2c-1
 
         self._logger.debug("Initializing device")
         slots = self._get_used_i2c_slots()
         if address not in slots:
             raise I2CSlotEmptyError(address)
-        elif slots[address] == "UU" or address in Device.devices.values():
+        elif slots[address] == "UU" or address in I2CDevice.devices.values():
             raise I2CSlotBusyError(address)
 
         else:  # Everything is fine.
             self.address = address
             self.name = name
-            self.bus = smbus.SMBus(Device._i2c_bus)
-            Device.devices[address] = self
-        self._logger.info("Device initialized")
+            self.bus = smbus.SMBus(I2CDevice._i2c_bus)
+            I2CDevice.devices[address] = self
+        self._logger.debug("Device initialized")
 
     @staticmethod
     def _get_i2c_bus():
         """
         Detect the revision number of a Raspberry Pi, useful for changing
         functionality like default I2C bus based on revision. The revision list
-        is available online. [1]_
+        is available online. [#]_
 
         Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.
 
-        This function is based on an Adafruit I2C implementation. [2]_
+        This function is based on an Adafruit I2C implementation. [#]_
+
+        Returns
+        -------
+        int
+            The I2C bus used by the Raspberry Pi.
+
+        Raises
+        ------
+        YozakuraRuntimeError
+            Could not determine the Raspberry Pi version.
 
         References
         ----------
-        .. [1] ELinux.org. "RPi Hardware History."
+        .. [#] ELinux.org. "RPi Hardware History."
                http://elinux.org/RPi_HardwareHistory#Board_Revision_History
-        .. [2] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
+        .. [#] Adafruit Python GPIO, Adafruit, Github. "Platform.py"
                https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53
 
         """
@@ -117,7 +134,7 @@ class Device(object):
                 elif match:
                     return 1  # Revision 2
             # Couldn't find the revision, throw an exception.
-            raise RuntimeError('Could not determine Raspberry Pi revision.')
+            raise YozakuraRuntimeError("Cannot determine Raspberry Pi version.")
 
     @staticmethod
     def _get_used_i2c_slots():
@@ -125,7 +142,7 @@ class Device(object):
         Find all used i2c slots.
 
         This function calls an external ``i2cdetect`` command, and works on the
-        resultant table to find out which slots are occupied.
+        returned table to find out which slots are occupied.
 
         Returns
         -------
@@ -136,7 +153,7 @@ class Device(object):
 
         """
         slots = OrderedDict()
-        command = "i2cdetect -y {bus}".format(bus=Device._i2c_bus)
+        command = "i2cdetect -y {bus}".format(bus=I2CDevice._i2c_bus)
         table = subprocess.check_output(command.split()).splitlines()[1:]
         for i, row in enumerate(table):
             row = str(row, encoding="utf-8")
@@ -148,7 +165,7 @@ class Device(object):
     def remove(self):
         """Deregister the device."""
         self._logger.info("Deregistering device")
-        del Device.devices[self.address]
+        del I2CDevice.devices[self.address]
 
     def __repr__(self):
         return "{dev_type} at {addr} ({name})".format(
@@ -160,11 +177,11 @@ class Device(object):
         return self.name
 
 
-class CurrentSensor(Device):
+class CurrentSensor(I2CDevice):
     """
-    Texas Instruments INA226 Current/Power Monitor. [1]_
+    Texas Instruments INA226 Current/Power Monitor. [#]_
 
-    The current sensor must be calibrated before use.
+    .. note:: The current sensor must be calibrated before use.
 
     Parameters
     ----------
@@ -225,29 +242,31 @@ class CurrentSensor(Device):
 
     References
     ----------
-    .. [1] Texas Instruments, INA 226 datasheet.
+    .. [#] Texas Instruments, INA 226 datasheet.
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
-    registers = {"config": 0,
-                 "v_shunt": 1,
-                 "v_bus": 2,
-                 "power": 3,
-                 "current": 4,
-                 "calib": 5,
+    registers = {"config":    0,
+                 "v_shunt":   1,
+                 "v_bus":     2,
+                 "power":     3,
+                 "current":   4,
+                 "calib":     5,
                  "alert_reg": 6,
                  "alert_lim": 7,
                  "die": 0xFF}
 
     def __init__(self, address, name="Current Sensor"):
         self.lsbs = {"v_shunt": 2.5e-6,  # Volts
-                     "v_bus": 1.25e-3,  # Volts
-                     "power": None,  # Watts
-                     "current": None}  # Amperes
+                     "v_bus":  1.25e-3,  # Volts
+                     "power":     None,  # Watts
+                     "current":   None}  # Amperes
 
         super().__init__(address, name)
         self.pin_alert = None
-        self.calibrate(10)  # 10 A max current.
+        self.calibrate(40.96)  # 40.96 A max current.
+        # self.set_configuration(avg=2, bus_ct=3, shunt_ct=3)
+        self.set_configuration()
 
     def _read_register(self, register, signed=True):
         """
@@ -274,6 +293,7 @@ class CurrentSensor(Device):
         if signed:
             if data > 2**15 - 1:
                 return data - 2**16
+
         return data
 
     def _write_register(self, register, data):
@@ -290,18 +310,18 @@ class CurrentSensor(Device):
         """
         self._logger.debug("Writing {data} to {reg} register"
                            .format(data=data, reg=register))
-        data = int(data)
+        data = int(data)  # Truncate the data.
 
         # bus.write_word_data writes one byte at a time, so we switch the byte
         # order before writing.
-        data = ((data & 0xff) << 8) + (data >> 8)  # Switch byte order
+        data = ((data & 0xff) << 8) + (data >> 8)
         self.bus.write_word_data(self.address, self.registers[register], data)
 
     def get_configuration(self):
         """
         Read the current sensor configuration.
 
-        See pages 18 and 19 in the datasheet [1]_ for more information.
+        See pages 18 and 19 in the datasheet [#]_ for more information.
 
         Returns
         -------
@@ -327,7 +347,7 @@ class CurrentSensor(Device):
 
         References
         ----------
-        .. [1] Texas Instruments, INA 226 datasheet.
+        .. [#] Texas Instruments, INA 226 datasheet.
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
@@ -341,7 +361,7 @@ class CurrentSensor(Device):
         """
         Configure the current sensor.
 
-        See pages 18 and 19 in the datasheet. [1]_ This function only changes
+        See pages 18 and 19 in the datasheet. [#]_ This function only changes
         the parameters that are specified. All other parameters remain
         unchanged.
 
@@ -361,7 +381,7 @@ class CurrentSensor(Device):
 
         References
         ----------
-        .. [1] Texas Instruments, INA 226 datasheet.
+        .. [#] Texas Instruments, INA 226 datasheet.
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
@@ -435,15 +455,20 @@ class CurrentSensor(Device):
         Parameters
         ----------
         max_current : float
-            The maximum current expected, in Amperes.
+            The maximum current expected, in amperes.
         r_shunt : float, optional
-            The resistance of the shunt resistor, in Ohms. The resistor used on
-            the sensor board is 0.002 Ohms.
+            The resistance of the shunt resistor, in ohms. The resistor used on
+            the sensor module [#]_ is 0.002 ohms.
 
         Raises
         ------
         BadArgError
             The max_current value is too small.
+
+        References
+        ----------
+        .. [#] Strawberry Linux, INA226モジュール説明書. (Japanese only.)
+               https://strawberry-linux.com/pub/ina226-manual.pdf
 
         """
         self._logger.debug("Calibrating sensor")
@@ -461,7 +486,7 @@ class CurrentSensor(Device):
         """
         Choose the alert function and set up the alert behaviour.
 
-        See pages 21 and 22 of the datasheet [1]_ for more information.
+        See pages 21 and 22 of the datasheet [#]_ for more information.
 
         Only one alert function may be selected. The five possible alert
         functions are:
@@ -504,7 +529,7 @@ class CurrentSensor(Device):
 
         References
         ----------
-        .. [1] Texas Instruments, INA 226 datasheet.
+        .. [#] Texas Instruments, INA 226 datasheet.
                http://www.ti.com/lit/ds/symlink/ina226.pdf
 
         """
@@ -521,9 +546,9 @@ class CurrentSensor(Device):
         self._write_register("alert_reg", alerts.as_byte)
 
         if alert == "sol" or alert == "sul":
-            lsb = self.lsbs["shunt"]
+            lsb = self.lsbs["v_shunt"]
         elif alert == "bol" or alert == "bul":
-            lsb = self.lsbs["bus"]
+            lsb = self.lsbs["v_bus"]
         else:  # alert == "pol"
             lsb = self.lsbs["power"]
         self._write_register("alert_lim", limit / lsb)
@@ -545,7 +570,8 @@ class CurrentSensor(Device):
         """
         Check the state of the alerts.
 
-        Returns:
+        Returns
+        -------
         flags : dict
             Contains the state of the alerts. Dictionary fields:
 
@@ -570,12 +596,28 @@ class CurrentSensor(Device):
 
         return flags
 
+    @property
+    def iv(self):
+        """
+        Return the current (A) and voltage (V) read by the sensor.
 
-class IMU(Device):
+        Returns
+        -------
+        2-tuple of float
+            The current and voltage readings of the sensor.
+
+        """
+        current = self.get_measurement("current")
+        # power = self.get_measurement("power")
+        voltage = self.get_measurement("v_bus")
+        return current, voltage
+
+
+class IMU(I2CDevice):
     """
-    Invenense MPU-9150 9-axis MEMS MotionTracking Device. [1]_
+    Invenense MPU-9150 9-axis MEMS MotionTracking Device. [#]_
 
-    Simple wrapper for the RTIMU library by richards-tech [2]_ for accessing
+    Simple wrapper for the RTIMU library by richards-tech [#]_ for accessing
     the sensor fusion data of the MPU-9150.
 
     Parameters
@@ -599,9 +641,9 @@ class IMU(Device):
 
     References
     ----------
-    .. [1] Invensense, MPU-9150 Product Specification.
+    .. [#] Invensense, MPU-9150 Product Specification.
            http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf
-    .. [2] RTIMULib, richards-tech, Github.
+    .. [#] RTIMULib, richards-tech, Github.
            https://github.com/richards-tech/RTIMULib
 
     """
@@ -613,7 +655,7 @@ class IMU(Device):
         else:
             address = self._settings.I2CAddress
 
-        self._logger = logging.getLogger("imu-{name}-{address}"
+        self._logger = logging.getLogger("i2c-{name}-{address}"
                                          .format(name=name,
                                                  address=hex(address)))
 
@@ -622,7 +664,9 @@ class IMU(Device):
             self._logger.warning("IMU init failed")
             return
         else:
-            self._logger.info("IMU init succeeded")
+            self._logger.debug("IMU init succeeded")
+
+        self._imu.setCompassEnable(False)
 
         self.poll_interval = self._imu.IMUGetPollInterval
         super().__init__(address, name)
@@ -630,14 +674,18 @@ class IMU(Device):
     @property
     def rpy(self):
         """
-        Return the Roll, Pitch, and Yaw data, in radians.
+        Return the roll, pitch, and yaw readings, in radians.
 
         Returns
         -------
-        3-tuple of (float, float, float)
+        3-list of float
             The roll, pitch, and yaw readings of the IMU, in radians.
 
         """
-        while True:  # Wait until new data is ready.
-            if self._imu.IMURead():
-                return self._imu.getFusionData()
+        data = self._imu.getIMUData()
+        while self._imu.IMURead():
+            data = self._imu.getIMUData()
+        if data["fusionPoseValid"]:
+            return data["fusionPose"]
+        else:
+            return [None, None, None]

@@ -3,8 +3,8 @@
 """
 Exceptions used in the entire Yozakura project.
 
-Exceptions in Yozakura are only used when there is a fatal error that would be
-dangerous, or would cause the robot to be unable to move or carry out its tasks
+Exceptions in Yozakura are only used when there is a fatal error that could be
+dangerous, or could cause the robot to be unable to move or carry out its tasks
 properly.
 
 """
@@ -31,20 +31,34 @@ class YozakuraException(Exception):
     """
 
 
+# Basic errors
 class BadArgError(YozakuraException):
-    """
-    Raised when there is an invalid argument.
-
-    Similar to ValueError.
-
-    """
+    """Raised when there is an invalid argument."""
 
 
-class NoMbedError(YozakuraException):
-    """Raised when the raspberry pi cannot connect to the mbed."""
-    msg = "The mbed is not connected!"
+class BadDataError(YozakuraException):
+    """Raised when invalid data is received."""
 
 
+class YozakuraExit(YozakuraException, SystemExit):
+    """Raised when the program needs to end."""
+
+
+class YozakuraRuntimeError(YozakuraException, RuntimeError):
+    """Raised when a runtime error occurs."""
+
+
+class YozakuraTimeoutError(YozakuraException, TimeoutError):
+    """Raised when a Timeout occurs."""
+
+
+# IP address
+class UnknownIPError(YozakuraException):
+    """Raised when the local IP address is unknown."""
+    msg = "Could not find the local IP address."
+
+
+# Base station - controller
 class NoControllerError(YozakuraException):
     """Raised when there are no controllers connected to the base station."""
     msg = "There are no controllers attached!"
@@ -71,6 +85,53 @@ class UnknownControllerError(YozakuraException):
         super().__init__(message.format(make=make))
 
 
+# RPi - Base station connection
+class NoConnectionError(YozakuraException):
+    """Raised when the base station is not connected."""
+    msg = "Base station is not connected!"
+
+
+# RPi - mbed connection
+class NoMbedError(YozakuraException):
+    """Raised when the raspberry pi cannot connect to an mbed."""
+    msg = "An mbed is not connected!"
+
+
+class UnknownMbedError(YozakuraException):
+    """Raised when the Raspberry Pi connects to an unknown mbed."""
+    msg = "An mbed cannot be identified!"
+
+
+# Motor errors
+class MotorCountError(YozakuraException):
+    """
+    Raised when not enough motors, or more than four motors are registered.
+
+    The Raspberry Pi client keeps a list of all motors it needs to control. If
+    the client is run with no motors registered, the robot would not be able
+    to move.
+
+    In addition, the ``MotorPacket`` structure only allows for a motor ID
+    between 0 and 3; further motors would not be addressable.
+
+    Parameters
+    ----------
+    count : int, optional
+        The amount of motors that have been registered.
+
+    """
+    def __init__(self, count=None):
+        if count is None:
+            message = "The motor count is bad!"
+        elif count == 1:
+            message = "Only one motor has been added!"
+        elif count < 4:
+            message = "Only {n} motors have been added!".format(n=count)
+        else:
+            message = "{n} motors have already been added!".format(n=count)
+        super().__init__(message)
+
+
 class NoDriversError(YozakuraException):
     """
     Raised when a motor driver has no control method enabled.
@@ -93,43 +154,7 @@ class NoDriversError(YozakuraException):
         super().__init__(message.format(motor=motor))
 
 
-class MotorCountError(YozakuraException):
-    """
-    Raised when no motors, or more than four motors are registered.
-
-    The Raspberry Pi client keeps a list of all motors it needs to control. If
-    the client is run with no motors registered, the robot would not be able
-    to move.
-
-    In addition, the ``MotorPacket`` structure only allows for a motor ID
-    between 0 and 3; further motors would not be addressable.
-
-    Parameters
-    ----------
-    count : int, optional
-        The amount of motors that have been registered.
-
-    """
-    def __init__(self, count=None):
-        if count is None:
-            message = "The motor count is bad!"
-        else:
-            message = "{n} motors have been registered!".format(n=count)
-        super().__init__(message)
-
-
-class NoSerialsError(YozakuraException):
-    """
-    Raised when RPi client is run with no serial devices registered.
-
-    The Raspberry Pi needs to use the microcontroller to obtain position data
-    from the two flippers of the robot. That information is used to hold the
-    angle when there is no input from the server.
-
-    """
-    msg = "No serial devices are registered!"
-
-
+# I2C Errors
 class I2CSlotEmptyError(YozakuraException):
     """
     Raised when no device is found at a given address.

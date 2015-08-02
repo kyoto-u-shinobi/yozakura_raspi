@@ -9,12 +9,11 @@ automatically, and can be used if its button mapping has been previously
 registered.
 
 """
-
 import logging
 
 import pygame
 
-from common.exceptions import UnknownControllerError
+from common.exceptions import NoControllerError, UnknownControllerError
 
 
 class Position(object):
@@ -23,15 +22,19 @@ class Position(object):
 
     Parameters
     ----------
-    x, y : float
-        The positions of the axis..
+    x : float
+        The horizontal position of the axis.
+    y : float
+        The vertical position of the axis.
     inverted : bool, optional
         Whether the direction is y-inverted.
 
     Attributes
     ----------
-    x, y : float
-        The positions of the axis..
+    x : float
+        The horizontal position of the axis.
+    y : float
+        The vertical position of the axis.
     inverted : bool
         Whether the direction is y-inverted.
 
@@ -87,7 +90,7 @@ class Position(object):
         if not vertical and not horizontal:
             direction = "none"
         else:
-            direction = "{}{}".format(vertical, horizontal)
+            direction = vertical + horizontal
 
         return direction
 
@@ -107,7 +110,7 @@ class Buttons(object):
 
     Parameters
     ----------
-    buttons : iterable
+    buttons : list
         A list containing the state of each button. 1 if pressed, 0 otherwise.
 
     Attributes
@@ -115,7 +118,7 @@ class Buttons(object):
     buttons : list of int
         A list containing the state of each button.
     pressed_buttons: list of str
-        A list containing the names of each button that is pressed.
+        A list containing the names of the button that are pressed.
     known_makes : list of str
         A list containing all the makes whose mappings have been registered.
 
@@ -125,13 +128,13 @@ class Buttons(object):
                     "select", "start",       # 8-9
                     "L3", "R3", "PS")        # 10-12
 
-    _mappings = {"Logitech Logitech RumblePad 2 USB": {},
+    _mappings = {"Logitech Logitech RumblePad 2 USB": {},  # No change
                  "Elecom Wireless Gamepad": {1: 3, 2: 1, 3: 2}}
 
     # Populate the mappings.
-    for make in _mappings:
-        for i in range(13):
-            _mappings[make].setdefault(i, i)
+    for _make in _mappings:
+        for _i in range(13):
+            _mappings[_make].setdefault(_i, _i)
 
     known_makes = list(_mappings.keys())
 
@@ -158,6 +161,23 @@ class Buttons(object):
         """
         return button in self.pressed
 
+    def any_pressed(self, *buttons):
+        """
+        Whether any given buttons are pressed.
+
+        Parameters
+        ----------
+        buttons : one or more str
+            The name(s) of the buttons to be checked.
+
+        Returns
+        -------
+        bool
+            True if any the buttons are pressed.
+
+        """
+        return any(self.is_pressed(button) for button in buttons)
+
     def all_pressed(self, *buttons):
         """
         Whether all given buttons are pressed.
@@ -173,7 +193,7 @@ class Buttons(object):
             True if all the buttons are pressed.
 
         """
-        return all([self.is_pressed(button) for button in buttons])
+        return all(self.is_pressed(button) for button in buttons)
 
     def __repr__(self):
         return str(self.buttons)
@@ -222,8 +242,12 @@ class State(object):
 
         Returns
         -------
-        dpad, lstick, rstick : 2-tuple of float
-            The positions of the dpad and the left and right analog sticks.
+        dpad : 2-tuple of float
+            The position of the dpad.
+        lstick : 2-tuple of float
+            The position of the left analog stick.
+        rstick : 2-tuple of float
+            The position of the right analog stick.
         buttons : list of int
             The list of buttons. 1 if pressed, 0 otherwise.
 
@@ -252,8 +276,8 @@ class State(object):
         --------
         >>> stick = Controller(0, "body")
         >>> try:
-        ...     While True:  # Below, end="backslash r"
-        ...         print(stick_body.get_state(), end="\r")
+        ...     while True:
+        ...         print(stick_body.get_state(), end="\\r")
         ... except (KeyboardInterrupt, SystemExit):  # Exit safely.
         ...     Controller.shutdown_all()
         dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []
@@ -306,7 +330,10 @@ class Controller(object):
     def __init__(self, stick_id, name=None):
         self._logger = logging.getLogger("controller-{id}".format(id=stick_id))
         self._logger.debug("Initializing controller")
-        self.controller = pygame.joystick.Joystick(stick_id)
+        try:
+            self.controller = pygame.joystick.Joystick(stick_id)
+        except pygame.error:
+            raise NoControllerError
         self.stick_id = stick_id
         self.make = self.controller.get_name()
 
@@ -365,6 +392,12 @@ class Controller(object):
         logging.info("Closing all controller handlers")
         for controller in list(cls.controllers.values()):
             controller.shutdown()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.shutdown()
 
     def __repr__(self):
         return "{name} (ID# {id})".format(name=self.name, id=self.stick_id())

@@ -21,6 +21,8 @@ import time
 
 import numpy as np
 
+from common.exceptions import YozakuraExit
+
 
 class Handler(socketserver.BaseRequestHandler):
     """
@@ -34,16 +36,18 @@ class Handler(socketserver.BaseRequestHandler):
         Handles communication with the client
     wheels_single_stick : bool
         Whether the wheels are controlled by only the left analog stick.
-    reverse mode : bool
+    reverse_mode : bool
         Whether reverse mode is engaged. In reverse mode, the x- and y- inputs
         are both inverted.
 
     """
     def __init__(self, request, client_address, server):
-        self._logger = logging.getLogger("{client_ip}_handler".format(
-            client_ip=client_address[0]))
+        self._logger = logging.getLogger("{client_ip}_handler"
+            .format(client_ip=client_address[0]))
         self._logger.debug("New handler created")
         super().__init__(request, client_address, server)
+        self.wheels_single_stick = False
+        self.reverse_mode = False
 
     def handle(self):
         """
@@ -61,20 +65,16 @@ class Handler(socketserver.BaseRequestHandler):
 
         - state : Reply with the state of the controller.
         - inputs : Reply with the raw input data from the state.
-        - speeds : Perform calculations and send the required motor speed
-          data.
+        - commands : Perform calculations and send the required motor and arm
+          speed data.
         - echo : Reply with what the client has said.
         - print : ``echo``, and print to ``stdout``.
 
         """
         self._logger.info("Connected to client")
         self.request.settimeout(0.5)  # seconds
-        self.wheels_single_stick = False
-        self.reverse_mode = False
         self._sticks_timestamp = self._reverse_timestamp = time.time()
 
-        # TODO(murata): Remove everything related to _sensors_client and the
-        # try/finally block once you add your udp server.
         self._sensors_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sensors_client.setsockopt(socket.SOL_SOCKET,
                                         socket.SO_REUSEADDR, True)
@@ -84,7 +84,7 @@ class Handler(socketserver.BaseRequestHandler):
             self._loop()
         finally:
             self._sensors_client.close()
-            raise SystemExit
+            raise YozakuraExit
 
     def _loop(self):
         """The main handler loop."""
@@ -93,56 +93,72 @@ class Handler(socketserver.BaseRequestHandler):
                 data = self.request.recv(64).decode().strip()
             except socket.timeout:
                 self._logger.warning("Lost connection to robot")
-                self._logger.info("Robot will shut down motors")
+                self._logger.info("Robot has shut down motors")
                 continue
             self._logger.debug('Received: "{data}"'.format(data=data))
-    
-            if data == "":  # Client exited safely.
+
+            if data == "":  # Client exited
                 self._logger.info("Terminating client session")
                 break
-    
-            if data == "state":
-                state = self.server.controllers["main"].state
-                reply = pickle.dumps(state.data)
-    
-            elif data == "inputs":
-                state = self.server.controllers["main"].state
-                dpad, lstick, rstick, buttons = state.data
-                reply = pickle.dumps(((dpad.x, dpad.y),
-                                      (lstick.x, lstick.y),
-                                      (rstick.x, rstick.y),
-                                      buttons.buttons))
-    
-            elif data == "speeds":
-                state = self.server.controllers["main"].state
-                reply = pickle.dumps(self._get_needed_speeds(state))
-    
-            elif data.split()[0] == "echo":
-                reply = " ".join(data.split()[1:])
-    
-            elif data.split()[0] == "print":
-                reply = " ".join(data.split()[1:])
-                self._logger.info('Client says: "{reply}"'
-                                  .format(reply=reply))
-    
-            else:
-                reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
-                self._logger.debug(reply)
-    
+
+            reply = self._generate_reply(data)
+
             try:
                 self.request.sendall(str.encode(reply))
-            except TypeError:  # Already bytecode
+            except TypeError:  # Already bytecode (e.g., pickled object)
                 self.request.sendall(reply)
-    
+
             # Receive sensor data
             raw_data = self._udp_receive(self, size=1024)
             try:
-                adc_data, current_data, pose_data = pickle.loads(raw_data)
-                self._log_sensor_data(adc_data, current_data, pose_data)
-            except (AttributeError, EOFError, IndexError, TypeError):
-                self._logger.debug("No or bad data received from robot")
+                flippers, currents, poses, arm_data = pickle.loads(raw_data)
+                self._log_sensor_data(flippers, currents, poses, arm_data)
+            except (AttributeError, EOFError, IndexError, TypeError) as e:
+                self._logger.debug("No or bad data received from robot: {e}"
+                                   .format(e=e))
+ 
+    def _generate_reply(self, data):
+        """
+        Generate the necessary reply given a request string.
 
-    def _get_needed_speeds(self, state):
+        Parameters
+        ----------
+        data : str
+            The request string.
+
+        Returns
+        -------
+        str or bytes
+            The reply to send back to the client.
+
+        """
+        if data == "state":
+                state = self.server.controllers["main"].state
+                reply = pickle.dumps(state.data)
+        elif data == "inputs":
+            state = self.server.controllers["main"].state
+            dpad, lstick, rstick, buttons = state.data
+            reply = pickle.dumps(((dpad.x, dpad.y),
+                                  (lstick.x, lstick.y),
+                                  (rstick.x, rstick.y),
+                                  buttons.buttons))
+        elif data == "commands":
+            state = self.server.controllers["main"].state
+            motor_commands, arm_commands = self._generate_commands(state)
+            reply = pickle.dumps(motor_commands, arm_commands)
+        elif data.split()[0] == "echo":
+            reply = " ".join(data.split()[1:])
+        elif data.split()[0] == "print":
+            reply = " ".join(data.split()[1:])
+            self._logger.info('Client says: "{reply}"'
+                              .format(reply=reply))
+        else:
+            reply = 'Unable to parse command: "{cmd}"'.format(cmd=data)
+            self._logger.debug(reply)
+
+        return reply
+
+    def _generate_commands(self, state):
         """
         Get required speeds based on controller state and system state.
 
@@ -164,22 +180,26 @@ class Handler(socketserver.BaseRequestHandler):
 
         Returns
         -------
-        float
-            The speed inputs for each of the four motors, with values
-            between -1 and 1. The four motors are:
+        motor_commands : 4-list of float
+            A list of the speeds requested of each motor:
 
-            - Left wheel
-            - Right wheel
-            - Left flipper
-            - Right flipper
+            - Left wheel motor
+            - Right wheel motor
+            - Left flipper motor
+            - Right flipper motor
+        arm_commands : 4-tuple of int
+            A list of commands for the arm servos:
+
+            - mode
+            - linear
+            - pitch
+            - yaw
 
         See also
         --------
-        State
+        Controller.State
 
         """
-        # TODO(masasin): Handle select : Synchronize flipper positions.
-        # TODO(masasin): Handle start : Move flippers to forward position.
         dpad, lstick, rstick, buttons = state.data
 
         if buttons.is_pressed("L3"):
@@ -224,7 +244,7 @@ class Handler(socketserver.BaseRequestHandler):
                 lflipper = -1
             else:
                 lflipper = 0
-
+                
         else:  # Forward mode
             # Wheels
             if self.wheels_single_stick:
@@ -262,8 +282,24 @@ class Handler(socketserver.BaseRequestHandler):
                 rflipper = -1
             else:
                 rflipper = 0
+            
+        # Arm
+        if buttons.is_pressed("○"):
+            linear = dpad.y
+        else:
+            pitch = dpad.y
+            yaw = dpad.x
+        
+        if buttons.is_pressed("start"):
+            mode = 1
+        elif buttons.is_pressed("select"):
+            mode = 2
+        else:
+            mode = 0
 
-        return lwheel, rwheel, lflipper, rflipper
+        motor_commands = [lwheel, rwheel, lflipper, rflipper]
+        arm_commands = mode, linear, pitch, yaw
+        return motor_commands, arm_commands
 
     def _switch_control_mode(self):
         """
@@ -308,97 +344,124 @@ class Handler(socketserver.BaseRequestHandler):
                 self._logger.info("Reverse mode enabled")
             self._reverse_timestamp = current_time
 
-    def _log_sensor_data(self, adc_data, current_data, pose_data):
+    def _log_sensor_data(self, flippers, currents, poses, arm_data):
         """
         Log sensor data to debug.
 
         Parameters
         ----------
-        adc_data : 2-list of floats
+        flippers : 2-list of floats
             ADC data containing flipper positions, in radians.
-        current_data : 3-list of 3-list of floats
-            Current sensor data containing current, power, and voltage values.
-        pose_data : 2-list of 3-list of floats
+        currents : list of 2-list of float
+            Current sensor data containing current (A) and voltage (V) values.
+        poses : list of 3-list of float
             Pose data containing yaw, pitch, and roll values.
+        arm_data : list of lists and float
+            The data returned from the arm.
 
         """
-        lwheel, rwheel, lflip, rflip, battery = current_data
+        lwheel, rwheel, lflip, rflip = current_data
         front, rear = np.rad2deg(pose_data)
+        arm_pos, servo_vii, (thermo_l, thermo_r), co2_sensor = arm_data
 
-        self._logger.debug("lflipper: {lf:6.3f}  rflipper: {rf:6.3f}"
-                           .format(lf=adc_data[0], rf=adc_data[1]))
-        self._logger.debug("lwheel_current: {i:6.3f} A  {p:6.3f} W  {v:6.3f} V"
-                           .format(i=lwheel[0], p=lwheel[1], v=lwheel[2]))
-        self._logger.debug("rwheel_current: {i:6.3f} A  {p:6.3f} W  {v:6.3f} V"
-                           .format(i=rwheel[0], p=rwheel[1], v=rwheel[2]))
-        self._logger.debug("lflip_current: {i:6.3f} A  {p:6.3f} W  {v:6.3f} V"
-                           .format(i=lflip[0], p=lflip[1], v=lflip[2]))
-        self._logger.debug("rflip_current: {i:6.3f} A  {p:6.3f} W  {v:6.3f} V"
-                           .format(i=rflip[0], p=rflip[1], v=rflip[2]))
-        self._logger.debug("batt_current: {i:6.3f} A  {p:6.3f} W  {v:6.3f} V"
-                           .format(i=battery[0], p=battery[1], v=battery[2]))
-        self._logger.debug("front r: {r:6.3f}  p: {p:6.3f}  y: {y:6.3f}"
-                           .format(r=front[0], p=front[1], y=front[2]))
-        self._logger.debug("rear r: {r:6.3f}  p: {p:6.3f}  y: {y:6.3f}"
-                           .format(r=rear[0], p=rear[1], y=rear[2]))
+        check = lambda x: "None  " if x is None else "{:6.3f}".format(x)
+        check_t = lambda x: "None" if x is None else "{4.1f}".format(x)
+        check_c = lambda x: "None  " if x is None else "{:6.1f}".format(x)
+
+        self._logger.debug("lflipper: {lf}  rflipper: {rf}"
+                           .format(lf=check(flippers[0]),
+                                   rf=check(flippers[1])))
+        self._logger.debug("total_iv: {i} A  {v} V"
+                           .format(i=check(sum(i[0] for i in current_data)),
+                                   v=check(sum(i[1] for i in current_data)/4)))
+        self._logger.debug("lwheel_current: {i} A  {v} V"
+                           .format(i=check(lwheel[0]), v=check(lwheel[1])))
+        self._logger.debug("rwheel_current: {i} A  {v} V"
+                           .format(i=check(rwheel[0]), v=check(rwheel[1])))
+        self._logger.debug("lflip_current: {i} A  {v} V"
+                           .format(i=check(lflip[0]), v=check(lflip[1])))
+                           .format(i=lflip[0], v=lflip[1]))
+        self._logger.debug("rflip_current: {i} A  {v} V"
+                           .format(i=check(rflip[0]), v=check(rflip[1])))
+        self._logger.debug("front r: {r}  p: {p}  y: {y}"
+                           .format(r=check(front[0]),
+                                   p=check(front[1]),
+                                   y=check(front[2])))
+        self._logger.debug("rear r: {r}  p: {p}  y: {y}"
+                           .format(r=check(rear[0]),
+                                   p=check(rear[1]),
+                                   y=check(rear[2])))
+        self._logger.debug("arm linear: {l}  pitch: {p}  yaw: {y}"
+                           .format(l=check(arm_pos[0]),
+                                   p=check(arm_pos[1]),
+                                   y=check(arm_pos[2])))
+        self._logger.debug("arm lin_v {l} V  pitch: {p} A  yaw: {y} A"
+                           .format(l=check(servo_vii[0]),
+                                   p=check(servo_vii[1]),
+                                   y=check(servo_vii[2])))
+        thermo_l_string = " ".join([check_t(i) for i in thermo_l])
+        thermo_r_string = " ".join([check_t(i) for i in thermo_r])
+        self._logger.debug("thermo_l: [{l}]".format(thermo_l_string)) 
+        self._logger.debug("thermo_r: [{r}]".format(thermo_r_string)) 
+        self._logger.debug("co2_sensor: {c}".format(c=check_c(co2_sensor)))
         self._logger.debug(20 * "=")
-    
+
     def _udp_get_latest(self, size=1, n_bytes=1):
         """
         Get the latest input.
-        
+
         This function automatically empties the given socket queue.
-        
+
         Parameters
         ----------
         size : int, optional
             The number of bytes to read at a time.
         n_bytes : int, optional
             The number of bytes to return.
-        
+
         Returns
         -------
         bytes
             The last received message, or None if the socket was not ready.
-        
+
         """
         data = []
         input_ready, o, e = select.select([self._server_client],
                                           [], [], 0)  # Check ready.
-        
+
         while input_ready:
             data.append(input_ready[0].recv(size))  # Read once.
             input_ready, o, e = select.select([self._server_client],
                                               [], [], 0)  # Check ready.
-        
+
         if not data:
             return None
         elif n_bytes == 1:
             return data[-1]
         else:
             return data[-n_bytes:]
-    
+
     def _udp_receive(self, size=32):
         """
         Receive UDP data without blocking.
-        
+
         Parameters
         ----------
         size : int, optional
             The number of bytes to read at a time.
-        
+
         Returns
         -------
         recv_msg : bytes
             The received message, or None if the buffer was empty.
         """
         recv_msg = None
-        
+
         try:
-            recv_msg = self._get_latest(size)
+            recv_msg = self._udp_get_latest(size)
         except BlockingIOError:
             pass
-        
+
         return recv_msg
 
 
@@ -444,7 +507,7 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
             The controller to be registered.
 
         """
-        self._logger.debug("Adding {c} controller".format(cs=controller))
+        self._logger.debug("Adding {c} controller".format(c=controller))
         self.controllers[controller.name] = controller
 
     def remove_controller(self, controller):
