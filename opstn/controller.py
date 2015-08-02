@@ -4,7 +4,7 @@
 Implement a controller in order to control the robot.
 
 Provides classes for directional position, button states, and full controller
-state, as well as a ``Controller`` class. The controller type is detected
+state, as well as a `Controller` class. The controller type is detected
 automatically, and can be used if its button mapping has been previously
 registered.
 
@@ -56,8 +56,8 @@ class Position(object):
         str
             "U", "D", "L", and "R" represent Up, Down, Left, and Right
             respectively. Return "U", "D", "L", "R" if the positions are either
-            only ``x`` or only ``y``. Otherwise, return "U" or "D", followed by
-            "L" or "R", as appropriate. If both the ``x`` and ``y`` positions
+            only `x` or only `y`. Otherwise, return "U" or "D", followed by
+            "L" or "R", as appropriate. If both the `x` and `y` positions
             are zero, return "none".
 
         Examples
@@ -106,7 +106,7 @@ class Buttons(object):
     A class representing the button configuration of a controller.
 
     When registering the mapping for a new controller, please run the
-    ``get_name()`` function to obtain the name to use.
+    `get_name()` function to obtain the name to use.
 
     Parameters
     ----------

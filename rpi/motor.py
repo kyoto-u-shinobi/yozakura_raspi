@@ -107,9 +107,9 @@ class Motor(object):
         if Motor._count == 4:
             raise MotorCountError(Motor._count)
         if not 0 <= start_input <= 1:
-            raise BadArgError("``start_input`` should be between 0 and 1.")
+            raise BadArgError("`start_input` should be between 0 and 1.")
         if not 0 <= max_speed <= 1:
-            raise BadArgError("``max_speed`` should be between 0 and 1.")
+            raise BadArgError("`max_speed` should be between 0 and 1.")
 
         self._logger = logging.getLogger(name)
         self._logger.debug("Initializing motor")

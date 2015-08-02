@@ -15,7 +15,7 @@ sensors connected via I2C. In addition, front and rear body pose are returned
 via two I2C-connected IMUs.
 
 From the arm mbed, the client receives servo positions, voltages, and currents;
-two 4x4 temperature matrices; and readings from a CO2 sensor attached to the
+two 4x4 temperature matrices; and readings from a |CO2| sensor attached to the
 arm.
 
 All external sensor data is sent back to the base station asynchronously via
@@ -122,8 +122,8 @@ class Client(object):
         """
         Set up and register a motor.
 
-        This method must be called before ``run``. Either ``ser`` or
-        ``pwm_pins`` must be provided.
+        This method must be called before `run`. Either `ser` or
+        `pwm_pins` must be provided.
 
         Parameters
         ----------
@@ -140,7 +140,7 @@ class Client(object):
         Raises
         ------
         NoDriversError
-            Neither ``ser`` nor ``pwm_pins`` have been provided.
+            Neither `ser` nor `pwm_pins` have been provided.
 
         """
         self._logger.debug("Adding {name}".format(name=motor))
@@ -188,7 +188,7 @@ class Client(object):
 
     def run(self):
         """
-        Send and handle requests until a ``KeyboardInterrupt`` is received.
+        Send and handle requests until a `KeyboardInterrupt` is received.
 
         This method connects to the server, and loops forever. It takes the
         speed and arm commands from the base station, and manages the outputs.
@@ -328,7 +328,7 @@ class Client(object):
         for motor, speed in zip(self.motors.values(), motor_commands):
             motor.drive(speed)
 
-    def _command_arm(self, arm_commands):
+    def _command_arm(self, commands):
         """
         Command the arm.
 
@@ -337,13 +337,13 @@ class Client(object):
 
         Parameters
         ----------
-        arm_commands : 4-tuple of int
+        commands : 4-tuple of int
             A list of commands for the arm servos.
 
         """
         self._logger.debug("Commanding arm")
         if "mbed_arm" in self.mbeds:
-            mode, linear, pitch, yaw = [2 if i == -1 else i for i in arm_commands]
+            mode, linear, pitch, yaw = [2 if i == -1 else i for i in commands]
             packet = ArmPacket()
             packet.mode = mode
             packet.linear = int(linear)

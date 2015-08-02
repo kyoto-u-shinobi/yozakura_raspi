@@ -369,7 +369,7 @@ class CurrentSensor(I2CDevice):
         ----------
         reset : bool, optional
             Whether to reset. This overrides all other data. Use via the
-            ``reset`` method.
+            `reset` method.
         avg : int, optional
             The averaging mode. Can range between 0 and 7.
         bus_ct : int, optional

@@ -26,9 +26,9 @@ class Mbed(serial.Serial):
     """
     mbed LPC1768. [#]_
 
-    This class subclasses from ``serial.Serial``, and implements all its method,
-    and also provides some new ones. For in-depth implementation details, please
-    see the ``pyserial`` documentation.
+    This class subclasses from `serial.Serial`, and implements all its
+    methods, and also provides some new ones. For in-depth implementation
+    details, please see the `pyserial` documentation.
 
     Parameters
     ----------

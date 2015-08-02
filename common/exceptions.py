@@ -14,7 +14,7 @@ class YozakuraException(Exception):
     """
     Root for all Yozakura exceptions, never raised.
 
-    All custom exceptions derive from ``YozakuraException``. That way, when you
+    All custom exceptions derive from `YozakuraException`. That way, when you
     need to filter out only exceptions caused by the robot (as opposed to, say,
     an error caused by your workstation or installation), you can simply use
     something like this:
@@ -69,7 +69,7 @@ class UnknownControllerError(YozakuraException):
     Raised when the mapping of the controller buttons is unknown.
 
     Controller button mappings have to be registered in advance in the
-    ``Buttons`` class.
+    `Buttons` class.
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ class MotorCountError(YozakuraException):
     the client is run with no motors registered, the robot would not be able
     to move.
 
-    In addition, the ``MotorPacket`` structure only allows for a motor ID
+    In addition, the `MotorPacket` structure only allows for a motor ID
     between 0 and 3; further motors would not be addressable.
 
     Parameters
@@ -136,7 +136,7 @@ class NoDriversError(YozakuraException):
     """
     Raised when a motor driver has no control method enabled.
 
-    For a ``Motor`` to be able to use PWM, it needs either the ``Serial``
+    For a `Motor` to be able to use PWM, it needs either the `Serial`
     connection to a microcontroller for hardware PWM (preferable if available),
     or a list of Raspberry Pi GPIO pins in order to use software PWM.
 

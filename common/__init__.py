@@ -3,7 +3,7 @@
 """
 Common modules used by both the base station and the Raspberry Pi.
 
-- ``exceptions`` defines exceptions used by Yozakura.
-- ``functions`` provides functions and decorators used throughout Yozakura.
+- `exceptions` defines exceptions used by Yozakura.
+- `functions` provides functions and decorators used throughout Yozakura.
 
 """

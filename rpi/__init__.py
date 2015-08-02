@@ -12,7 +12,9 @@ The Raspberry Pi is on the Yozakura. It communicates with:
 The Raspberry Pi's client module receives speed commands from the base station,
 and relays them to the mbeds to control the motors and arm. In addition, it
 sends back data about flipper positions, current sensor measurements, pose
-information, arm position and status, temperature measurements, and CO2
+information, arm position and status, temperature measurements, and |CO2|
 readings.
+
+.. |CO2| replace:: CO\ :sub:`2`
 
 """
