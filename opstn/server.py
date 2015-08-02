@@ -43,7 +43,7 @@ class Handler(socketserver.BaseRequestHandler):
     """
     def __init__(self, request, client_address, server):
         self._logger = logging.getLogger("{client_ip}_handler"
-            .format(client_ip=client_address[0]))
+                                         .format(client_ip=client_address[0]))
         self._logger.debug("New handler created")
         super().__init__(request, client_address, server)
         self.wheels_single_stick = False
@@ -205,85 +205,115 @@ class Handler(socketserver.BaseRequestHandler):
         if buttons.is_pressed("L3"):
             self._switch_control_mode()
         if buttons.is_pressed("R3"):
-            self._engage_reverse_mode()
+            self._toggle_reverse_mode()
+
+        lwheel, rwheel = self._generate_commands_wheels(lstick, rstick)
+        lflipper, rflipper = self._generate_commands_flippers(buttons)
+        motor_commands = [lwheel, rwheel, lflipper, rflipper]
+
+        arm_commands = self._generate_commands_arm(dpad, buttons)
+        return motor_commands, arm_commands
+
+    def _generate_commands_wheels(self, lstick, rstick):
+        """
+        Generate the commands to the wheels.
+
+        Parameters
+        ----------
+        lstick : Position
+            The position of the left analog stick.
+        rstick : Position
+            The position of the right analog stick.
+
+        Returns
+        -------
+        lwheel : float
+            The command to the left wheels.
+        rwheel : float
+            The command to the right wheels.
+
+        """
+        flip_dirs_on_reverse = True
+        if self.wheels_single_stick:
+            self._logger.debug("lx: {lx:9.7}  ly: {ly:9.7}"
+                               .format(lx=lstick.x, ly=lstick.y))
+            if lstick.y == 0:  # Rotate in place.
+                lwheel = lstick.x
+                rwheel = -lstick.x
+                flip_dirs_on_reverse = False
+            else:
+                lwheel = -lstick.y * (1 + lstick.x) / (1 + abs(lstick.x))
+                rwheel = -lstick.y * (1 - lstick.x) / (1 + abs(lstick.x))
+        else:
+            self._logger.debug("ly: {ly:9.7}  ry: {ry:9.7}"
+                               .format(ly=lstick.y, ry=rstick.y))
+            lwheel = -lstick.y
+            rwheel = -rstick.y
 
         if self.reverse_mode:
-            # Wheels
-            if self.wheels_single_stick:
-                self._logger.debug("lx: {lx:9.7}  ly: {ly:9.7}"
-                                   .format(lx=lstick.x, ly=lstick.y))
-                if abs(lstick.y) == 0:  # Rotate in place
-                    lwheel = -lstick.x
-                    rwheel = lstick.x
-                else:
-                    l_mult = (1 - lstick.x) / (1 + abs(lstick.x))
-                    r_mult = (1 + lstick.x) / (1 + abs(lstick.x))
-                    lwheel = lstick.y * l_mult
-                    rwheel = lstick.y * r_mult
+            if flip_dirs_on_reverse:
+                lwheel, rwheel = -rwheel, -lwheel
             else:
-                self._logger.debug("ly: {ly:9.7}  ry: {ry:9.7}"
-                                   .format(ly=lstick.y, ry=rstick.y))
-                lwheel = rstick.y
-                rwheel = lstick.y
+                lwheel, rwheel = rwheel, lwheel
 
-            # Flippers
-            if buttons.all_pressed("L1", "L2"):
-                rflipper = 0
-            elif buttons.is_pressed("L1"):
-                rflipper = 1
-            elif buttons.is_pressed("L2"):
-                rflipper = -1
-            else:
-                rflipper = 0
+        return lwheel, rwheel
 
-            if buttons.all_pressed("R1", "R2"):
-                lflipper = 0
-            elif buttons.is_pressed("R1"):
-                lflipper = 1
-            elif buttons.is_pressed("R2"):
-                lflipper = -1
-            else:
-                lflipper = 0
+    def _generate_commands_flippers(self, buttons):
+        """
+        Generate the commands to the flippers.
 
-        else:  # Forward mode
-            # Wheels
-            if self.wheels_single_stick:
-                self._logger.debug("lx: {lx:9.7}  ly: {ly:9.7}"
-                                   .format(lx=lstick.x, ly=lstick.y))
-                if abs(lstick.y) == 0:  # Rotate in place
-                    lwheel = lstick.x
-                    rwheel = -lstick.x
-                else:
-                    l_mult = (1 + lstick.x) / (1 + abs(lstick.x))
-                    r_mult = (1 - lstick.x) / (1 + abs(lstick.x))
-                    lwheel = -lstick.y * l_mult
-                    rwheel = -lstick.y * r_mult
-            else:
-                self._logger.debug("ly: {ly:9.7}  ry: {ry:9.7}"
-                                   .format(ly=lstick.y, ry=rstick.y))
-                lwheel = -lstick.y
-                rwheel = -rstick.y
+        Parameters
+        ----------
+        buttons : Buttons
+            The state of the buttons.
 
-            # Flippers
-            if buttons.all_pressed("L1", "L2"):
-                lflipper = 0
-            elif buttons.is_pressed("L1"):
-                lflipper = 1
-            elif buttons.is_pressed("L2"):
-                lflipper = -1
-            else:
-                lflipper = 0
+        Returns
+        -------
+        lflipper : float
+            The command to the left flippers.
+        rflipper : float
+            The command to the right flippers.
 
-            if buttons.all_pressed("R1", "R2"):
-                rflipper = 0
-            elif buttons.is_pressed("R1"):
-                rflipper = 1
-            elif buttons.is_pressed("R2"):
-                rflipper = -1
-            else:
-                rflipper = 0
+        """
+        lflipper = rflipper = 0
 
-        # Arm
+        if buttons.is_pressed("L1"):
+            lflipper += 1
+        if buttons.is_pressed("L2"):
+            lflipper -= 1
+
+        if buttons.is_pressed("R1"):
+            rflipper += 1
+        if buttons.is_pressed("R2"):
+            rflipper -= 1
+
+        if self.reverse_mode:
+            lflipper, rflipper = rflipper, lflipper  # Switch directions.
+
+        return lflipper, rflipper
+
+    def _generate_commands_arm(self, dpad, buttons):
+        """
+        Generate the commands to the arm.
+
+        Parameters
+        ----------
+        dpad : Position
+            The position of the dpad.
+        buttons : Buttons
+            The state of the buttons.
+
+        Returns
+        -------
+        4-tuple of int
+            A list of commands for the arm servos:
+
+            - mode
+            - linear
+            - pitch
+            - yaw
+
+        """
         if buttons.is_pressed("○"):
             linear = dpad.y
         else:
@@ -297,9 +327,7 @@ class Handler(socketserver.BaseRequestHandler):
         else:
             mode = 0
 
-        motor_commands = [lwheel, rwheel, lflipper, rflipper]
-        arm_commands = mode, linear, pitch, yaw
-        return motor_commands, arm_commands
+        return mode, linear, pitch, yaw
 
     def _switch_control_mode(self):
         """
@@ -322,7 +350,7 @@ class Handler(socketserver.BaseRequestHandler):
                                   "lstick to control robot")
             self._sticks_timestamp = current_time
 
-    def _engage_reverse_mode(self):
+    def _toggle_reverse_mode(self):
         """
         Toggle the control mode between forward and reverse.
 
@@ -360,20 +388,28 @@ class Handler(socketserver.BaseRequestHandler):
             The data returned from the arm.
 
         """
-        lwheel, rwheel, lflip, rflip = current_data
-        front, rear = np.rad2deg(pose_data)
-        arm_pos, servo_vii, (thermo_l, thermo_r), co2_sensor = arm_data
+        def check(x):
+            """General checker."""
+            return "None  " if x is None else "{:6.3f}".format(x)
 
-        check = lambda x: "None  " if x is None else "{:6.3f}".format(x)
-        check_t = lambda x: "None" if x is None else "{4.1f}".format(x)
-        check_c = lambda x: "None  " if x is None else "{:6.1f}".format(x)
+        def check_t(x):
+            """Check temperature array."""
+            return "None" if x is None else "{4.1f}".format(x)
+
+        def check_c(x):
+            """Check |CO2| result."""
+            return "None  " if x is None else "{:6.1f}".format(x)
+
+        lwheel, rwheel, lflip, rflip = currents
+        front, rear = np.rad2deg(poses)
+        arm_pos, servo_vii, (thermo_l, thermo_r), co2_sensor = arm_data
 
         self._logger.debug("lflipper: {lf}  rflipper: {rf}"
                            .format(lf=check(flippers[0]),
                                    rf=check(flippers[1])))
         self._logger.debug("total_iv: {i} A  {v} V"
-                           .format(i=check(sum(i[0] for i in current_data)),
-                                   v=check(sum(i[1] for i in current_data)/4)))
+                           .format(i=check(sum(i[0] for i in currents)),
+                                   v=check(sum(i[1] for i in currents)/4)))
         self._logger.debug("lwheel_current: {i} A  {v} V"
                            .format(i=check(lwheel[0]), v=check(lwheel[1])))
         self._logger.debug("rwheel_current: {i} A  {v} V"
@@ -524,7 +560,7 @@ class Server(socketserver.ForkingMixIn, socketserver.TCPServer):
 
     def serve_forever(self, poll_interval=0.5):
         """
-        Handle requests until an explicit ``shutdown()`` request.
+        Handle requests until an explicit `shutdown()` request.
 
         Parameters
         ----------
