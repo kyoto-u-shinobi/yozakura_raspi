@@ -7,15 +7,15 @@ all:
 	rm ~/kagi.zip
 
 doc:
-	cd docs
-	make html
+	cd docs && make html
 
 pages:
 	git checkout master
 	make doc
-	cp -r docs/build /tmp/master-build
+	cp -r docs/_build /tmp/master-build
 	git checkout gh-pages
 	cp -r /tmp/master-build/* .
 	rm -rf /tmp/master-build
 	git commit -am "Update documentation."
+	git push
 	git checkout $(CURRENT_BRANCH)
