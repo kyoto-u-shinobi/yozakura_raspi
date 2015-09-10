@@ -572,7 +572,7 @@ class Client(object):
 
         """
         buffer_string = ""
-        dev = self.serials[ser]
+        dev = self.mbeds[ser]
         while True:
             buffer_string += dev.read(dev.inWaiting()).decode()
             if "\n" in buffer_string:
