@@ -49,7 +49,7 @@ class Mbed(serial.Serial):
     """
     def __init__(self, *args, **kwargs):
         self._identity = None
-        self._logger = logging.getLogger("mbed-{port}".format(port=port))
+        self._logger = logging.getLogger("mbed-{port}".format(port=args[0]))
         self._logger.debug("Initializing mbed")
         try:
             super().__init__(*args, **kwargs)
