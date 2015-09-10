@@ -47,7 +47,7 @@ class Mbed(serial.Serial):
            https://developer.mbed.org/platforms/mbed-LPC1768/
 
     """
-    def __init__(self, port, baudrate, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         self._identity = None
         self._logger = logging.getLogger("mbed-{port}".format(port=port))
         self._logger.debug("Initializing mbed")
