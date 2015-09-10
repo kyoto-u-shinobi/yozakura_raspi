@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Hardware and Software Setup &mdash; Yozakura 1.0 RC documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Yozakura 1.0 RC documentation" href="index.html"/>
+        <link rel="next" title="Technical Documentation" href="modules.html"/>
+        <link rel="prev" title="Tutorial" href="tutorial.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Yozakura
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Hardware and Software Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#environment-setup">Environment setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ubuntu-setup">Ubuntu setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#raspbian-setup">Raspbian setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#peripherals">Peripherals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#contec">CONTEC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#contec-station-connected-to-base-station">CONTEC station (connected to base station)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#contec-access-point-connected-to-rpi">CONTEC access point (connected to RPi)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cameras">Cameras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ai-ball-access-point-elecom">Ai-Ball access point (elecom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#camera-ip-addresses">Camera IP addresses</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#urg-ust-10lx">URG (UST-10LX)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-setup">Hardware setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wiring">Wiring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#raspberry-pi">Raspberry Pi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Technical Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="common.html">common package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="opstn.html">opstn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html">rpi package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Yozakura</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Hardware and Software Setup</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/setup.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="hardware-and-software-setup">
+<h1>Hardware and Software Setup<a class="headerlink" href="#hardware-and-software-setup" title="Permalink to this headline">¶</a></h1>
+<p>The Raspberry Pi in use is a Raspberry Pi B+. The RPi 2 B+ will also work.</p>
+<div class="section" id="environment-setup">
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
+<p>First, set up the base station and RPi environments.</p>
+<p>While they work on any flavour of Linux, this guide assumes that the base station runs Ubuntu, and the RPi runs Raspbian.</p>
+<div class="section" id="ubuntu-setup">
+<h3>Ubuntu setup<a class="headerlink" href="#ubuntu-setup" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Install pygame for Python 3.x. You might need to compile from source.</li>
+<li>Set the static IP to 192.168.54.200</li>
+</ul>
+</div>
+<div class="section" id="raspbian-setup">
+<h3>Raspbian setup<a class="headerlink" href="#raspbian-setup" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Setup I2C</li>
+<li>Install Python 3.4</li>
+<li><code class="docutils literal"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">PySerial</span> <span class="pre">RPi.GPIO</span> <span class="pre">smbus-cffi</span></code></li>
+<li>Install RTIMULib. You will need to compile from source.</li>
+<li>Clone Yozakura locally</li>
+<li>Set the static IP to 192.168.54.210</li>
+</ul>
+</div>
+</div>
+<div class="section" id="peripherals">
+<h2>Peripherals<a class="headerlink" href="#peripherals" title="Permalink to this headline">¶</a></h2>
+<p>The base station and the RPi use a CONTEC router to connect wirelessly. The wireless cameras connect to an elecom router. Also connected is a URG laser range finder.</p>
+<div class="section" id="contec">
+<h3>CONTEC<a class="headerlink" href="#contec" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="contec-station-connected-to-base-station">
+<h4>CONTEC station (connected to base station)<a class="headerlink" href="#contec-station-connected-to-base-station" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Authentication is blank</li>
+<li>Set the IP address to 192.168.54.220</li>
+<li>Set the connection mode to IEEE 802.11n (5 GHz)</li>
+<li>Select compatible infrastructure</li>
+<li>Set the ESSID to RRL10_SHINOBI_TELE_YOZAKURA_44ch</li>
+<li>Set the security to WPA2-PSK (AES)</li>
+<li>1:8</li>
+</ul>
+</div>
+<div class="section" id="contec-access-point-connected-to-rpi">
+<h4>CONTEC access point (connected to RPi)<a class="headerlink" href="#contec-access-point-connected-to-rpi" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Authentication is admin:pass</li>
+<li>Set the IP address to 192.168.54.225</li>
+<li>Set the connection mode to IEEE 802.11n (5 GHz)</li>
+<li>Select compatible infrastructure</li>
+<li>Set the ESSID to RRL10_SHINOBI_TELE_YOZAKURA_44ch</li>
+<li>Set the security to WPA2-PSK (AES)</li>
+<li>1:8</li>
+</ul>
+</div>
+</div>
+<div class="section" id="cameras">
+<h3>Cameras<a class="headerlink" href="#cameras" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ai-ball-access-point-elecom">
+<h4>Ai-Ball access point (elecom)<a class="headerlink" href="#ai-ball-access-point-elecom" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>set the IP address to 192.168.54.150</li>
+<li>Set the ESSID to elecom2g-d3f474</li>
+<li>Set the security to WPA2-PSK (AES)</li>
+<li>3582988152694</li>
+</ul>
+</div>
+<div class="section" id="camera-ip-addresses">
+<h4>Camera IP addresses<a class="headerlink" href="#camera-ip-addresses" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Overview: 192.168.54.160</li>
+<li>Front: 192.168.54.161</li>
+<li>Rear: 192.168.54.162</li>
+<li>Arm: 192.168.54.163</li>
+</ul>
+</div>
+</div>
+<div class="section" id="urg-ust-10lx">
+<h3>URG (UST-10LX)<a class="headerlink" href="#urg-ust-10lx" title="Permalink to this headline">¶</a></h3>
+<p>IP Address: 192.168.54.170</p>
+<p>Reference documentation:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://www.hokuyo-aut.co.jp/02sensor/07scanner/ust_10lx_20lx.html">https://www.hokuyo-aut.co.jp/02sensor/07scanner/ust_10lx_20lx.html</a></li>
+<li><a class="reference external" href="https://www.hokuyo-aut.co.jp/02sensor/07scanner/download/ust-10lx_spec.pdf">https://www.hokuyo-aut.co.jp/02sensor/07scanner/download/ust-10lx_spec.pdf</a></li>
+<li><a class="reference external" href="http://www.hokuyo-aut.co.jp/02sensor/07scanner/download/pdf/UST_protocol_ja.pdf">http://www.hokuyo-aut.co.jp/02sensor/07scanner/download/pdf/UST_protocol_ja.pdf</a></li>
+<li><a class="reference external" href="http://www.hokuyo-aut.co.jp/02sensor/07scanner/download/data/UrgBenri_ja.htm">http://www.hokuyo-aut.co.jp/02sensor/07scanner/download/data/UrgBenri_ja.htm</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="hardware-setup">
+<h2>Hardware setup<a class="headerlink" href="#hardware-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="wiring">
+<h3>Wiring<a class="headerlink" href="#wiring" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="raspberry-pi">
+<h4>Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permalink to this headline">¶</a></h4>
+<a class="reference internal image-reference" href="_images/rpi_pinout.png"><img alt="RPi B+ pinout diagram" src="_images/rpi_pinout.png" style="width: 600px;" /></a>
+<table border="1" class="docutils">
+<colgroup>
+<col width="40%" />
+<col width="9%" />
+<col width="4%" />
+<col width="9%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Connection</th>
+<th class="head">Pin #</th>
+<th class="head">&nbsp;</th>
+<th class="head">Pin #</th>
+<th class="head">Connection</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>3.3V bus</td>
+<td>1</td>
+<td>&nbsp;</td>
+<td>2</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>SDA bus to I2C devices</td>
+<td>3</td>
+<td>&nbsp;</td>
+<td>4</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>SDC bus to I2C devices</td>
+<td>5</td>
+<td>&nbsp;</td>
+<td>6</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>Motor RST bus</td>
+<td>7</td>
+<td>&nbsp;</td>
+<td>8</td>
+<td>Left motor FF1</td>
+</tr>
+<tr class="row-even"><td>Ground bus</td>
+<td>9</td>
+<td>&nbsp;</td>
+<td>10</td>
+<td>Left motor FF2</td>
+</tr>
+<tr class="row-odd"><td>Right motor FF1</td>
+<td>11</td>
+<td>&nbsp;</td>
+<td>12</td>
+<td>Left motor current sensor AL</td>
+</tr>
+<tr class="row-even"><td>Right motor FF2</td>
+<td>13</td>
+<td>&nbsp;</td>
+<td>14</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>Right motor current sensor AL</td>
+<td>15</td>
+<td>&nbsp;</td>
+<td>16</td>
+<td>Battery current sensor AL</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>17</td>
+<td>&nbsp;</td>
+<td>18</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>Right flipper FF1</td>
+<td>19</td>
+<td>&nbsp;</td>
+<td>20</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>Right flipper FF2</td>
+<td>21</td>
+<td>&nbsp;</td>
+<td>22</td>
+<td>Left flipper FF1</td>
+</tr>
+<tr class="row-odd"><td>Right flipper current sensor AL</td>
+<td>23</td>
+<td>&nbsp;</td>
+<td>24</td>
+<td>Left flipper FF2</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>25</td>
+<td>&nbsp;</td>
+<td>26</td>
+<td>Left flipper current sensor AL</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="mbed">
+<h5>mbed<a class="headerlink" href="#mbed" title="Permalink to this headline">¶</a></h5>
+<a class="reference internal image-reference" href="_images/mbed_pinout.png"><img alt="mbed LPC1768 pinout diagram" class="align-right" src="_images/mbed_pinout.png" style="width: 400px;" /></a>
+<ul class="simple">
+<li>p19: Left flipper position ADC</li>
+<li>p20: Right flipper position ADC</li>
+<li>p23: Right flipper PWM</li>
+<li>p24: Left flipper PWM</li>
+<li>p25: Right motor PWM</li>
+<li>p26: Left motor PWM</li>
+<li>p27: Left motor DIR</li>
+<li>p28: Right motor DIR</li>
+<li>p29: Left flipper DIR</li>
+<li>p30: Right flipper DIR</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="modules.html" class="btn btn-neutral float-right" title="Technical Documentation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral" title="Tutorial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Kyoto University Mechatronics Laboratory.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0 RC',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

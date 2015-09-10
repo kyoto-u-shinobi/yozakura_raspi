@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Technical Documentation &mdash; Yozakura 1.0 RC documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Yozakura 1.0 RC documentation" href="index.html"/>
+        <link rel="next" title="common package" href="common.html"/>
+        <link rel="prev" title="Hardware and Software Setup" href="setup.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Yozakura
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Hardware and Software Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#environment-setup">Environment setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#ubuntu-setup">Ubuntu setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#raspbian-setup">Raspbian setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#peripherals">Peripherals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#contec">CONTEC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#contec-station-connected-to-base-station">CONTEC station (connected to base station)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#contec-access-point-connected-to-rpi">CONTEC access point (connected to RPi)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#cameras">Cameras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#ai-ball-access-point-elecom">Ai-Ball access point (elecom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#camera-ip-addresses">Camera IP addresses</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#urg-ust-10lx">URG (UST-10LX)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#hardware-setup">Hardware setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#wiring">Wiring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#raspberry-pi">Raspberry Pi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Technical Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="common.html">common package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="opstn.html">opstn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html">rpi package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Yozakura</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Technical Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/modules.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="technical-documentation">
+<h1>Technical Documentation<a class="headerlink" href="#technical-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="common.html">common package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="common.html#module-common">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="opstn.html">opstn package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="opstn.html#module-opstn">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="opstn.html#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="opstn.html#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rpi.html">rpi package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="common.html" class="btn btn-neutral float-right" title="common package" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="setup.html" class="btn btn-neutral" title="Hardware and Software Setup" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Kyoto University Mechatronics Laboratory.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0 RC',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

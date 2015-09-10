@@ -1,0 +1,752 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>opstn package &mdash; Yozakura 1.0 RC documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Yozakura 1.0 RC documentation" href="index.html"/>
+        <link rel="up" title="Technical Documentation" href="modules.html"/>
+        <link rel="next" title="rpi package" href="rpi.html"/>
+        <link rel="prev" title="common package" href="common.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Yozakura
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Hardware and Software Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#environment-setup">Environment setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#ubuntu-setup">Ubuntu setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#raspbian-setup">Raspbian setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#peripherals">Peripherals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#contec">CONTEC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#contec-station-connected-to-base-station">CONTEC station (connected to base station)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#contec-access-point-connected-to-rpi">CONTEC access point (connected to RPi)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#cameras">Cameras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#ai-ball-access-point-elecom">Ai-Ball access point (elecom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#camera-ip-addresses">Camera IP addresses</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#urg-ust-10lx">URG (UST-10LX)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#hardware-setup">Hardware setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#wiring">Wiring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#raspberry-pi">Raspberry Pi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Technical Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="common.html">common package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">opstn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-opstn">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html">rpi package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Yozakura</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="modules.html">Technical Documentation</a> &raquo;</li>
+      
+    <li>opstn package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/opstn.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="opstn-package">
+<h1>opstn package<a class="headerlink" href="#opstn-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-opstn">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-opstn" title="Permalink to this headline">¶</a></h2>
+<p>Modules for the base station.</p>
+<p>The base station receives a request for speed data from the Raspberry Pi. It
+then reads the input state from a controller, calculates the required speeds,
+and forwards them to the Raspberry Pi.</p>
+<p>In addition, the base station will receive data from a UDP server running on
+the Raspberry Pi, which is used by either the server class or the ROS GUI.</p>
+</div>
+<div class="section" id="module-opstn.controller">
+<span id="opstn-controller-module"></span><h2>opstn.controller module<a class="headerlink" href="#module-opstn.controller" title="Permalink to this headline">¶</a></h2>
+<p>Implement a controller in order to control the robot.</p>
+<p>Provides classes for directional position, button states, and full controller
+state, as well as a <cite>Controller</cite> class. The controller type is detected
+automatically, and can be used if its button mapping has been previously
+registered.</p>
+<dl class="class">
+<dt id="opstn.controller.Buttons">
+<em class="property">class </em><code class="descclassname">opstn.controller.</code><code class="descname">Buttons</code><span class="sig-paren">(</span><em>make</em>, <em>buttons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Buttons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Buttons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.4/library/functions.html#object" title="(in Python v3.4)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A class representing the button configuration of a controller.</p>
+<p>When registering the mapping for a new controller, please run the
+<cite>get_name()</cite> function to obtain the name to use.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buttons</strong> (<a class="reference external" href="https://docs.python.org/3.4/library/stdtypes.html#list" title="(in Python v3.4)"><em>list</em></a>) &#8211; A list containing the state of each button. 1 if pressed, 0 otherwise.</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="opstn.controller.Buttons.buttons">
+<code class="descname">buttons</code><a class="headerlink" href="#opstn.controller.Buttons.buttons" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of int</em></p>
+<p>A list containing the state of each button.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Buttons.pressed_buttons">
+<code class="descname">pressed_buttons</code><a class="headerlink" href="#opstn.controller.Buttons.pressed_buttons" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of str</em></p>
+<p>A list containing the names of the button that are pressed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Buttons.known_makes">
+<code class="descname">known_makes</code><a class="headerlink" href="#opstn.controller.Buttons.known_makes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of str</em></p>
+<p>A list containing all the makes whose mappings have been registered.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.controller.Buttons.all_pressed">
+<code class="descname">all_pressed</code><span class="sig-paren">(</span><em>*buttons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Buttons.all_pressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Buttons.all_pressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether all given buttons are pressed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buttons</strong> (<em>one or more str</em>) &#8211; The name(s) of the buttons to be checked.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if all the buttons are pressed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.4/library/functions.html#bool" title="(in Python v3.4)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.controller.Buttons.any_pressed">
+<code class="descname">any_pressed</code><span class="sig-paren">(</span><em>*buttons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Buttons.any_pressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Buttons.any_pressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether any given buttons are pressed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buttons</strong> (<em>one or more str</em>) &#8211; The name(s) of the buttons to be checked.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if any the buttons are pressed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.4/library/functions.html#bool" title="(in Python v3.4)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.controller.Buttons.is_pressed">
+<code class="descname">is_pressed</code><span class="sig-paren">(</span><em>button</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Buttons.is_pressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Buttons.is_pressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether a given button is pressed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>button</strong> (<a class="reference external" href="https://docs.python.org/3.4/library/stdtypes.html#str" title="(in Python v3.4)"><em>str</em></a>) &#8211; The name of the button to be checked.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether the button is pressed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.4/library/functions.html#bool" title="(in Python v3.4)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="opstn.controller.Controller">
+<em class="property">class </em><code class="descclassname">opstn.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>stick_id</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.4/library/functions.html#object" title="(in Python v3.4)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A controller to control the robot.</p>
+<p>The controller wraps a pygame Joystick object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stick_id</strong> (<a class="reference external" href="https://docs.python.org/3.4/library/functions.html#int" title="(in Python v3.4)"><em>int</em></a>) &#8211; The ID of the controller.</li>
+<li><strong>name</strong> (<em>str, optional</em>) &#8211; The name of the controller.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="opstn.controller.Controller.controller">
+<code class="descname">controller</code><a class="headerlink" href="#opstn.controller.Controller.controller" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>pygame.joystick.Joystick</em></p>
+<p>The controller itself.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Controller.stick_id">
+<code class="descname">stick_id</code><a class="headerlink" href="#opstn.controller.Controller.stick_id" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em></p>
+<p>The ID of the controller.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Controller.make">
+<code class="descname">make</code><a class="headerlink" href="#opstn.controller.Controller.make" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>The make of the controller.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Controller.name">
+<code class="descname">name</code><a class="headerlink" href="#opstn.controller.Controller.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str, optional</em></p>
+<p>The name of the controller.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Controller.controllers">
+<code class="descname">controllers</code><a class="headerlink" href="#opstn.controller.Controller.controllers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>A class variable containing all registered controllers. It is used to
+keep track of all controllers to make sure that they all exit safely.</p>
+<p><strong>Dictionary format :</strong> {stick_id (int): controller (Controller)}</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">UnknownControllerError</span></code> &#8211;
+The mapping of the controller buttons is unknown.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="opstn.controller.Controller.shutdown">
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Controller.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Controller.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safely quits a controller.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="opstn.controller.Controller.shutdown_all">
+<em class="property">classmethod </em><code class="descname">shutdown_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Controller.shutdown_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Controller.shutdown_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safely quit all controllers.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Controller.state">
+<code class="descname">state</code><a class="headerlink" href="#opstn.controller.Controller.state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the state of all the inputs of the controller.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The controller state.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#opstn.controller.State" title="opstn.controller.State">State</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="opstn.controller.Position">
+<em class="property">class </em><code class="descclassname">opstn.controller.</code><code class="descname">Position</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>inverted=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#Position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.Position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.4/library/functions.html#object" title="(in Python v3.4)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A class containing a controller axis position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.4/library/functions.html#float" title="(in Python v3.4)"><em>float</em></a>) &#8211; The horizontal position of the axis.</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.4/library/functions.html#float" title="(in Python v3.4)"><em>float</em></a>) &#8211; The vertical position of the axis.</li>
+<li><strong>inverted</strong> (<em>bool, optional</em>) &#8211; Whether the direction is y-inverted.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="opstn.controller.Position.x">
+<code class="descname">x</code><a class="headerlink" href="#opstn.controller.Position.x" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>The horizontal position of the axis.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Position.y">
+<code class="descname">y</code><a class="headerlink" href="#opstn.controller.Position.y" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>The vertical position of the axis.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Position.inverted">
+<code class="descname">inverted</code><a class="headerlink" href="#opstn.controller.Position.inverted" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em></p>
+<p>Whether the direction is y-inverted.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.Position.direction">
+<code class="descname">direction</code><a class="headerlink" href="#opstn.controller.Position.direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the direction represented by the controller axis position.</p>
+<p>The directions are Up, Down, Left, and Right, and their intermediates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">&#8220;U&#8221;, &#8220;D&#8221;, &#8220;L&#8221;, and &#8220;R&#8221; represent Up, Down, Left, and Right
+respectively. Return &#8220;U&#8221;, &#8220;D&#8221;, &#8220;L&#8221;, &#8220;R&#8221; if the positions are either
+only <cite>x</cite> or only <cite>y</cite>. Otherwise, return &#8220;U&#8221; or &#8220;D&#8221;, followed by
+&#8220;L&#8221; or &#8220;R&#8221;, as appropriate. If both the <cite>x</cite> and <cite>y</cite> positions
+are zero, return &#8220;none&#8221;.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.4/library/stdtypes.html#str" title="(in Python v3.4)">str</a></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">position</span><span class="o">.</span><span class="n">direction</span>
+<span class="go">&#39;UR&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">position</span><span class="o">.</span><span class="n">direction</span>
+<span class="go">&#39;R&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">position</span><span class="o">.</span><span class="n">direction</span>
+<span class="go">&#39;none&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="opstn.controller.State">
+<em class="property">class </em><code class="descclassname">opstn.controller.</code><code class="descname">State</code><span class="sig-paren">(</span><em>dpad</em>, <em>lstick</em>, <em>rstick</em>, <em>buttons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.State" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.4/library/functions.html#object" title="(in Python v3.4)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>The state of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dpad</strong> (<a class="reference internal" href="#opstn.controller.Position" title="opstn.controller.Position"><em>Position</em></a>) &#8211; The position of the dpad.</li>
+<li><strong>lstick</strong> (<a class="reference internal" href="#opstn.controller.Position" title="opstn.controller.Position"><em>Position</em></a>) &#8211; The position of the left analog stick.</li>
+<li><strong>rstick</strong> (<a class="reference internal" href="#opstn.controller.Position" title="opstn.controller.Position"><em>Position</em></a>) &#8211; The position of the right analog stick.</li>
+<li><strong>buttons</strong> (<a class="reference internal" href="#opstn.controller.Buttons" title="opstn.controller.Buttons"><em>Buttons</em></a>) &#8211; The state of the buttons.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="opstn.controller.State.dpad">
+<code class="descname">dpad</code><a class="headerlink" href="#opstn.controller.State.dpad" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Position</em></p>
+<p>The position of the dpad.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.State.lstick">
+<code class="descname">lstick</code><a class="headerlink" href="#opstn.controller.State.lstick" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Position</em></p>
+<p>The position of the left analog stick.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.State.rstick">
+<code class="descname">rstick</code><a class="headerlink" href="#opstn.controller.State.rstick" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Position</em></p>
+<p>The position of the right analog stick.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.State.buttons">
+<code class="descname">buttons</code><a class="headerlink" href="#opstn.controller.State.buttons" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Buttons</em></p>
+<p>The state of the buttons.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.controller.State.__str__">
+<code class="descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/controller.html#State.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.controller.State.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A human-readable representation of the state.</p>
+<p>To print on a single line, ensure that the terminal is at least 144
+characters wide, and end your <cite>print</cite> function with a carriage return
+character to go back to the start of the line.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A string with a maximum length of 144 characters, showing the
+positions of the dpad, and left and right analog sticks; as well
+as a list showing all the buttons that are currently pressed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.4/library/stdtypes.html#str" title="(in Python v3.4)">str</a></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stick</span> <span class="o">=</span> <span class="n">Controller</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;body&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="n">stick_body</span><span class="o">.</span><span class="n">get_state</span><span class="p">(),</span> <span class="n">end</span><span class="o">=</span><span class="s">&quot;</span><span class="se">\r</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>  <span class="c"># Exit safely.</span>
+<span class="gp">... </span>    <span class="n">Controller</span><span class="o">.</span><span class="n">shutdown_all</span><span class="p">()</span>
+<span class="go">dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.controller.State.data">
+<code class="descname">data</code><a class="headerlink" href="#opstn.controller.State.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the raw data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>dpad</strong> (<em>2-tuple of float</em>) &#8211;
+The position of the dpad.</li>
+<li><strong>lstick</strong> (<em>2-tuple of float</em>) &#8211;
+The position of the left analog stick.</li>
+<li><strong>rstick</strong> (<em>2-tuple of float</em>) &#8211;
+The position of the right analog stick.</li>
+<li><strong>buttons</strong> (<em>list of int</em>) &#8211;
+The list of buttons. 1 if pressed, 0 otherwise.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-opstn.server">
+<span id="opstn-server-module"></span><h2>opstn.server module<a class="headerlink" href="#module-opstn.server" title="Permalink to this headline">¶</a></h2>
+<p>Base station server for communicating with Yozakura.</p>
+<p>After connecting with the client, the server receives requests, reads input
+from a connected controller, and responds accordingly. The server is capable of
+being connected to multiple clients simultaneously.</p>
+<p>It also contains a UDP server that can be used to read data about flipper
+positions, current sensor measurements, and pose information that was sent back
+by Yozakura via UDP.</p>
+<dl class="class">
+<dt id="opstn.server.Handler">
+<em class="property">class </em><code class="descclassname">opstn.server.</code><code class="descname">Handler</code><span class="sig-paren">(</span><em>request</em>, <em>client_address</em>, <em>server</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/server.html#Handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.server.Handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">socketserver.BaseRequestHandler</span></code></p>
+<p>A handler for connection requests.</p>
+<p>It gets called by the server automatically whenever a new client connects.</p>
+<dl class="attribute">
+<dt id="opstn.server.Handler.request">
+<code class="descname">request</code><a class="headerlink" href="#opstn.server.Handler.request" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>socket</em></p>
+<p>Handles communication with the client</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.server.Handler.wheels_single_stick">
+<code class="descname">wheels_single_stick</code><a class="headerlink" href="#opstn.server.Handler.wheels_single_stick" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em></p>
+<p>Whether the wheels are controlled by only the left analog stick.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="opstn.server.Handler.reverse_mode">
+<code class="descname">reverse_mode</code><a class="headerlink" href="#opstn.server.Handler.reverse_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em></p>
+<p>Whether reverse mode is engaged. In reverse mode, the x- and y- inputs
+are both inverted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.server.Handler.handle">
+<code class="descname">handle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/server.html#Handler.handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.server.Handler.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the requests to the server.</p>
+<p>Once connected to the client, the handler loops and keeps listening for
+requests. This allows us to find out when the client is disconnected,
+and also allows for a much higher communication rate with the robot
+compared to reopening upon each request.</p>
+<p>Pickle is used on the server and client sides to transfer Python
+objects.</p>
+<p>Requests handled:</p>
+<ul class="simple">
+<li>state : Reply with the state of the controller.</li>
+<li>inputs : Reply with the raw input data from the state.</li>
+<li>commands : Perform calculations and send the required motor and arm
+speed data.</li>
+<li>echo : Reply with what the client has said.</li>
+<li>print : <code class="docutils literal"><span class="pre">echo</span></code>, and print to <code class="docutils literal"><span class="pre">stdout</span></code>.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="opstn.server.Server">
+<em class="property">class </em><code class="descclassname">opstn.server.</code><code class="descname">Server</code><span class="sig-paren">(</span><em>server_address</em>, <em>handler_class</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/server.html#Server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.server.Server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">socketserver.ForkingMixIn</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socketserver.TCPServer</span></code></p>
+<p>A forking, logging TCP Server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>server_address</strong> (<em>2-tuple of (str, int)</em>) &#8211; The address at which the server is listening. The elements are the
+server address and the port number respectively.</li>
+<li><strong>handler_class</strong> (<a class="reference internal" href="#opstn.server.Handler" title="opstn.server.Handler"><em>Handler</em></a>) &#8211; The request handler. Each new request generates a separate process
+running that handler.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="opstn.server.Server.controllers">
+<code class="descname">controllers</code><a class="headerlink" href="#opstn.server.Server.controllers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>Contains all registered controllers.</p>
+<p><strong>Dictionary format :</strong> {name (str): controller (Controller)}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.server.Server.add_controller">
+<code class="descname">add_controller</code><span class="sig-paren">(</span><em>controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/server.html#Server.add_controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.server.Server.add_controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a controller.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>controller</strong> (<a class="reference internal" href="#opstn.controller.Controller" title="opstn.controller.Controller"><em>Controller</em></a>) &#8211; The controller to be registered.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.server.Server.remove_controller">
+<code class="descname">remove_controller</code><span class="sig-paren">(</span><em>controller</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/server.html#Server.remove_controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.server.Server.remove_controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deregister a controller.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>controller</strong> (<a class="reference internal" href="#opstn.controller.Controller" title="opstn.controller.Controller"><em>Controller</em></a>) &#8211; The controller to be deregistered.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="opstn.server.Server.serve_forever">
+<code class="descname">serve_forever</code><span class="sig-paren">(</span><em>poll_interval=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opstn/server.html#Server.serve_forever"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opstn.server.Server.serve_forever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle requests until an explicit <cite>shutdown()</cite> request.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>poll_interval</strong> (<em>float, optional</em>) &#8211; The polling interval, in seconds.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="rpi.html" class="btn btn-neutral float-right" title="rpi package" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="common.html" class="btn btn-neutral" title="common package" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Kyoto University Mechatronics Laboratory.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0 RC',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

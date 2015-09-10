@@ -1,0 +1,917 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>rpi.devices &mdash; Yozakura 1.0 RC documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Yozakura 1.0 RC documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> Yozakura
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Hardware and Software Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../setup.html#environment-setup">Environment setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#ubuntu-setup">Ubuntu setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#raspbian-setup">Raspbian setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../setup.html#peripherals">Peripherals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#contec">CONTEC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#contec-station-connected-to-base-station">CONTEC station (connected to base station)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#contec-access-point-connected-to-rpi">CONTEC access point (connected to RPi)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#cameras">Cameras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#ai-ball-access-point-elecom">Ai-Ball access point (elecom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#camera-ip-addresses">Camera IP addresses</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#urg-ust-10lx">URG (UST-10LX)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../setup.html#hardware-setup">Hardware setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#wiring">Wiring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#raspberry-pi">Raspberry Pi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Technical Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../common.html">common package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../common.html#module-common">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../opstn.html">opstn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../opstn.html#module-opstn">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../opstn.html#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../opstn.html#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpi.html">rpi package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">Yozakura</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>rpi.devices</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for rpi.devices</h1><div class="highlight"><pre>
+<span class="c"># (C) 2015  Kyoto University Mechatronics Laboratory</span>
+<span class="c"># Released under the GNU General Public License, version 3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes for using I2C devices.</span>
+
+<span class="sd">Provides a generic I2CDevice class to simplify work with I2C devices, as well as</span>
+<span class="sd">separate classes for each supported device. The following devices are currently</span>
+<span class="sd">supported:</span>
+
+<span class="sd">- Texas Instruments INA226 Current/Power Monitor [#]_</span>
+<span class="sd">- Invenense MPU-9150 9-axis MEMS MotionTracking Device [#]_</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">.. [#] Texas Instruments, INA 226 datasheet.</span>
+<span class="sd">       http://www.ti.com/lit/ds/symlink/ina226.pdf</span>
+
+<span class="sd">.. [#] Invensense, MPU-9150 Product Specification.</span>
+<span class="sd">       http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">from</span> <span class="nn">RPi</span> <span class="kn">import</span> <span class="n">GPIO</span> <span class="k">as</span> <span class="n">gpio</span>
+<span class="kn">import</span> <span class="nn">RTIMU</span>
+<span class="kn">import</span> <span class="nn">smbus</span>
+
+<span class="kn">from</span> <span class="nn">common.exceptions</span> <span class="kn">import</span> <span class="n">BadArgError</span><span class="p">,</span> <span class="n">YozakuraRuntimeError</span><span class="p">,</span>\
+    <span class="n">I2CSlotEmptyError</span><span class="p">,</span> <span class="n">I2CSlotBusyError</span><span class="p">,</span> <span class="n">NotCalibratedError</span>
+<span class="kn">from</span> <span class="nn">rpi.bitfields</span> <span class="kn">import</span> <span class="n">CurrentConfiguration</span><span class="p">,</span> <span class="n">CurrentAlerts</span>
+
+
+<div class="viewcode-block" id="I2CDevice"><a class="viewcode-back" href="../../rpi.html#rpi.devices.I2CDevice">[docs]</a><span class="k">class</span> <span class="nc">I2CDevice</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parent class for all I2C devices.</span>
+
+<span class="sd">    Provides registration and deregistration.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    address : int</span>
+<span class="sd">        The address of the I2C device.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the device.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    YozakuraRuntimeError</span>
+<span class="sd">        Could not determine the Raspberry Pi version, and could thus not assign</span>
+<span class="sd">        the correct I2C bus.</span>
+<span class="sd">    I2CSlotEmptyError</span>
+<span class="sd">        No devices could be found at the specified address.</span>
+<span class="sd">    I2CSlotBusyError</span>
+<span class="sd">        The address is valid, but is currently being used by another device; or,</span>
+<span class="sd">        another device has already been registered at that address and has not</span>
+<span class="sd">        been removed yet.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    address : int</span>
+<span class="sd">        The address of the I2C device.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the device.</span>
+<span class="sd">    devices : dict</span>
+<span class="sd">        Contains all registered devices.</span>
+
+<span class="sd">        Dictionary format: {address (str): device (I2CDevice)}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">devices</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_i2c_bus</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;i2c-{name}-{address}&quot;</span>
+                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                 <span class="n">address</span><span class="o">=</span><span class="nb">hex</span><span class="p">(</span><span class="n">address</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">I2CDevice</span><span class="o">.</span><span class="n">_i2c_bus</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">I2CDevice</span><span class="o">.</span><span class="n">_i2c_bus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_i2c_bus</span><span class="p">()</span>  <span class="c"># /dev/i2c-0 or /dev/i2c-1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Initializing device&quot;</span><span class="p">)</span>
+        <span class="n">slots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_used_i2c_slots</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">address</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">slots</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">I2CSlotEmptyError</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">slots</span><span class="p">[</span><span class="n">address</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;UU&quot;</span> <span class="ow">or</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">I2CDevice</span><span class="o">.</span><span class="n">devices</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">I2CSlotBusyError</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># Everything is fine.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bus</span> <span class="o">=</span> <span class="n">smbus</span><span class="o">.</span><span class="n">SMBus</span><span class="p">(</span><span class="n">I2CDevice</span><span class="o">.</span><span class="n">_i2c_bus</span><span class="p">)</span>
+            <span class="n">I2CDevice</span><span class="o">.</span><span class="n">devices</span><span class="p">[</span><span class="n">address</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Device initialized&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_i2c_bus</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect the revision number of a Raspberry Pi, useful for changing</span>
+<span class="sd">        functionality like default I2C bus based on revision. The revision list</span>
+<span class="sd">        is available online. [#]_</span>
+
+<span class="sd">        Revision 1 pi uses I2C Bus 0, while revision 2 uses I2C Bus 1.</span>
+
+<span class="sd">        This function is based on an Adafruit I2C implementation. [#]_</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The I2C bus used by the Raspberry Pi.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        YozakuraRuntimeError</span>
+<span class="sd">            Could not determine the Raspberry Pi version.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [#] ELinux.org. &quot;RPi Hardware History.&quot;</span>
+<span class="sd">               http://elinux.org/RPi_HardwareHistory#Board_Revision_History</span>
+<span class="sd">        .. [#] Adafruit Python GPIO, Adafruit, Github. &quot;Platform.py&quot;</span>
+<span class="sd">               https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/Platform.py#L53</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;/proc/cpuinfo&quot;</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">infile</span><span class="p">:</span>
+                <span class="c"># Match a line of the form &quot;Revision : 0002&quot; while ignoring</span>
+                <span class="c"># info in front of the revsion (like 1000 when overvolted).</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&quot;Revision\s+:\s+.*(\w{4})$&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span>
+                                 <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">match</span> <span class="ow">and</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;0000&quot;</span><span class="p">,</span> <span class="s">&quot;0002&quot;</span><span class="p">,</span> <span class="s">&quot;0003&quot;</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="mi">0</span>  <span class="c"># Revision 1</span>
+                <span class="k">elif</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="mi">1</span>  <span class="c"># Revision 2</span>
+            <span class="c"># Couldn&#39;t find the revision, throw an exception.</span>
+            <span class="k">raise</span> <span class="n">YozakuraRuntimeError</span><span class="p">(</span><span class="s">&quot;Cannot determine Raspberry Pi version.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_used_i2c_slots</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find all used i2c slots.</span>
+
+<span class="sd">        This function calls an external ``i2cdetect`` command, and works on the</span>
+<span class="sd">        returned table to find out which slots are occupied.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        slots : dict</span>
+<span class="sd">            Contains all used i2c slots and their values.</span>
+
+<span class="sd">            **Dictionary format :** {slot_number (int): slot_number_hex (str)}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">slots</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="s">&quot;i2cdetect -y {bus}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">I2CDevice</span><span class="o">.</span><span class="n">_i2c_bus</span><span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&quot;utf-8&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="k">if</span> <span class="n">item</span> <span class="o">!=</span> <span class="s">&quot;--&quot;</span><span class="p">:</span>
+                    <span class="n">slots</span><span class="p">[</span><span class="mi">16</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)]</span> <span class="o">=</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">slots</span>
+
+<div class="viewcode-block" id="I2CDevice.remove"><a class="viewcode-back" href="../../rpi.html#rpi.devices.I2CDevice.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Deregister the device.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Deregistering device&quot;</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">I2CDevice</span><span class="o">.</span><span class="n">devices</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">]</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;{dev_type} at {addr} ({name})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">dev_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+            <span class="n">addr</span><span class="o">=</span><span class="nb">hex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+</div>
+<div class="viewcode-block" id="CurrentSensor"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor">[docs]</a><span class="k">class</span> <span class="nc">CurrentSensor</span><span class="p">(</span><span class="n">I2CDevice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Texas Instruments INA226 Current/Power Monitor. [#]_</span>
+
+<span class="sd">    .. warning:: The current sensor must be calibrated before use.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    address : int</span>
+<span class="sd">        The address of the device.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        The name of the device.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    address : int</span>
+<span class="sd">        The address of the device.</span>
+<span class="sd">    pin_alert : int</span>
+<span class="sd">        The alert pin of the device. None if not connected.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the device.</span>
+<span class="sd">    registers : dict</span>
+<span class="sd">        Contains the addresses of each register.</span>
+
+<span class="sd">        **Dictionary format :** {register (str): address (int)}</span>
+
+<span class="sd">        config : str</span>
+<span class="sd">            Configuration register</span>
+<span class="sd">        v_shunt : str</span>
+<span class="sd">            Shunt voltage measurement register</span>
+<span class="sd">        v_bus : str</span>
+<span class="sd">            Bus voltage measurement register</span>
+<span class="sd">        power : str</span>
+<span class="sd">            Power measurement register</span>
+<span class="sd">        current : str</span>
+<span class="sd">            Current measurement register</span>
+<span class="sd">        calib : str</span>
+<span class="sd">            Calibration register</span>
+<span class="sd">        alert_reg : str</span>
+<span class="sd">            Mask/Enable register</span>
+<span class="sd">        alert_lim : str</span>
+<span class="sd">            Alert limit register</span>
+<span class="sd">        die : str</span>
+<span class="sd">            Die ID</span>
+<span class="sd">    lsbs : dict</span>
+<span class="sd">        Contains the value of the least significant bit of each measurement</span>
+<span class="sd">        register.</span>
+
+<span class="sd">        **Dictionary format :** {register (str): lsb (float)}</span>
+
+<span class="sd">        v_shunt : str</span>
+<span class="sd">            Shunt voltage result register</span>
+<span class="sd">        v_bus : str</span>
+<span class="sd">            Bus voltage result register</span>
+<span class="sd">        power : str</span>
+<span class="sd">            Power result register</span>
+<span class="sd">        current : str</span>
+<span class="sd">            Current result register</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    All words are big endian.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Texas Instruments, INA 226 datasheet.</span>
+<span class="sd">           http://www.ti.com/lit/ds/symlink/ina226.pdf</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">registers</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;config&quot;</span><span class="p">:</span>    <span class="mi">0</span><span class="p">,</span>
+                 <span class="s">&quot;v_shunt&quot;</span><span class="p">:</span>   <span class="mi">1</span><span class="p">,</span>
+                 <span class="s">&quot;v_bus&quot;</span><span class="p">:</span>     <span class="mi">2</span><span class="p">,</span>
+                 <span class="s">&quot;power&quot;</span><span class="p">:</span>     <span class="mi">3</span><span class="p">,</span>
+                 <span class="s">&quot;current&quot;</span><span class="p">:</span>   <span class="mi">4</span><span class="p">,</span>
+                 <span class="s">&quot;calib&quot;</span><span class="p">:</span>     <span class="mi">5</span><span class="p">,</span>
+                 <span class="s">&quot;alert_reg&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                 <span class="s">&quot;alert_lim&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+                 <span class="s">&quot;die&quot;</span><span class="p">:</span> <span class="mh">0xFF</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;Current Sensor&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;v_shunt&quot;</span><span class="p">:</span> <span class="mf">2.5e-6</span><span class="p">,</span>  <span class="c"># Volts</span>
+                     <span class="s">&quot;v_bus&quot;</span><span class="p">:</span>  <span class="mf">1.25e-3</span><span class="p">,</span>  <span class="c"># Volts</span>
+                     <span class="s">&quot;power&quot;</span><span class="p">:</span>     <span class="bp">None</span><span class="p">,</span>  <span class="c"># Watts</span>
+                     <span class="s">&quot;current&quot;</span><span class="p">:</span>   <span class="bp">None</span><span class="p">}</span>  <span class="c"># Amperes</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pin_alert</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span><span class="mf">40.96</span><span class="p">)</span>  <span class="c"># 40.96 A max current.</span>
+        <span class="c"># self.set_configuration(avg=2, bus_ct=3, shunt_ct=3)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_read_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read a register on the device.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        register : str</span>
+<span class="sd">            The name of the register to be read.</span>
+<span class="sd">        signed : bool, optional</span>
+<span class="sd">            Whether the result is a signed integer.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        data : word</span>
+<span class="sd">            The data from the register. If the result is a signed integer,</span>
+<span class="sd">            return its two&#39;s complement.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Reading {reg} register&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reg</span><span class="o">=</span><span class="n">register</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">read_word_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register</span><span class="p">])</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">((</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span>  <span class="c"># Switch byte order</span>
+
+        <span class="k">if</span> <span class="n">signed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">**</span><span class="mi">15</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">data</span> <span class="o">-</span> <span class="mi">2</span><span class="o">**</span><span class="mi">16</span>
+
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">_write_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write to a register on the device.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        register : str</span>
+<span class="sd">            The name of the register to be written to.</span>
+<span class="sd">        data : word</span>
+<span class="sd">            The data to be written.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Writing {data} to {reg} register&quot;</span>
+                           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">reg</span><span class="o">=</span><span class="n">register</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c"># Truncate the data.</span>
+
+        <span class="c"># bus.write_word_data writes one byte at a time, so we switch the byte</span>
+        <span class="c"># order before writing.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">((</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0xff</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">write_word_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register</span><span class="p">],</span> <span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CurrentSensor.get_configuration"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.get_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the current sensor configuration.</span>
+
+<span class="sd">        See pages 18 and 19 in the datasheet [#]_ for more information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        config : CurrentConfiguration</span>
+<span class="sd">            The configuration word. Bit fields:</span>
+
+<span class="sd">            reset : bool</span>
+<span class="sd">                Whether to reset.</span>
+<span class="sd">            empty : 3 bits</span>
+<span class="sd">                Not used.</span>
+<span class="sd">            avg : 3 bits</span>
+<span class="sd">                Averaging mode. Can range between 0 and 7.</span>
+<span class="sd">            bus_ct : 3 bits</span>
+<span class="sd">                Bus voltage conversion time. Can range between 0 and 7.</span>
+<span class="sd">            shunt_ct : 3 bits</span>
+<span class="sd">                Shunt voltage conversion time. Can range between 0 and 7.</span>
+<span class="sd">            mode : 3 bits</span>
+<span class="sd">                Operating mode. Can range between 0 and 7.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        bitfields.CurrentConfiguration</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [#] Texas Instruments, INA 226 datasheet.</span>
+<span class="sd">               http://www.ti.com/lit/ds/symlink/ina226.pdf</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Getting configuration&quot;</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">CurrentConfiguration</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">as_byte</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_register</span><span class="p">(</span><span class="s">&quot;config&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">config</span>
+</div>
+<div class="viewcode-block" id="CurrentSensor.set_configuration"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.set_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">set_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">avg</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">bus_ct</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">shunt_ct</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configure the current sensor.</span>
+
+<span class="sd">        See pages 18 and 19 in the datasheet. [#]_ This function only changes</span>
+<span class="sd">        the parameters that are specified. All other parameters remain</span>
+<span class="sd">        unchanged.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reset : bool, optional</span>
+<span class="sd">            Whether to reset. This overrides all other data. Use via the</span>
+<span class="sd">            `reset` method.</span>
+<span class="sd">        avg : int, optional</span>
+<span class="sd">            The averaging mode. Can range between 0 and 7.</span>
+<span class="sd">        bus_ct : int, optional</span>
+<span class="sd">            Bus voltage conversion time. Can range between 0 and 7.</span>
+<span class="sd">        shunt_ct : int, optional</span>
+<span class="sd">            Shunt voltage conversion time. Can range between 0 and 7.</span>
+<span class="sd">        mode : int, optional</span>
+<span class="sd">            Operating mode. Can range between 0 and 7.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [#] Texas Instruments, INA 226 datasheet.</span>
+<span class="sd">               http://www.ti.com/lit/ds/symlink/ina226.pdf</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting configuration&quot;</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_configuration</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">reset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">reset</span> <span class="o">=</span> <span class="n">reset</span>
+        <span class="k">if</span> <span class="n">avg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="n">avg</span>
+        <span class="k">if</span> <span class="n">bus_ct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">bus_ct</span> <span class="o">=</span> <span class="n">bus_ct</span>
+        <span class="k">if</span> <span class="n">shunt_ct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">shunt_ct</span> <span class="o">=</span> <span class="n">shunt_ct</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_register</span><span class="p">(</span><span class="s">&quot;config&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">as_byte</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CurrentSensor.reset"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the current sensor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Resetting sensor&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">(</span><span class="n">reset</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CurrentSensor.get_measurement"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.get_measurement">[docs]</a>    <span class="k">def</span> <span class="nf">get_measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the measurement in a register.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        register : str</span>
+<span class="sd">            The name of the register to be read.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The value of the measurement, in natural units.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        BadArgError</span>
+<span class="sd">            The register specified does not contain a measurement.</span>
+<span class="sd">        NotCalibratedError</span>
+<span class="sd">            The device has not yet been calibrated.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Getting {reg} measurement&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reg</span><span class="o">=</span><span class="n">register</span><span class="p">))</span>
+        <span class="c"># Force a read if triggered mode.</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_configuration</span><span class="p">()</span><span class="o">.</span><span class="n">mode</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">()</span>
+        <span class="c"># TODO(masasin): Add a wait for conversion to be complete.</span>
+
+        <span class="k">if</span> <span class="n">register</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BadArgError</span><span class="p">(</span><span class="s">&quot;{reg} is not a measurement!&quot;</span>
+                              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reg</span><span class="o">=</span><span class="n">register</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_register</span><span class="p">(</span><span class="n">register</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="n">register</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotCalibratedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CurrentSensor.calibrate"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.calibrate">[docs]</a>    <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_current</span><span class="p">,</span> <span class="n">r_shunt</span><span class="o">=</span><span class="mf">0.002</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calibrate the current sensor.</span>
+
+<span class="sd">        The device must be calibrated before use. Calibration sets the</span>
+<span class="sd">        calibration register, and determines the LSB values for the current</span>
+<span class="sd">        and power measurement registers.</span>
+
+<span class="sd">        The minimum usable max_current is 2.6 A, with a resolution of 0.08 mA.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_current : float</span>
+<span class="sd">            The maximum current expected, in amperes.</span>
+<span class="sd">        r_shunt : float, optional</span>
+<span class="sd">            The resistance of the shunt resistor, in ohms. The resistor used on</span>
+<span class="sd">            the sensor module [#]_ is 0.002 ohms.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        BadArgError</span>
+<span class="sd">            The max_current value is too small.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [#] Strawberry Linux, INA226モジュール説明書. (Japanese only.)</span>
+<span class="sd">               https://strawberry-linux.com/pub/ina226-manual.pdf</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Calibrating sensor&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_current</span> <span class="o">&lt;</span> <span class="mf">2.6</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BadArgError</span><span class="p">(</span><span class="s">&quot;max_current should be at least 2.6 A.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;current&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_current</span> <span class="o">/</span> <span class="mi">2</span><span class="o">**</span><span class="mi">15</span>      <span class="c"># Amperes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;power&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">25</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;current&quot;</span><span class="p">]</span>  <span class="c"># Watts</span>
+        <span class="n">calib_value</span> <span class="o">=</span> <span class="mf">0.00512</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;current&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">r_shunt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_register</span><span class="p">(</span><span class="s">&quot;calib&quot;</span><span class="p">,</span> <span class="n">calib_value</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CurrentSensor.set_alerts"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.set_alerts">[docs]</a>    <span class="k">def</span> <span class="nf">set_alerts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alert</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span>
+                   <span class="n">ready</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">latch</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                   <span class="n">pin_alert</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">interrupt</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Choose the alert function and set up the alert behaviour.</span>
+
+<span class="sd">        See pages 21 and 22 of the datasheet [#]_ for more information.</span>
+
+<span class="sd">        Only one alert function may be selected. The five possible alert</span>
+<span class="sd">        functions are:</span>
+
+<span class="sd">            sol : str</span>
+<span class="sd">                Shunt voltage over limit.</span>
+<span class="sd">            sul : str</span>
+<span class="sd">                Shunt voltage under limit.</span>
+<span class="sd">            bol : str</span>
+<span class="sd">                Bus voltage over limit.</span>
+<span class="sd">            bul : str</span>
+<span class="sd">                Bus voltage under limit.</span>
+<span class="sd">            pol : str</span>
+<span class="sd">                Power over limit.</span>
+
+<span class="sd">        In addition, three bits can be used to set the Mask/Enable register&#39;s</span>
+<span class="sd">        behaviour. The three flags are:</span>
+
+<span class="sd">            cnvr : bool</span>
+<span class="sd">                Conversion ready</span>
+<span class="sd">            apol : bool</span>
+<span class="sd">                Invert alert polarity</span>
+<span class="sd">            len : bool</span>
+<span class="sd">                Alert latch enable</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        alert : str</span>
+<span class="sd">            The alert function to be enabled.</span>
+<span class="sd">        limit : float</span>
+<span class="sd">            The limit at which the alert is triggered, in natural units.</span>
+<span class="sd">        ready : bool, optional</span>
+<span class="sd">            Whether to trigger an alert if conversion ready.</span>
+<span class="sd">        invert : bool, optional</span>
+<span class="sd">            Whether to invert the alert pin polarity.</span>
+<span class="sd">        latch : bool, optional</span>
+<span class="sd">            Whether to latch the alert output.</span>
+<span class="sd">        pin_alert : int, optional</span>
+<span class="sd">            The alert pin, if connected.</span>
+<span class="sd">        interrupt : bool, optional</span>
+<span class="sd">            Whether to enable interrupts.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [#] Texas Instruments, INA 226 datasheet.</span>
+<span class="sd">               http://www.ti.com/lit/ds/symlink/ina226.pdf</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting alerts&quot;</span><span class="p">)</span>
+        <span class="n">alerts</span> <span class="o">=</span> <span class="n">CurrentAlerts</span><span class="p">()</span>
+        <span class="n">functions</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;sol&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s">&quot;sul&quot;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span> <span class="s">&quot;bol&quot;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="s">&quot;bul&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s">&quot;pol&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">}</span>
+
+        <span class="n">alerts</span><span class="o">.</span><span class="n">as_byte</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">functions</span><span class="p">[</span><span class="n">alert</span><span class="p">]</span>
+
+        <span class="n">alerts</span><span class="o">.</span><span class="n">conv_watch</span> <span class="o">=</span> <span class="n">ready</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">invert</span> <span class="o">=</span> <span class="n">invert</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">latch</span> <span class="o">=</span> <span class="n">latch</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_register</span><span class="p">(</span><span class="s">&quot;alert_reg&quot;</span><span class="p">,</span> <span class="n">alerts</span><span class="o">.</span><span class="n">as_byte</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">alert</span> <span class="o">==</span> <span class="s">&quot;sol&quot;</span> <span class="ow">or</span> <span class="n">alert</span> <span class="o">==</span> <span class="s">&quot;sul&quot;</span><span class="p">:</span>
+            <span class="n">lsb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;v_shunt&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">alert</span> <span class="o">==</span> <span class="s">&quot;bol&quot;</span> <span class="ow">or</span> <span class="n">alert</span> <span class="o">==</span> <span class="s">&quot;bul&quot;</span><span class="p">:</span>
+            <span class="n">lsb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;v_bus&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c"># alert == &quot;pol&quot;</span>
+            <span class="n">lsb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsbs</span><span class="p">[</span><span class="s">&quot;power&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_register</span><span class="p">(</span><span class="s">&quot;alert_lim&quot;</span><span class="p">,</span> <span class="n">limit</span> <span class="o">/</span> <span class="n">lsb</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pin_alert</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pin_alert</span> <span class="o">=</span> <span class="n">pin_alert</span>
+            <span class="n">gpio</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">pin_alert</span><span class="p">,</span> <span class="n">gpio</span><span class="o">.</span><span class="n">IN</span><span class="p">,</span>
+                       <span class="n">pull_up_down</span><span class="o">=</span><span class="n">gpio</span><span class="o">.</span><span class="n">PUD_UP</span> <span class="k">if</span> <span class="n">invert</span> <span class="k">else</span> <span class="n">gpio</span><span class="o">.</span><span class="n">PUD_DOWN</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">interrupt</span><span class="p">:</span>
+                <span class="n">gpio</span><span class="o">.</span><span class="n">add_event_detect</span><span class="p">(</span><span class="n">pin_alert</span><span class="p">,</span>
+                                      <span class="n">gpio</span><span class="o">.</span><span class="n">FALLING</span> <span class="k">if</span> <span class="n">invert</span> <span class="k">else</span> <span class="n">gpio</span><span class="o">.</span><span class="n">RISING</span><span class="p">,</span>
+                                      <span class="n">callback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_catch_alert</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_catch_alert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Threaded callback for alert detection&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Alert detected&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CurrentSensor.get_alerts"><a class="viewcode-back" href="../../rpi.html#rpi.devices.CurrentSensor.get_alerts">[docs]</a>    <span class="k">def</span> <span class="nf">get_alerts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the state of the alerts.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        flags : dict</span>
+<span class="sd">            Contains the state of the alerts. Dictionary fields:</span>
+
+<span class="sd">            aff : str</span>
+<span class="sd">                Alert function flag</span>
+<span class="sd">            cvrf : str</span>
+<span class="sd">                Conversion ready flag</span>
+<span class="sd">            ovf : str</span>
+<span class="sd">                Math overflow flag</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Getting alert flags&quot;</span><span class="p">)</span>
+        <span class="n">alerts</span> <span class="o">=</span> <span class="n">CurrentAlerts</span><span class="p">()</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">as_byte</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_register</span><span class="p">(</span><span class="s">&quot;alert_reg&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;aff&quot;</span><span class="p">:</span> <span class="n">alerts</span><span class="o">.</span><span class="n">alert_func</span><span class="p">,</span>
+                 <span class="s">&quot;cvrf&quot;</span><span class="p">:</span> <span class="n">alerts</span><span class="o">.</span><span class="n">conv_flag</span><span class="p">,</span>
+                 <span class="s">&quot;ovf&quot;</span><span class="p">:</span> <span class="n">alerts</span><span class="o">.</span><span class="n">overflow</span><span class="p">}</span>
+
+        <span class="c"># Clear aff bit in the register.</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">alert_func</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_register</span><span class="p">(</span><span class="s">&quot;alert_reg&quot;</span><span class="p">,</span> <span class="n">alerts</span><span class="o">.</span><span class="n">as_byte</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">flags</span>
+</div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">iv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the current (A) and voltage (V) read by the sensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        2-tuple of float</span>
+<span class="sd">            The current and voltage readings of the sensor.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_measurement</span><span class="p">(</span><span class="s">&quot;current&quot;</span><span class="p">)</span>
+        <span class="c"># power = self.get_measurement(&quot;power&quot;)</span>
+        <span class="n">voltage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_measurement</span><span class="p">(</span><span class="s">&quot;v_bus&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">current</span><span class="p">,</span> <span class="n">voltage</span>
+
+</div>
+<div class="viewcode-block" id="IMU"><a class="viewcode-back" href="../../rpi.html#rpi.devices.IMU">[docs]</a><span class="k">class</span> <span class="nc">IMU</span><span class="p">(</span><span class="n">I2CDevice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Invenense MPU-9150 9-axis MEMS MotionTracking Device. [#]_</span>
+
+<span class="sd">    Simple wrapper for the RTIMU library by richards-tech [#]_ for accessing</span>
+<span class="sd">    the sensor fusion data of the MPU-9150.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    settings_file : str, optional</span>
+<span class="sd">        The location of the settings file, without the &quot;.ini&quot; extension.</span>
+<span class="sd">    address : int, optional</span>
+<span class="sd">        The address of the device. If provided, it overrides the I2C address</span>
+<span class="sd">        found in the settings file.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        The name of the device.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    address : int</span>
+<span class="sd">        The address of the device.</span>
+<span class="sd">    poll_interval : int</span>
+<span class="sd">        The recommended poll interval, in milliseconds.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the device.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [#] Invensense, MPU-9150 Product Specification.</span>
+<span class="sd">           http://www.invensense.com/mems/gyro/documents/PS-MPU-9150A-00v4_3.pdf</span>
+<span class="sd">    .. [#] RTIMULib, richards-tech, Github.</span>
+<span class="sd">           https://github.com/richards-tech/RTIMULib</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings_file</span><span class="o">=</span><span class="s">&quot;imu_settings&quot;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="s">&quot;MPU-9150&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="o">=</span> <span class="n">RTIMU</span><span class="o">.</span><span class="n">Settings</span><span class="p">(</span><span class="n">settings_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">I2CAddress</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">I2CAddress</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;i2c-{name}-{address}&quot;</span>
+                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                 <span class="n">address</span><span class="o">=</span><span class="nb">hex</span><span class="p">(</span><span class="n">address</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span> <span class="o">=</span> <span class="n">RTIMU</span><span class="o">.</span><span class="n">RTIMU</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span><span class="o">.</span><span class="n">IMUInit</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;IMU init failed&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;IMU init succeeded&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span><span class="o">.</span><span class="n">setCompassEnable</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span><span class="o">.</span><span class="n">IMUGetPollInterval</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rpy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the roll, pitch, and yaw readings, in radians.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        3-list of float</span>
+<span class="sd">            The roll, pitch, and yaw readings of the IMU, in radians.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span><span class="o">.</span><span class="n">getIMUData</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span><span class="o">.</span><span class="n">IMURead</span><span class="p">():</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imu</span><span class="o">.</span><span class="n">getIMUData</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s">&quot;fusionPoseValid&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s">&quot;fusionPose&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Kyoto University Mechatronics Laboratory.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.0 RC',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
