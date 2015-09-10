@@ -6,15 +6,16 @@ all:
 	chmod +x ~/start_robot
 	rm ~/kagi.zip
 
-docs:
+doc:
 	cd docs
 	make html
 
 pages:
 	git checkout master
-	make docs
+	make doc
 	cp -r docs/build /tmp/master-build
 	git checkout gh-pages
 	cp -r /tmp/master-build/* .
-	git commit -m "Update documentation."
+	rm -rf /tmp/master-build
+	git commit -am "Update documentation."
 	git checkout $(CURRENT_BRANCH)
