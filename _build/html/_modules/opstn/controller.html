@@ -1,0 +1,630 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>opstn.controller &mdash; Yozakura 1.0 RC documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Yozakura 1.0 RC documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> Yozakura
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">Hardware and Software Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../setup.html#environment-setup">Environment setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#ubuntu-setup">Ubuntu setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#raspbian-setup">Raspbian setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../setup.html#peripherals">Peripherals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#contec">CONTEC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#contec-station-connected-to-base-station">CONTEC station (connected to base station)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#contec-access-point-connected-to-rpi">CONTEC access point (connected to RPi)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#cameras">Cameras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#ai-ball-access-point-elecom">Ai-Ball access point (elecom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#camera-ip-addresses">Camera IP addresses</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#urg-ust-10lx">URG (UST-10LX)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../setup.html#hardware-setup">Hardware setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../setup.html#wiring">Wiring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../setup.html#raspberry-pi">Raspberry Pi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Technical Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../common.html">common package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../common.html#module-common">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../opstn.html">opstn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../opstn.html#module-opstn">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../opstn.html#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../opstn.html#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../rpi.html">rpi package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">Yozakura</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>opstn.controller</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for opstn.controller</h1><div class="highlight"><pre>
+<span class="c"># (C) 2015  Kyoto University Mechatronics Laboratory</span>
+<span class="c"># Released under the GNU General Public License, version 3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implement a controller in order to control the robot.</span>
+
+<span class="sd">Provides classes for directional position, button states, and full controller</span>
+<span class="sd">state, as well as a `Controller` class. The controller type is detected</span>
+<span class="sd">automatically, and can be used if its button mapping has been previously</span>
+<span class="sd">registered.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">pygame</span>
+
+<span class="kn">from</span> <span class="nn">common.exceptions</span> <span class="kn">import</span> <span class="n">NoControllerError</span><span class="p">,</span> <span class="n">UnknownControllerError</span>
+
+
+<div class="viewcode-block" id="Position"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Position">[docs]</a><span class="k">class</span> <span class="nc">Position</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class containing a controller axis position.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : float</span>
+<span class="sd">        The horizontal position of the axis.</span>
+<span class="sd">    y : float</span>
+<span class="sd">        The vertical position of the axis.</span>
+<span class="sd">    inverted : bool, optional</span>
+<span class="sd">        Whether the direction is y-inverted.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : float</span>
+<span class="sd">        The horizontal position of the axis.</span>
+<span class="sd">    y : float</span>
+<span class="sd">        The vertical position of the axis.</span>
+<span class="sd">    inverted : bool</span>
+<span class="sd">        Whether the direction is y-inverted.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">inverted</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inverted</span> <span class="o">=</span> <span class="n">inverted</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">direction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine the direction represented by the controller axis position.</span>
+
+<span class="sd">        The directions are Up, Down, Left, and Right, and their intermediates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            &quot;U&quot;, &quot;D&quot;, &quot;L&quot;, and &quot;R&quot; represent Up, Down, Left, and Right</span>
+<span class="sd">            respectively. Return &quot;U&quot;, &quot;D&quot;, &quot;L&quot;, &quot;R&quot; if the positions are either</span>
+<span class="sd">            only `x` or only `y`. Otherwise, return &quot;U&quot; or &quot;D&quot;, followed by</span>
+<span class="sd">            &quot;L&quot; or &quot;R&quot;, as appropriate. If both the `x` and `y` positions</span>
+<span class="sd">            are zero, return &quot;none&quot;.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; position = Position(0.5, 0.7)</span>
+<span class="sd">        &gt;&gt;&gt; position.direction</span>
+<span class="sd">        &#39;UR&#39;</span>
+<span class="sd">        &gt;&gt;&gt; position = Position(0.9, 0)</span>
+<span class="sd">        &gt;&gt;&gt; position.direction</span>
+<span class="sd">        &#39;R&#39;</span>
+<span class="sd">        &gt;&gt;&gt; position = Position(0, 0)</span>
+<span class="sd">        &gt;&gt;&gt; position.direction</span>
+<span class="sd">        &#39;none&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">vertical</span> <span class="o">=</span> <span class="s">&quot;D&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverted</span> <span class="k">else</span> <span class="s">&quot;U&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">vertical</span> <span class="o">=</span> <span class="s">&quot;U&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverted</span> <span class="k">else</span> <span class="s">&quot;D&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vertical</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="s">&quot;R&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="s">&quot;L&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vertical</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">horizontal</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="s">&quot;none&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">vertical</span> <span class="o">+</span> <span class="n">horizontal</span>
+
+        <span class="k">return</span> <span class="n">direction</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;[{x:5.2f}, {y:5.2f}]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Buttons"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Buttons">[docs]</a><span class="k">class</span> <span class="nc">Buttons</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class representing the button configuration of a controller.</span>
+
+<span class="sd">    When registering the mapping for a new controller, please run the</span>
+<span class="sd">    `get_name()` function to obtain the name to use.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    buttons : list</span>
+<span class="sd">        A list containing the state of each button. 1 if pressed, 0 otherwise.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    buttons : list of int</span>
+<span class="sd">        A list containing the state of each button.</span>
+<span class="sd">    pressed_buttons: list of str</span>
+<span class="sd">        A list containing the names of the button that are pressed.</span>
+<span class="sd">    known_makes : list of str</span>
+<span class="sd">        A list containing all the makes whose mappings have been registered.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_button_list</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;□&quot;</span><span class="p">,</span> <span class="s">&quot;✕&quot;</span><span class="p">,</span> <span class="s">&quot;○&quot;</span><span class="p">,</span> <span class="s">&quot;△&quot;</span><span class="p">,</span>   <span class="c"># 0-3</span>
+                    <span class="s">&quot;L1&quot;</span><span class="p">,</span> <span class="s">&quot;R1&quot;</span><span class="p">,</span> <span class="s">&quot;L2&quot;</span><span class="p">,</span> <span class="s">&quot;R2&quot;</span><span class="p">,</span>  <span class="c"># 4-7</span>
+                    <span class="s">&quot;select&quot;</span><span class="p">,</span> <span class="s">&quot;start&quot;</span><span class="p">,</span>       <span class="c"># 8-9</span>
+                    <span class="s">&quot;L3&quot;</span><span class="p">,</span> <span class="s">&quot;R3&quot;</span><span class="p">,</span> <span class="s">&quot;PS&quot;</span><span class="p">)</span>        <span class="c"># 10-12</span>
+
+    <span class="n">_mappings</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;Logitech Logitech RumblePad 2 USB&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c"># No change</span>
+                 <span class="s">&quot;Elecom Wireless Gamepad&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+
+    <span class="c"># Populate the mappings.</span>
+    <span class="k">for</span> <span class="n">_make</span> <span class="ow">in</span> <span class="n">_mappings</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">13</span><span class="p">):</span>
+            <span class="n">_mappings</span><span class="p">[</span><span class="n">_make</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">_i</span><span class="p">,</span> <span class="n">_i</span><span class="p">)</span>
+
+    <span class="n">known_makes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_mappings</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">make</span><span class="p">,</span> <span class="n">buttons</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_make</span> <span class="o">=</span> <span class="n">make</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buttons</span> <span class="o">=</span> <span class="n">buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pressed</span> <span class="o">=</span> <span class="p">[</span><span class="n">Buttons</span><span class="o">.</span><span class="n">_button_list</span><span class="p">[</span><span class="n">Buttons</span><span class="o">.</span><span class="n">_mappings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_make</span><span class="p">][</span><span class="n">i</span><span class="p">]]</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">button</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buttons</span><span class="p">)</span> <span class="k">if</span> <span class="n">button</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Buttons.is_pressed"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Buttons.is_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">is_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether a given button is pressed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        button : str</span>
+<span class="sd">            The name of the button to be checked.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether the button is pressed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">button</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pressed</span>
+</div>
+<div class="viewcode-block" id="Buttons.any_pressed"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Buttons.any_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">any_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">buttons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether any given buttons are pressed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        buttons : one or more str</span>
+<span class="sd">            The name(s) of the buttons to be checked.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if any the buttons are pressed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_pressed</span><span class="p">(</span><span class="n">button</span><span class="p">)</span> <span class="k">for</span> <span class="n">button</span> <span class="ow">in</span> <span class="n">buttons</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Buttons.all_pressed"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Buttons.all_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">all_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">buttons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether all given buttons are pressed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        buttons : one or more str</span>
+<span class="sd">            The name(s) of the buttons to be checked.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if all the buttons are pressed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_pressed</span><span class="p">(</span><span class="n">button</span><span class="p">)</span> <span class="k">for</span> <span class="n">button</span> <span class="ow">in</span> <span class="n">buttons</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buttons</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pressed</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="State"><a class="viewcode-back" href="../../opstn.html#opstn.controller.State">[docs]</a><span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The state of the object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dpad : Position</span>
+<span class="sd">        The position of the dpad.</span>
+<span class="sd">    lstick : Position</span>
+<span class="sd">        The position of the left analog stick.</span>
+<span class="sd">    rstick : Position</span>
+<span class="sd">        The position of the right analog stick.</span>
+<span class="sd">    buttons : Buttons</span>
+<span class="sd">        The state of the buttons.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dpad : Position</span>
+<span class="sd">        The position of the dpad.</span>
+<span class="sd">    lstick : Position</span>
+<span class="sd">        The position of the left analog stick.</span>
+<span class="sd">    rstick : Position</span>
+<span class="sd">        The position of the right analog stick.</span>
+<span class="sd">    buttons : Buttons</span>
+<span class="sd">        The state of the buttons.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpad</span><span class="p">,</span> <span class="n">lstick</span><span class="p">,</span> <span class="n">rstick</span><span class="p">,</span> <span class="n">buttons</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dpad</span> <span class="o">=</span> <span class="n">dpad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstick</span> <span class="o">=</span> <span class="n">lstick</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rstick</span> <span class="o">=</span> <span class="n">rstick</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buttons</span> <span class="o">=</span> <span class="n">buttons</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the raw data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dpad : 2-tuple of float</span>
+<span class="sd">            The position of the dpad.</span>
+<span class="sd">        lstick : 2-tuple of float</span>
+<span class="sd">            The position of the left analog stick.</span>
+<span class="sd">        rstick : 2-tuple of float</span>
+<span class="sd">            The position of the right analog stick.</span>
+<span class="sd">        buttons : list of int</span>
+<span class="sd">            The list of buttons. 1 if pressed, 0 otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dpad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstick</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rstick</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buttons</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="State.__str__"><a class="viewcode-back" href="../../opstn.html#opstn.controller.State.__str__">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A human-readable representation of the state.</span>
+
+<span class="sd">        To print on a single line, ensure that the terminal is at least 144</span>
+<span class="sd">        characters wide, and end your `print` function with a carriage return</span>
+<span class="sd">        character to go back to the start of the line.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            A string with a maximum length of 144 characters, showing the</span>
+<span class="sd">            positions of the dpad, and left and right analog sticks; as well</span>
+<span class="sd">            as a list showing all the buttons that are currently pressed.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; stick = Controller(0, &quot;body&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; try:</span>
+<span class="sd">        ...     while True:</span>
+<span class="sd">        ...         print(stick_body.get_state(), end=&quot;\\r&quot;)</span>
+<span class="sd">        ... except (KeyboardInterrupt, SystemExit):  # Exit safely.</span>
+<span class="sd">        ...     Controller.shutdown_all()</span>
+<span class="sd">        dpad: UR   lstick: [-1.00,  0.00]  rstick: [ 0.12, -0.45]  buttons: []</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&quot;dpad: {dpad:4}  lstick: {ls}  rstick: {rs}  buttons: {b:75}&quot;</span>\
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dpad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpad</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span>
+                    <span class="n">ls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lstick</span><span class="p">,</span> <span class="n">rs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rstick</span><span class="p">,</span>
+                    <span class="n">b</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buttons</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="Controller"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Controller">[docs]</a><span class="k">class</span> <span class="nc">Controller</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A controller to control the robot.</span>
+
+<span class="sd">    The controller wraps a pygame Joystick object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stick_id : int</span>
+<span class="sd">        The ID of the controller.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        The name of the controller.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    controller : pygame.joystick.Joystick</span>
+<span class="sd">        The controller itself.</span>
+<span class="sd">    stick_id : int</span>
+<span class="sd">        The ID of the controller.</span>
+<span class="sd">    make : str</span>
+<span class="sd">        The make of the controller.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        The name of the controller.</span>
+<span class="sd">    controllers : dict</span>
+<span class="sd">        A class variable containing all registered controllers. It is used to</span>
+<span class="sd">        keep track of all controllers to make sure that they all exit safely.</span>
+
+<span class="sd">        **Dictionary format :** {stick_id (int): controller (Controller)}</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    UnknownControllerError</span>
+<span class="sd">        The mapping of the controller buttons is unknown.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pygame</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+    <span class="n">controllers</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stick_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;controller-{id}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">stick_id</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Initializing controller&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">joystick</span><span class="o">.</span><span class="n">Joystick</span><span class="p">(</span><span class="n">stick_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">pygame</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoControllerError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stick_id</span> <span class="o">=</span> <span class="n">stick_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">make</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">Buttons</span><span class="o">.</span><span class="n">known_makes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnknownControllerError</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Registering controller&quot;</span><span class="p">)</span>
+        <span class="n">Controller</span><span class="o">.</span><span class="n">controllers</span><span class="p">[</span><span class="n">stick_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Controller initialized&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the state of all the inputs of the controller.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        State</span>
+<span class="sd">            The controller state.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stick</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span>
+        <span class="n">n_buttons</span> <span class="o">=</span> <span class="n">stick</span><span class="o">.</span><span class="n">get_numbuttons</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Syncronizing pygame&quot;</span><span class="p">)</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">pump</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Getting state&quot;</span><span class="p">)</span>
+        <span class="n">dpad</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="o">*</span><span class="n">stick</span><span class="o">.</span><span class="n">get_hat</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">lstick</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="n">stick</span><span class="o">.</span><span class="n">get_axis</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">stick</span><span class="o">.</span><span class="n">get_axis</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">inverted</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">rstick</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="n">stick</span><span class="o">.</span><span class="n">get_axis</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">stick</span><span class="o">.</span><span class="n">get_axis</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">inverted</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">buttons</span> <span class="o">=</span> <span class="n">Buttons</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">,</span>
+                          <span class="p">[</span><span class="n">stick</span><span class="o">.</span><span class="n">get_button</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_buttons</span><span class="p">)])</span>
+
+        <span class="k">return</span> <span class="n">State</span><span class="p">(</span><span class="n">dpad</span><span class="p">,</span> <span class="n">lstick</span><span class="p">,</span> <span class="n">rstick</span><span class="p">,</span> <span class="n">buttons</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Controller.shutdown"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Controller.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Safely quits a controller.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Closing controller handler&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">Controller</span><span class="o">.</span><span class="n">controllers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stick_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Controller</span><span class="o">.</span><span class="n">controllers</span><span class="p">:</span>
+            <span class="n">pygame</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.shutdown_all"><a class="viewcode-back" href="../../opstn.html#opstn.controller.Controller.shutdown_all">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown_all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Safely quit all controllers.&quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Closing all controller handlers&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;{name} (ID# {id})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stick_id</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Kyoto University Mechatronics Laboratory.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.0 RC',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,1050 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Index &mdash; Yozakura 1.0 RC documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Yozakura 1.0 RC documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> Yozakura
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Hardware and Software Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#environment-setup">Environment setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#ubuntu-setup">Ubuntu setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#raspbian-setup">Raspbian setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#peripherals">Peripherals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#contec">CONTEC</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#contec-station-connected-to-base-station">CONTEC station (connected to base station)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#contec-access-point-connected-to-rpi">CONTEC access point (connected to RPi)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#cameras">Cameras</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#ai-ball-access-point-elecom">Ai-Ball access point (elecom)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#camera-ip-addresses">Camera IP addresses</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#urg-ust-10lx">URG (UST-10LX)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html#hardware-setup">Hardware setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html#wiring">Wiring</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="setup.html#raspberry-pi">Raspberry Pi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Technical Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="common.html">common package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.exceptions">common.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="common.html#module-common.functions">common.functions module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="opstn.html">opstn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn.controller">opstn.controller module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opstn.html#module-opstn.server">opstn.server module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rpi.html">rpi package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.bitfields">rpi.bitfields module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.client">rpi.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.devices">rpi.devices module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#rpi-mbed-module">rpi.mbed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpi.html#module-rpi.motor">rpi.motor module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Yozakura</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li></li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.State.__str__">__str__() (opstn.controller.State method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.server.Server.add_controller">add_controller() (opstn.server.Server method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.add_current_sensor">add_current_sensor() (rpi.client.Client method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.add_imu">add_imu() (rpi.client.Client method)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.functions.add_logging_level">add_logging_level() (in module common.functions)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.add_mbed">add_mbed() (rpi.client.Client method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.add_motor">add_motor() (rpi.client.Client method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.address">address (rpi.devices.CurrentSensor attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.devices.I2CDevice.address">(rpi.devices.I2CDevice attribute)</a>
+  </dt>
+
+        
+  <dt><a href="rpi.html#rpi.devices.IMU.address">(rpi.devices.IMU attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.alert_func">alert_func (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons.all_pressed">all_pressed() (opstn.controller.Buttons method)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons.any_pressed">any_pressed() (opstn.controller.Buttons method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.ArmPacket">ArmPacket (class in rpi.bitfields)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration.avg">avg (rpi.bitfields.CurrentConfiguration attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.exceptions.BadArgError">BadArgError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.BadDataError">BadDataError</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration.bus_ct">bus_ct (rpi.bitfields.CurrentConfiguration attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.bus_ol">bus_ol (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.bus_ul">bus_ul (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons">Buttons (class in opstn.controller)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons.buttons">buttons (opstn.controller.Buttons attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="opstn.html#opstn.controller.State.buttons">(opstn.controller.State attribute)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.calibrate">calibrate() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client">Client (class in rpi.client)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#module-common">common (module)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#module-common.exceptions">common.exceptions (module)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#module-common.functions">common.functions (module)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Controller">Controller (class in opstn.controller)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.controller">controller (opstn.controller.Controller attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.controllers">controllers (opstn.controller.Controller attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="opstn.html#opstn.server.Server.controllers">(opstn.server.Server attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.conv_flag">conv_flag (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.conv_watch">conv_watch (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.current_sensors">current_sensors (rpi.client.Client attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts">CurrentAlerts (class in rpi.bitfields)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration">CurrentConfiguration (class in rpi.bitfields)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor">CurrentSensor (class in rpi.devices)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.State.data">data (opstn.controller.State attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.I2CDevice.devices">devices (rpi.devices.I2CDevice attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Position.direction">direction (opstn.controller.Position attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.State.dpad">dpad (opstn.controller.State attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.drive">drive() (rpi.motor.Motor method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.empty">empty (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration.empty">(rpi.bitfields.CurrentConfiguration attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.enable_serial">enable_serial() (rpi.motor.Motor method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.enable_soft_pwm">enable_soft_pwm() (rpi.motor.Motor method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.get_alerts">get_alerts() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.get_configuration">get_configuration() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.functions.get_ip_address">get_ip_address() (in module common.functions)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.get_measurement">get_measurement() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.server.Handler.handle">handle() (opstn.server.Handler method)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.server.Handler">Handler (class in opstn.server)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.has_pwm">has_pwm (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.has_serial">has_serial (rpi.motor.Motor attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.I2CDevice">I2CDevice (class in rpi.devices)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.I2CSlotBusyError">I2CSlotBusyError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.I2CSlotEmptyError">I2CSlotEmptyError</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.IMU">IMU (class in rpi.devices)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.imus">imus (rpi.client.Client attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.functions.interrupted">interrupted() (in module common.functions)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.invert">invert (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Position.inverted">inverted (opstn.controller.Position attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons.is_pressed">is_pressed() (opstn.controller.Buttons method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.iv">iv (rpi.devices.CurrentSensor attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons.known_makes">known_makes (opstn.controller.Buttons attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.latch">latch (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.ArmPacket.linear">linear (rpi.bitfields.ArmPacket attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.lsbs">lsbs (rpi.devices.CurrentSensor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.State.lstick">lstick (opstn.controller.State attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.make">make (opstn.controller.Controller attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.max_speed">max_speed (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.mbeds">mbeds (rpi.client.Client attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.ArmPacket.mode">mode (rpi.bitfields.ArmPacket attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration.mode">(rpi.bitfields.CurrentConfiguration attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.motor.Motor">Motor (class in rpi.motor)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.bitfields.MotorPacket.motor_id">motor_id (rpi.bitfields.MotorPacket attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.motor.Motor.motor_id">(rpi.motor.Motor attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="common.html#common.exceptions.MotorCountError">MotorCountError</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.MotorPacket">MotorPacket (class in rpi.bitfields)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.motors">motors (rpi.client.Client attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.motor.Motor.motors">(rpi.motor.Motor attribute)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.name">name (opstn.controller.Controller attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.name">(rpi.devices.CurrentSensor attribute)</a>
+  </dt>
+
+        
+  <dt><a href="rpi.html#rpi.devices.I2CDevice.name">(rpi.devices.I2CDevice attribute)</a>
+  </dt>
+
+        
+  <dt><a href="rpi.html#rpi.devices.IMU.name">(rpi.devices.IMU attribute)</a>
+  </dt>
+
+        
+  <dt><a href="rpi.html#rpi.motor.Motor.name">(rpi.motor.Motor attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.bitfields.MotorPacket.negative">negative (rpi.bitfields.MotorPacket attribute)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.NoConnectionError">NoConnectionError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.NoControllerError">NoControllerError</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.exceptions.NoDriversError">NoDriversError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.NoMbedError">NoMbedError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.NotCalibratedError">NotCalibratedError</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#module-opstn">opstn (module)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#module-opstn.controller">opstn.controller (module)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#module-opstn.server">opstn.server (module)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.overflow">overflow (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.pin_alert">pin_alert (rpi.devices.CurrentSensor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.pin_dir">pin_dir (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.pin_fault_1">pin_fault_1 (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.pin_fault_2">pin_fault_2 (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.pin_pwm">pin_pwm (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.pin_reset">pin_reset (rpi.motor.Motor attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.bitfields.ArmPacket.pitch">pitch (rpi.bitfields.ArmPacket attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.IMU.poll_interval">poll_interval (rpi.devices.IMU attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Position">Position (class in opstn.controller)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.power_ol">power_ol (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Buttons.pressed_buttons">pressed_buttons (opstn.controller.Buttons attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.registers">registers (rpi.devices.CurrentSensor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.I2CDevice.remove">remove() (rpi.devices.I2CDevice method)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.server.Server.remove_controller">remove_controller() (opstn.server.Server method)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.server.Handler.request">request (opstn.server.Handler attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.client.Client.request">(rpi.client.Client attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration.reset">reset (rpi.bitfields.CurrentConfiguration attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.reset">reset() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.reset_driver">reset_driver() (rpi.motor.Motor method)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.server.Handler.reverse_mode">reverse_mode (opstn.server.Handler attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#module-rpi">rpi (module)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#module-rpi.bitfields">rpi.bitfields (module)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#module-rpi.client">rpi.client (module)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#module-rpi.devices">rpi.devices (module)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#module-rpi.motor">rpi.motor (module)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.IMU.rpy">rpy (rpi.devices.IMU attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.State.rstick">rstick (opstn.controller.State attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.run">run() (rpi.client.Client method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.ser">ser (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.server.Server.serve_forever">serve_forever() (opstn.server.Server method)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.server.Server">Server (class in opstn.server)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.client.Client.server_address">server_address (rpi.client.Client attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.set_alerts">set_alerts() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.devices.CurrentSensor.set_configuration">set_configuration() (rpi.devices.CurrentSensor method)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentConfiguration.shunt_ct">shunt_ct (rpi.bitfields.CurrentConfiguration attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.shunt_ol">shunt_ol (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="rpi.html#rpi.bitfields.CurrentAlerts.shunt_ul">shunt_ul (rpi.bitfields.CurrentAlerts attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.shutdown">shutdown() (opstn.controller.Controller method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.client.Client.shutdown">(rpi.client.Client method)</a>
+  </dt>
+
+        
+  <dt><a href="rpi.html#rpi.motor.Motor.shutdown">(rpi.motor.Motor method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.shutdown_all">shutdown_all() (opstn.controller.Controller class method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="rpi.html#rpi.motor.Motor.shutdown_all">(rpi.motor.Motor class method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="rpi.html#rpi.bitfields.MotorPacket.speed">speed (rpi.bitfields.MotorPacket attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.motor.Motor.start_input">start_input (rpi.motor.Motor attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.State">State (class in opstn.controller)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.state">state (opstn.controller.Controller attribute)</a>
+  </dt>
+
+      
+  <dt><a href="opstn.html#opstn.controller.Controller.stick_id">stick_id (opstn.controller.Controller attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.exceptions.UnknownControllerError">UnknownControllerError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.UnknownIPError">UnknownIPError</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.exceptions.UnknownMbedError">UnknownMbedError</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.server.Handler.wheels_single_stick">wheels_single_stick (opstn.server.Handler attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.Position.x">x (opstn.controller.Position attribute)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="opstn.html#opstn.controller.Position.y">y (opstn.controller.Position attribute)</a>
+  </dt>
+
+      
+  <dt><a href="rpi.html#rpi.bitfields.ArmPacket.yaw">yaw (rpi.bitfields.ArmPacket attribute)</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.YozakuraException">YozakuraException</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="common.html#common.exceptions.YozakuraExit">YozakuraExit</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.YozakuraRuntimeError">YozakuraRuntimeError</a>
+  </dt>
+
+      
+  <dt><a href="common.html#common.exceptions.YozakuraTimeoutError">YozakuraTimeoutError</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Kyoto University Mechatronics Laboratory.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0 RC',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
