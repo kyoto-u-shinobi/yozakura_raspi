@@ -5,7 +5,7 @@ YOZAKURA
 SHINOBI遠隔班
 夜桜
 
-詳しくは、https://kyoto-u-shinobi.github.io/yozakura/html/index.htmlをご覧ください。
+詳しくは、https://kyoto-u-shinobi.github.io/yozakura/html/index.html をご覧ください。
 
 #Settings
 ##Contec  
