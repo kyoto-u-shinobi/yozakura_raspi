@@ -134,7 +134,7 @@ qtcreator-*
 
 # Vim
 *~
-*.sw?
+*.*.sw?
 
 # Emacs
 .#*

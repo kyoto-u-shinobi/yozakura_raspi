@@ -9,29 +9,35 @@ SHINOBI遠隔班
 ##Contec  
 **CONTEC access point (yozakura side)     admin:pass**  
 IP Address: 192.168.54.225  
-IEEE802.11n (2.4 GHz)  10 channels  
+IEEE802.11n (5 GHz)  44 channels  
 コンパチブルインフラストラクチャ  
-ESSID SHINOBI_TELE_YOZAKURA_10ch  
+ESSID RRL10_SHINOBI_TELE_YOZAKURA_44ch  
 WPA2-PSK(AES)  
 1:8  
 
 **CONTEC station (opstn side)     blank**  
 IP Address: 192.168.54.220  
-IEEE802.11n (2.4GHz)  
+IEEE802.11n (5GHz)  
 コンパチブルインフラストラクチャ  
-ESSID SHINOBI_TELE_YOZAKURA_10ch  
+ESSID RRL10_SHINOBI_TELE_YOZAKURA_44ch  
 WPA2-PSK(AES)  
 1:8  
 
 ##PC  
 **Operator Station PC**  
-IP Address: 192.168.54.200  
+IP Address: 192.168.54.200
 
 **Robot PC (Rasberry Pi)**  
 IP Address: 192.168.54.210  
 
-##Camera  
-**AI-Ball for Arm**  
+##Camera
+**Access point for Ai-Ball**  
+IP Address: 192.168.54.150  
+SSID elecom2g-d3f474  
+WPA2-PSK(AES)  
+3582988152694  
+
+**AI-Ball for Overview**  
 IP Address: 192.168.54.160  
 
 **AI-Ball for Front body**  
@@ -40,7 +46,7 @@ IP Address: 192.168.54.161
 **AI-Ball for Back body**  
 IP Address: 192.168.54.162  
 
-**AI-Ball for Overview**  
+**AI-Ball for Arm**  
 IP Address: 192.168.54.163  
 
 ## Others  

@@ -2,20 +2,19 @@
 # Released under the GNU General Public License, version 3
 import logging
 
-import serial
-
-from common.exceptions import NoConnectionError, NoMbedError, UnknownMbedError, YozakuraTimeoutError, I2CSlotEmptyError, DynamixelError
-from common.functions import get_ip_address
+from common.exceptions import YozakuraTimeoutError, NoConnectionError,\
+    NoMbedError, UnknownMbedError, I2CSlotEmptyError, DynamixelError
+from common.functions import add_logging_level, get_ip_address
 from rpi.arm import Arm
 from rpi.client import Client
 from rpi.dynamixel import AX12, MX28
 from rpi.devices import CurrentSensor, IMU
-from rpi.mbed import connect_to_mbeds
+from rpi.mbed import Mbed
 from rpi.motor import Motor
 
 
 def main():
-    client_address = get_ip_address(["eth0", "enp2s0", "wlan0"])
+    client_address = get_ip_address(["eth0", "enp2s0", "wlan0"])[0]
 
     # Connect to correct server based on local IP address.
     if client_address.startswith("192.168"):  # Contec
@@ -26,7 +25,8 @@ def main():
     try:
         client = Client(client_address, (opstn_address, 9999))
     except NoConnectionError as e:
-        logging.critical(e)
+        logging.critical(e.split("! ")[0])
+        logging.help(e.split("! ")[1])
         return
 
     logging.info("Initializing motors")
@@ -37,10 +37,10 @@ def main():
 
     logging.info("Initializing current sensors")
     current_sensors = []
-    for address, name in zip(range(0x40, 0x44), ["left_wheel_current",
-                                                 "right_wheel_current",
-                                                 "left_flipper_current",
-                                                 "right_flipper_current"]):
+    # TODO (masasin): Add alert pins.
+    for address, name in zip([0x40, 0x41, 0x42, 0x42],
+                             ["left_wheel_current", "right_wheel_current",
+                              "left_flipper_current", "right_flipper_current"]):
         try:
             sensor = CurrentSensor(address=address, name=name)
         except I2CSlotEmptyError as e:
@@ -49,10 +49,10 @@ def main():
             current_sensors.append(sensor)
 
     logging.info("Initializing IMUs")
-    imus=[]
+    imus = []
     for address, name in zip([0x68, 0x69], ["rear_imu", "front_imu"]):
         try:
-            imu=IMU(address=address, name=name)
+            imu = IMU(address=address, name=name)
         except I2CSlotEmptyError as e:
             logging.warning(e)
         else:
@@ -60,7 +60,7 @@ def main():
 
     logging.info("Connecting to mbeds")
     try:
-        mbed_arm, mbed_body = connect_to_mbeds()
+        mbed_arm, mbed_body = Mbed.connect_to_mbeds()
     except (NoMbedError, UnknownMbedError, YozakuraTimeoutError) as e:
         logging.critical(e)
         Motor.shutdown_all()
@@ -76,9 +76,12 @@ def main():
         yaw = MX28(2, name="yaw")
         servos = (linear, pitch, yaw)
 
-        arm.add_servo(linear, home_position=300, limits=(100, 300), speed=30, upstep=20, downstep=20, multiturn=False)
-        arm.add_servo(pitch, home_position=334, limits=(172, 334), speed=30, upstep=20, downstep=20, multiturn=False)
-        arm.add_servo(yaw, home_position=0, limits=(360, 360), speed=30, upstep=20, downstep=20, multiturn=True)
+        arm.add_servo(linear, home_position=300, limits=(100, 300), speed=30,
+                      upstep=20, downstep=20, multiturn=False)
+        arm.add_servo(pitch, home_position=334, limits=(172, 334), speed=30,
+                      upstep=20, downstep=20, multiturn=False)
+        arm.add_servo(yaw, home_position=0, limits=(360, 360), speed=30,
+                      upstep=20, downstep=20, multiturn=True)
     except DynamixelError as e:
         logging.critical(e)
         for servo in [linear, pitch, yaw]:
@@ -87,16 +90,16 @@ def main():
             except AttributeError:
                 pass
         return
-    
+
     for servo in servos:
         arm.add_servo(servo)
-    
+
     arm.go_home_loop()
 
     logging.debug("Registering peripherals to client")
     if mbed_arm is not None:
-        client.add_serial_device("mbed_arm", mbed_arm)
-    client.add_serial_device("mbed_body", mbed_body)
+        client.add_mbed("mbed_arm", mbed_arm)
+    client.add_mbed("mbed_body", mbed_body)
     client.add_arm(arm)
     for motor in motors:
         client.add_motor(motor, ser=mbed_body)
@@ -110,13 +113,11 @@ def main():
     except NoConnectionError:
         pass
     except KeyboardInterrupt:
-        print()
-    except SystemExit as e:
-        logging.error("Received SystemExit: {e}".format(e=e))
+        print()  # Keep the console log aligned
     finally:
         logging.info("Shutting down...")
         Motor.shutdown_all()
-        logging.debug("Shutting down connection with mbed")
+        logging.debug("Shutting down connections with mbeds")
         if mbed_arm is not None:
             mbed_arm.close()
         mbed_body.close()
@@ -128,5 +129,28 @@ def main():
     logging.info("All done")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(name)-30s : %(levelname)-8s %(message)s")
+    format_string = "%(name)-30s : %(levelname)-8s  %(message)s"
+    date_format = "%Y-%m-%d %H:%M:%S "
+    add_logging_level("verbose", 5)
+    add_logging_level("help", 25)
+
+    LOG_TO_FILE = False
+
+    if LOG_TO_FILE:
+        # Log everything to file
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(asctime)s " + format_string,
+                            datefmt=date_format,
+                            filename="/tmp/rpi.log",
+                            filemode="w")
+
+        # Log important data to console
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        console.setFormatter(logging.Formatter(format_string))
+        logging.getLogger("").addHandler(console)
+    else:
+        logging.basicConfig(level=logging.INFO, format=format_string)
+
+    # Run Yozakura
     main()

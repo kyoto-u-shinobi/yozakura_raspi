@@ -41,9 +41,9 @@ resulting byte should contain ``0b01110000``, which has an ascii value of
 >>> packet.speed
 16
 
-Since the size of the fields were defined in ``MotorPacketBits`` above,
-we can set each portio individually without needing to perform bit
-manipulation. What we did is the equivalent of:
+Since the size of the fields were defined in `_MotorPacketBits`, we can set each
+portion individually without needing to perform bit manipulation. What we did is
+the equivalent of:
 
 >>> motor_id = 1 << 6
 >>> negative = 1 << 5
@@ -64,17 +64,17 @@ import ctypes
 
 
 # Used by the arm mbed
-class ArmPacketBits(ctypes.LittleEndianStructure):
+class _ArmPacketBits(ctypes.LittleEndianStructure):
     """
     The bits for the packet sent to the arm mbed.
-    
+
     Note that the mbed's processor is little endian, which is why a
-    ``LittleEndianStructure`` is used.
-    
+    `LittleEndianStructure` is used.
+
     See Also
     --------
     ArmPacket
-    
+
     """
     _fields_ = [("mode", ctypes.c_uint8, 2),
                 ("linear", ctypes.c_uint8, 2),
@@ -90,7 +90,7 @@ class ArmPacket(ctypes.Union):
     is encoded as a single byte.
 
     Using a union allows us to transmit the full byte to the mbed by using
-    ``packet.as_byte``, and ensures that it would be exactly eight bits long.
+    `packet.as_byte`, and ensures that it would be exactly eight bits long.
 
     Attributes
     ----------
@@ -105,23 +105,23 @@ class ArmPacket(ctypes.Union):
 
     Notes
     -----
-    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
-    ``as_byte``.
+    Anonymous usage is the bitfield, `b`. The full byte can be accessed via
+    `as_byte`.
 
     """
-    _fields_ = [("b", ArmPacketBits),
+    _fields_ = [("b", _ArmPacketBits),
                 ("as_byte", ctypes.c_uint8)]
 
     _anonymous_ = ("b")
 
 
 # Used in rpi.motors
-class MotorPacketBits(ctypes.LittleEndianStructure):
+class _MotorPacketBits(ctypes.LittleEndianStructure):
     """
     The bits for the packet sent to the motors.
 
     Note that the mbed's processor is little endian, which is why a
-    ``LittleEndianStructure`` is used.
+    `LittleEndianStructure` is used.
 
     See Also
     --------
@@ -141,7 +141,7 @@ class MotorPacket(ctypes.Union):
     is encoded as a single byte.
 
     Using a union allows us to transmit the full byte to the mbed by using
-    ``packet.as_byte``, and ensures that it would be exactly eight bits long.
+    `packet.as_byte`, and ensures that it would be exactly eight bits long.
 
     Attributes
     ----------
@@ -154,20 +154,20 @@ class MotorPacket(ctypes.Union):
 
     Notes
     -----
-    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
-    ``as_byte``.
+    Anonymous usage is the bitfield, `b`. The full byte can be accessed via
+    `as_byte`.
 
     """
-    _fields_ = [("b", MotorPacketBits),
+    _fields_ = [("b", _MotorPacketBits),
                 ("as_byte", ctypes.c_uint8)]
 
     _anonymous_ = ("b")
 
 
 # Used in rpi.devices.CurrentSensor
-class CurrentConfigurationBits(ctypes.Structure):
+class _CurrentConfigurationBits(ctypes.Structure):
     """
-    The bits for the configuration register of the INA226 ``CurrentSensor``.
+    The bits for the configuration register of the INA226 `CurrentSensor`.
 
     See Also
     --------
@@ -184,7 +184,7 @@ class CurrentConfigurationBits(ctypes.Structure):
 
 class CurrentConfiguration(ctypes.Union):
     """
-    The union for the configuration register of ``CurrentSensor``.
+    The union for the configuration register of `CurrentSensor`.
 
     The current sensor used here is the Texas Instruments INA226 Current/Power
     Monitor. The configuration register details are shown on pages 18 and 19
@@ -220,8 +220,8 @@ class CurrentConfiguration(ctypes.Union):
 
     Notes
     -----
-    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
-    ``as_byte``.
+    Anonymous usage is the bitfield, `b`. The full byte can be accessed via
+    `as_byte`.
 
     References
     ----------
@@ -229,15 +229,15 @@ class CurrentConfiguration(ctypes.Union):
            http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
-    _fields_ = [("b", CurrentConfigurationBits),
+    _fields_ = [("b", _CurrentConfigurationBits),
                 ("as_byte", ctypes.c_uint16)]
 
     _anonymous_ = ("b")
 
 
-class CurrentAlertsFlags(ctypes.Structure):
+class _CurrentAlertsFlags(ctypes.Structure):
     """
-    The bits for the Mask/Enable register of the INA226 ``CurrentSensor``.
+    The bits for the Mask/Enable register of the INA226 `CurrentSensor`.
 
     See Also
     --------
@@ -260,7 +260,7 @@ class CurrentAlertsFlags(ctypes.Structure):
 
 class CurrentAlerts(ctypes.Union):
     """
-    The union for the Mask/Enable register of ``CurrentSensor``.
+    The union for the Mask/Enable register of `CurrentSensor`.
 
     The current sensor used here is the Texas Instruments INA226 Current/Power
     Monitor. The Mask/Enable register details are shown on pages 21 and 22 of
@@ -290,7 +290,7 @@ class CurrentAlerts(ctypes.Union):
         Not used.
     alert_func : bool
         Whether the alert was triggered by an alert function.
-        (``shunt_ol``, ``shunt_ul``, ``bus_ol``, ``bus_ul``, ``power_ol``)
+        (`shunt_ol`, `shunt_ul`, `bus_ol`, `bus_ul`, `power_ol`)
     conv_flag : bool
         Whether the alert was triggered by a conversion becoming ready.
     overflow : bool
@@ -304,8 +304,8 @@ class CurrentAlerts(ctypes.Union):
 
     Notes
     -----
-    Anonymous usage is the bitfield, ``b``. The full byte can be accessed via
-    ``as_byte``.
+    Anonymous usage is the bitfield, `b`. The full byte can be accessed via
+    `as_byte`.
 
     References
     ----------
@@ -313,7 +313,7 @@ class CurrentAlerts(ctypes.Union):
             http://www.ti.com/lit/ds/symlink/ina226.pdf
 
     """
-    _fields_ = [("b", CurrentAlertsFlags),
+    _fields_ = [("b", _CurrentAlertsFlags),
                 ("as_byte", ctypes.c_uint16)]
 
     _anonymous_ = ("b")

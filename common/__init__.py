@@ -3,7 +3,7 @@
 """
 Common modules used by both the base station and the Raspberry Pi.
 
-    - ``exceptions`` defines exceptions used throughout the project.
-    - ``networking`` provides a method to determine the host IP address.
+- `exceptions` defines exceptions used by Yozakura.
+- `functions` provides functions and decorators used throughout Yozakura.
 
 """
