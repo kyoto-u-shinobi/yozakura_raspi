@@ -38,7 +38,7 @@ def main():
     # TODO (masasin): Add alert pins.
     for address, name in zip([0x40, 0x41, 0x42, 0x42],
                              ["left_wheel_current", "right_wheel_current",
-                             "left_flipper_current", "right_flipper_current"]):
+                              "left_flipper_current", "right_flipper_current"]):
         try:
             sensor = CurrentSensor(address=address, name=name)
         except I2CSlotEmptyError as e:
