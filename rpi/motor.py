@@ -243,6 +243,8 @@ class Motor(object):
             scaled_speed = (speed * (1 - self.start_input)) + self.start_input
         elif speed < 0:
             scaled_speed = (speed * (1 - self.start_input)) - self.start_input
+        else:
+            scaled_speed = 0
 
         # Map [0:1] to [0:max_speed]
         scaled_speed *= self.max_speed
