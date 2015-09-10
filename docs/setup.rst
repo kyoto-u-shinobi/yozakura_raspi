@@ -19,7 +19,7 @@ Raspbian setup
 --------------
 * Setup I2C
 * Install Python 3.4
-* ``pip install PySerial RPi.GPIO smbus-cffi``
+* ``pip3 install PySerial RPi.GPIO smbus-cffi``
 * Install RTIMULib. You will need to compile from source.
 * Clone Yozakura locally
 * Set the static IP to 192.168.54.210
