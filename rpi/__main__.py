@@ -67,8 +67,8 @@ def main():
 
     logging.debug("Registering peripherals to client")
     if mbed_arm is not None:
-        client.add_serial_device("mbed_arm", mbed_arm)
-    client.add_serial_device("mbed_body", mbed_body)
+        client.add_mbed("mbed_arm", mbed_arm)
+    client.add_mbed("mbed_body", mbed_body)
     for motor in motors:
         client.add_motor(motor, ser=mbed_body)
     for sensor in current_sensors:
