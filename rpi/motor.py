@@ -104,6 +104,7 @@ class Motor(object):
 
     def __init__(self, name, fault_1, fault_2, reset,
                  start_input=0, max_speed=1):
+        cls = self.__class__
         if Motor._count == 4:
             raise MotorCountError(Motor._count)
         if not 0 <= start_input <= 1:
@@ -134,9 +135,9 @@ class Motor(object):
         self.reset_driver()  # Clear any startup faults.
 
         self._logger.debug("Registering motor")
-        Motor.motors.append(self)
+        cls.motors.append(self)
         self._logger.debug("Motor initialized")
-        Motor._count += 1
+        cls._count += 1
 
     def _catch_fault(self, channel):
         """Threaded callback for fault detection."""
@@ -212,14 +213,21 @@ class Motor(object):
 
         Raises
         ------
+        BadArgError
+            The requested speed is outside the allowable range.
         NoDriversError
             Neither serial nor PWM are enabled.
 
         """
+        if not -1 <= speed <= 1:
+            raise BadArgError("`speed` should be between -1 and 1.")
+
+        scaled_speed = self._scale_speed(speed)
+
         if self.has_serial:
-            self._transmit(speed)
+            self._transmit(scaled_speed)
         elif self.has_pwm:
-            self._pwm_drive(speed)
+            self._pwm_drive(scaled_speed)
         else:
             raise NoDriversError(self)
 
@@ -271,7 +279,7 @@ class Motor(object):
         packet = MotorPacket()
         packet.motor_id = self.motor_id
         packet.negative = True if speed < 0 else False
-        packet.speed = int(abs(self._scale_speed(speed)) * 31)
+        packet.speed = int(abs(speed) * 31)
 
         self.ser.write(bytes([packet.as_byte]))
 
@@ -283,16 +291,14 @@ class Motor(object):
         on the speed requested.
 
         Parameters
-        ----------
+        ---------
         speed : float
             A value from -1 to 1 indicating the requested speed of the motor.
             The speed is changed by changing the PWM duty cycle.
 
         """
-        scaled_speed = self._scale_speed(speed)
-
-        gpio.output(self.pin_dir, gpio.LOW if scaled_speed < 0 else gpio.HIGH)
-        self._pwm.ChangeDutyCycle(abs(scaled_speed) * 100)
+        gpio.output(self.pin_dir, gpio.LOW if speed <= 0 else gpio.HIGH)
+        self._pwm.ChangeDutyCycle(abs(speed) * 100)
 
     def reset_driver(self):
         """Reset the motor driver."""
@@ -300,23 +306,26 @@ class Motor(object):
         sleep(0.1)
         gpio.output(self.pin_reset, gpio.HIGH)
 
-    def shutdown(self):
+    @classmethod
+    def shutdown_all(cls):
+        """Shut down all motors."""
+        logging.debug("Shutting down all motors")
+        for motor in cls.motors.copy():
+            motor._shutdown()
+        gpio.cleanup()
+        logging.info("All motors shut down")
+
+    def _shutdown(self):
         """Shut down the motor."""
+        cls = self.__class__
         self._logger.debug("Shutting down motor")
         try:
             self.drive(0)
         except NoDriversError:
             self._logger.warning("No drivers available")
+        cls.motors.remove(self)
+        cls._count -= 1
         self._logger.debug("Motor shut down")
-
-    @classmethod
-    def shutdown_all(cls):
-        """Shut down all motors."""
-        logging.debug("Shutting down all motors")
-        for motor in cls.motors:
-            motor.shutdown()
-        gpio.cleanup()
-        logging.info("All motors shut down")
 
     def __repr__(self):
         return "{name} (ID# {m_id})".format(name=self.name, m_id=self.motor_id)
