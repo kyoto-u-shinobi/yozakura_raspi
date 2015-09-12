@@ -162,11 +162,11 @@ def get_ip_address(interfaces):
     Get the IP address of the device's interfaces.
 
     >>> get_ip_address("wlan0")  # Connected; returns wlan0.
-    '192.168.11.2'
+    ('192.168.11.2', 'wlan0')
     >>> get_ip_address(["eth0", "wlan0"])  # Both connected; returns eth0.
-    '192.168.11.5'
+    ('192.168.11.5', 'eth0')
     >>> get_ip_address(["eth1", "wlan0"])  # wlan0 connected; returns wlan0.
-    '192.168.11.2'
+    ('192.168.11.2', 'wlan0')
     >>> get_ip_address("wlan1")  # Does not exist
     Traceback (most recent call last):
         ...
