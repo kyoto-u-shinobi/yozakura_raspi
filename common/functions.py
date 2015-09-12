@@ -148,6 +148,8 @@ def get_ip_address(interfaces):
 
     Raises
     ------
+    BadArgError
+        Bad inputs are given.
     UnknownIPError
         No interfaces give a valid IP address.
 
