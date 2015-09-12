@@ -2,14 +2,14 @@
 # Released under the GNU General Public License, version 3
 import logging
 
-from common.functions import get_ip_address
+from common.functions import get_interfaces
 from opstn.controller import Controller
 from opstn.server import Server, Handler
 
 
 def main():
     logging.debug("Initializing controllers")
-    ip_address = get_ip_address(["eth0", "enp2s0", "wlan0"])
+    ip_address = get_interfaces(external=True, active=True)[0].ip
     server = Server((ip_address, 9999), Handler)
 
     with Controller(0, name="main") as main_controller:

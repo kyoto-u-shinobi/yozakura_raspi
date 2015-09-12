@@ -4,14 +4,14 @@
 Common functions used throughout Yozakura.
 
 """
-import fcntl
+from collections import namedtuple
 from functools import wraps
 import logging
+import re
 import signal
-import socket
-import struct
+import subprocess
 
-from common.exceptions import BadArgError, UnknownIPError, YozakuraTimeoutError
+from common.exceptions import UnknownIPError, YozakuraTimeoutError
 
 
 def add_logging_level(name, level):
@@ -121,82 +121,61 @@ def interrupted(duration, exception=YozakuraTimeoutError, error_message=None):
     return interrupt_decorator
 
 
-def get_ip_address(interfaces):
+def get_interfaces(external=False, active=False):
     """
-    Determine the IP address of a set of local interfaces.
+    Get a list of network interfaces on Linux.
 
-    Uses the Linux SIOCGIFADDR ioctl to find the IP address associated with a
-    network interface, given the name of that interface, e.g. "eth0". The
-    address is returned as a string containing a dotted quad.
-
-    This is useful, for instance, when initializing a server.
-
-    The code is based on an ActiveState Code Recipe. [#]_
+    To access the MAC address and/or the IP address, set the relevant keyword
+    arguments to True.
 
     Parameters
     ----------
-    interfaces : str or list of str
-        The name or names of the interfaces to be checked. The function goes
-        through each item in the list in order.
+    external : bool, optional
+        Only show external interfaces, and ignore virtual (e.g. loopback)
+        devices, and return their MAC addresses.
+    active : bool, optional
+        Only show interfaces which are UP and have an IP address, and return
+        their IPv4 addresses.
 
     Returns
     -------
-    address : str
-        The IP address of the first valid interface tested.
-    interface : str
-        The name of the valid interface.
+    interfaces
+        list of str containing the interface name by default, or list of
+        namedtuple containing `name`, `mac`, and `ip` as requested.
 
     Raises
     ------
     UnknownIPError
-        No interfaces give a valid IP address.
-
-    References
-    ----------
-    .. [#] Paul Cannon, ActiveState Code. "get the IP address associated with
-           a network interface (linux only)"
-           http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
+        No external interfaces have a valid IP address.
 
     Examples
     --------
-    Get the IP address of the device's interfaces.
-
-    >>> get_ip_address("wlan0")  # Connected; returns wlan0.
-    ('192.168.11.2', 'wlan0')
-    >>> get_ip_address(["eth0", "wlan0"])  # Both connected; returns eth0.
-    ('192.168.11.5', 'eth0')
-    >>> get_ip_address(["eth1", "wlan0"])  # wlan0 connected; returns wlan0.
-    ('192.168.11.2', 'wlan0')
-    >>> get_ip_address("wlan1")  # Does not exist
-    Traceback (most recent call last):
-        ...
-    OSError: [Errno 19] No such device
-    >>> get_ip_address(["eth1", "wlan1"])  # Do not exist
-    Traceback (most recent call last):
-        ...
-    OSError: [Errno 19] No such devices
+    >>> print(get_interfaces())
+    ['eth0', 'lo', 'wlan0']
+    >>> print(get_interfaces(external=True))
+    [Interface(name='eth0', mac='a0:b1:c2:d3:e4:f5'), Interface(name='wlan0', ma
+    c='f5:e4:d3:c2:b1:a0')]
+    >>> print(get_interfaces(ip=True))
+    [Interface(name='lo', ip='127.0.0.1'), Interface(name='wlan0', ip='192.168.1
+    1.2')]
+    >>> print(get_interfaces(external=True, ip=True))
+    [Interface(name='wlan0', mac='f5:e4:d3:c2:b1:a0', ip='192.168.11.2')]
 
     """
-    try:
-        if type(interfaces) in (list, tuple):
-            interface = interfaces[0]
-        else:
-            interface = interfaces
-        packed = struct.pack("256s", str.encode(interface))
-    except TypeError:
-        raise BadArgError("`interfaces` must be str or list of str.")
+    name_pattern = "^(\w+)\s"
+    mac_pattern = ".*?HWaddr[ ]([0-9A-Fa-f:]{17})" if external else ""
+    ip_pattern = ".*?\n\s+inet[ ]addr:((?:\d+\.){3}\d+)" if active else ""
+    pattern = re.compile("".join((name_pattern, mac_pattern, ip_pattern)),
+                         flags=re.MULTILINE)
 
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        address = socket.inet_ntoa(fcntl.ioctl(s.fileno(),
-                                               0x8915,  # SIOCGIFADDR
-                                               packed)[20:24])
-        return address, interface
-    except OSError:
-        # Go through the sequence until the sequence is exhausted.
-        if type(interfaces) in (list, tuple) and len(interfaces) > 1:
-            return get_ip_address(interfaces[1:])
-        else:
+    ifconfig = subprocess.check_output("ifconfig").decode()
+    interfaces = pattern.findall(ifconfig)
+    if external or active:
+        if external and active and not interfaces:
             raise UnknownIPError
-    finally:
-        s.close()
+        Interface = namedtuple("Interface", "name {mac} {ip}".format(
+            mac="mac" if external else "",
+            ip="ip" if active else ""))
+        return [Interface(*interface) for interface in interfaces]
+    else:
+        return interfaces

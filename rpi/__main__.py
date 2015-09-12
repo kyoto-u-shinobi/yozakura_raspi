@@ -4,7 +4,7 @@ import logging
 
 from common.exceptions import YozakuraTimeoutError, NoConnectionError,\
     NoMbedError, UnknownMbedError, I2CSlotEmptyError
-from common.functions import add_logging_level, get_ip_address
+from common.functions import add_logging_level, get_interfaces
 from rpi.client import Client
 from rpi.devices import CurrentSensor, IMU
 from rpi.mbed import Mbed
@@ -12,7 +12,7 @@ from rpi.motor import Motor
 
 
 def main():
-    client_address = get_ip_address(["eth0", "enp2s0", "wlan0"])[0]
+    client_address = get_interfaces(external=True, active=True)[0].ip
 
     # Connect to correct server based on local IP address.
     if client_address.startswith("192.168"):  # Contec
