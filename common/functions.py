@@ -177,7 +177,6 @@ def get_ip_address(interfaces):
     OSError: [Errno 19] No such devices
 
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         if type(interfaces) in (list, tuple):
             interface = interfaces[0]
@@ -188,6 +187,7 @@ def get_ip_address(interfaces):
         raise BadArgError("`interfaces` must be str or list of str.")
 
     try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         address = socket.inet_ntoa(fcntl.ioctl(s.fileno(),
                                                0x8915,  # SIOCGIFADDR
                                                packed)[20:24])
