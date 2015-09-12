@@ -581,6 +581,10 @@ class Client(object):
 
     def shutdown(self):
         """Shut down the client."""
+        Motor.shutdown_all()
+        self._logger.debug("Shutting down connections with mbeds")
+        for mbed in self.mbeds:
+            mbed.close()
         self._logger.debug("Shutting down client")
         self.request.close()
         self._logger.info("Client shut down")
