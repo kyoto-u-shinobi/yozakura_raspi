@@ -113,7 +113,7 @@ if __name__ == "__main__":
                             format="%(asctime)s " + format_string,
                             datefmt=date_format,
                             filename="/tmp/rpi.log",
-                            filemode="w")
+                            filemode="a")
 
         # Log important data to console
         console = logging.StreamHandler()
