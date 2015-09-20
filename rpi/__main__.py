@@ -11,6 +11,9 @@ from rpi.mbed import Mbed
 from rpi.motor import Motor
 
 
+LOG_TO_FILE = False
+
+
 def main():
     client_address = get_interfaces(external=True, active=True)[0].ip
 
@@ -105,8 +108,6 @@ if __name__ == "__main__":
     date_format = "%Y-%m-%d %H:%M:%S "
     add_logging_level("verbose", 5)
     add_logging_level("help", 25)
-
-    LOG_TO_FILE = False
 
     if LOG_TO_FILE:
         # Log everything to file
