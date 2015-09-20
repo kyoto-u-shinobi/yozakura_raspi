@@ -11,6 +11,38 @@ from rpi.mbed import Mbed
 from rpi.motor import Motor
 
 
+def main():
+    client_address = get_interfaces(external=True, active=True)[0].ip
+
+    # Connect to correct server based on local IP address.
+    if client_address.startswith("192.168"):  # Contec
+        opstn_address = "192.168.54.200"
+    elif client_address.startswith("10.249"):  # Lab dev
+        opstn_address = "10.249.255.172"
+
+    try:
+        client = Client(client_address, (opstn_address, 9999))
+    except NoConnectionError as e:
+        logging.critical(e.split("! ")[0])
+        logging.help(e.split("! ")[1])
+        return
+
+    _initialize_motors(client)
+    _initialize_sensors(client)
+
+    try:
+        client.run()
+    except NoConnectionError:
+        pass
+    except KeyboardInterrupt:
+        print()  # Keep the console log aligned
+    finally:
+        logging.info("Shutting down...")
+        client.shutdown()
+
+    logging.info("All done")
+
+
 def _initialize_motors(client):
     """Initialize the motors and the mbeds."""
     logging.info("Initializing motors")
@@ -67,37 +99,6 @@ def _initialize_sensors(client):
     for imu in imus:
         client.add_imu(imu)
 
-
-def main():
-    client_address = get_interfaces(external=True, active=True)[0].ip
-
-    # Connect to correct server based on local IP address.
-    if client_address.startswith("192.168"):  # Contec
-        opstn_address = "192.168.54.200"
-    elif client_address.startswith("10.249"):  # Lab dev
-        opstn_address = "10.249.255.172"
-
-    try:
-        client = Client(client_address, (opstn_address, 9999))
-    except NoConnectionError as e:
-        logging.critical(e.split("! ")[0])
-        logging.help(e.split("! ")[1])
-        return
-
-    _initialize_motors(client)
-    _initialize_sensors(client)
-
-    try:
-        client.run()
-    except NoConnectionError:
-        pass
-    except KeyboardInterrupt:
-        print()  # Keep the console log aligned
-    finally:
-        logging.info("Shutting down...")
-        client.shutdown()
-
-    logging.info("All done")
 
 if __name__ == "__main__":
     format_string = "%(name)-30s : %(levelname)-8s  %(message)s"
