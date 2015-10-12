@@ -283,7 +283,7 @@ class Client(object):
         """
         self._logger.debug("Requesting commands")
         # TODO (murata): Change "speeds" to "commands" in opstn.
-        self.request.send(str.encode("commands"))
+        self.request.send("commands".encode())
         result = self.request.recv(128)
         if not result:
             raise BadDataError("No motor or arm commands received")

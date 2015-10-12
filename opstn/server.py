@@ -102,7 +102,7 @@ class Handler(socketserver.BaseRequestHandler):
             reply = self._generate_reply(data)
 
             try:
-                self.request.sendall(str.encode(reply))
+                self.request.sendall(reply.encode())
             except TypeError:  # Already bytecode (e.g., pickled object)
                 self.request.sendall(reply)
 
