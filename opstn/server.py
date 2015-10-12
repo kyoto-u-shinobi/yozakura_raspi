@@ -75,16 +75,14 @@ class Handler(socketserver.BaseRequestHandler):
         self.request.settimeout(0.5)  # seconds
         self._sticks_timestamp = self._reverse_timestamp = time.time()
 
-        self._sensors_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sensors_client.setsockopt(socket.SOL_SOCKET,
-                                        socket.SO_REUSEADDR, True)
-        self._sensors_client.bind(("", 9999))
-
-        try:
-            self._loop()
-        finally:
-            self._sensors_client.close()
-            raise YozakuraExit
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sensors_client:
+            sensors_client.setsockopt(socket.SOL_SOCKET,
+                                            socket.SO_REUSEADDR, True)
+            sensors_client.bind(("", 9999))
+            try:
+                self._loop()
+            finally:
+                raise YozakuraExit
 
     def _loop(self):
         """The main handler loop."""
