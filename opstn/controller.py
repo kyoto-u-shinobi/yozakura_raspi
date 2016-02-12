@@ -123,17 +123,34 @@ class Buttons(object):
         A list containing all the makes whose mappings have been registered.
 
     """
-    _button_list = ("□", "✕", "○", "△",   # 0-3
-                    "L1", "R1", "L2", "R2",  # 4-7
-                    "select", "start",       # 8-9
-                    "L3", "R3", "PS")        # 10-12
+    _button_list = ("□", "✕", "○", "△",      # 0-3 (Symbols)
+                    "L1", "R1", "L2", "R2",  # 4-7 (Bumpers)
+                    "select", "start",       # 8-9 (Select, start)
+                    "L3", "R3", "PS",        # 10-12 (Sticks, PS)
+                    "U", "D", "L", "R")      # 13-16 (Dpad)
 
-    _mappings = {"Logitech Logitech RumblePad 2 USB": {},  # No change
-                 "Elecom Wireless Gamepad": {1: 3, 2: 1, 3: 2}}
+    _mappings = {
+        "Logitech Logitech RumblePad 2 USB": {},  # No change
+        "Elecom Wireless Gamepad": {
+            1: 3, 2: 1, 3: 2,  # Symbols
+        },
+        "WiseGroup.,Ltd JC-PS101U": {  # Playstation 2
+            0: 3, 1: 2, 2: 1, 3:0,   # Symbols
+            8: 9, 9: 8,              # Select, start
+            4: 6, 5: 7, 7: 5, 6: 4,  # Bumpers
+        },
+        "Sony PLAYSTATION(R)3 Controller": {  # Playstation 3
+            4: 13, 6: 14, 7: 15, 5: 16,  # Dpad
+            12: 3, 15: 0, 13: 2, 14: 1,  # Symbols
+            10: 4, 11: 5, 8: 6, 9: 7,    # Bumpers
+            0: 8, 3: 9, 16: 12,          # Centre
+            1: 10, 2: 11,                # Sticks
+        },
+    }
 
     # Populate the mappings.
     for _make in _mappings:
-        for _i in range(13):
+        for _i in range(len(_button_list)):
             _mappings[_make].setdefault(_i, _i)
 
     known_makes = list(_mappings.keys())
@@ -343,7 +360,7 @@ class Controller(object):
             self.name = self.make
 
         if self.make not in Buttons.known_makes:
-            raise UnknownControllerError
+            raise UnknownControllerError(self.make)
 
         self.controller.init()
 
@@ -370,11 +387,27 @@ class Controller(object):
         pygame.event.pump()
 
         self._logger.debug("Getting state")
-        dpad = Position(*stick.get_hat(0))
         lstick = Position(stick.get_axis(0), stick.get_axis(1), inverted=True)
         rstick = Position(stick.get_axis(2), stick.get_axis(3), inverted=True)
         buttons = Buttons(self.make,
                           [stick.get_button(i) for i in range(n_buttons)])
+        
+        try:
+            dpad = Position(*stick.get_hat(0))
+        except pygame.error:  # PS3 considers the DPAD as buttons.
+            pos = [0, 0]
+            if "U" in buttons.pressed:
+                pos[1] += 1
+            if "D" in buttons.pressed:
+                pos[1] -= 1
+            if "L" in buttons.pressed:
+                pos[0] -= 1
+            if "R" in buttons.pressed:
+                pos[0] += 1
+            for direction in ("U", "D", "L", "R"):
+                if direction in buttons.pressed:
+                    buttons.pressed.remove(direction)
+            dpad = Position(*pos)
 
         return State(dpad, lstick, rstick, buttons)
 
