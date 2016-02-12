@@ -310,7 +310,7 @@ class Motor(object):
     def shutdown_all(cls):
         """Shut down all motors."""
         logging.debug("Shutting down all motors")
-        for motor in cls.motors.copy():
+        for motor in cls.motors.keys():
             motor._shutdown()
         gpio.cleanup()
         logging.info("All motors shut down")
