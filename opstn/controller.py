@@ -433,7 +433,7 @@ class Controller(object):
         self.shutdown()
 
     def __repr__(self):
-        return "{name} (ID# {id})".format(name=self.name, id=self.stick_id())
+        return "{name} (ID# {id})".format(name=self.name, id=self.stick_id)
 
     def __str__(self):
         return self.name
